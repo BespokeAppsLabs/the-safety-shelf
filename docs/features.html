@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>The Safety Shelf — What Your Store Can Do</title>
+<style>
+  :root {
+    --bg: #0a0b12; --surface: #141726; --surface2: #1b1f33; --border: #2a3050;
+    --fg: #e8eef7; --muted: #9aa3b8; --primary: #89cff0; --accent: #b026ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    line-height: 1.5;
+  }
+  @page { size: A4; margin: 0; }
+
+  .page { padding: 48px 52px; }
+
+  /* Cover */
+  .cover {
+    min-height: 100vh; padding: 64px 56px;
+    display: flex; flex-direction: column; justify-content: center;
+    background:
+      radial-gradient(60rem 40rem at 12% 8%, #16233f, transparent 60%),
+      radial-gradient(50rem 35rem at 100% 100%, #2a0f4a, transparent 55%),
+      var(--bg);
+    page-break-after: always;
+  }
+  .moon { font-size: 40px; }
+  .brand { color: var(--primary); font-weight: 700; letter-spacing: -0.5px;
+           font-size: 15px; text-transform: uppercase; letter-spacing: 3px; margin-top: 18px; }
+  .cover h1 { font-size: 58px; line-height: 1.02; margin: 14px 0 0; letter-spacing: -1.5px; }
+  .cover h1 .g { color: var(--primary); }
+  .cover .sub { color: var(--muted); font-size: 19px; margin-top: 20px; max-width: 30rem; }
+  .pill { display:inline-block; margin-top: 34px; padding: 9px 18px; border-radius: 999px;
+          background: var(--accent); color: #fff; font-weight: 600; font-size: 13px;
+          box-shadow: 0 0 24px -4px #b026ffaa; }
+
+  h2.section { font-size: 13px; text-transform: uppercase; letter-spacing: 3px;
+               color: var(--accent); margin: 0 0 20px; }
+  .lead { color: var(--muted); font-size: 15px; margin: 0 0 26px; max-width: 42rem; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px 22px; break-inside: avoid;
+  }
+  .card .ico { font-size: 22px; }
+  .card h3 { margin: 10px 0 6px; font-size: 16.5px; color: var(--primary); }
+  .card p { margin: 0; color: #cdd5e6; font-size: 13.5px; }
+  .card .tag { display:inline-block; margin-top:12px; font-size:11px; color: var(--accent);
+               border:1px solid #b026ff55; border-radius: 999px; padding: 2px 9px; }
+
+  .control {
+    margin-top: 26px; border-radius: 14px; padding: 22px 24px;
+    background: linear-gradient(135deg, #12203a, #241041);
+    border: 1px solid #3a2a5e;
+  }
+  .control h3 { margin: 0 0 6px; font-size: 17px; color: var(--primary); }
+  .control p { margin: 0; color: #d6def0; font-size: 14px; }
+
+  .foot { margin-top: 30px; border-top: 1px solid var(--border); padding-top: 14px;
+          color: var(--muted); font-size: 11.5px; display:flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+  <section class="cover">
+    <div class="moon">🌙</div>
+    <div class="brand">The Safety Shelf</div>
+    <h1>Your bookshop, <span class="g">runs itself for you</span>.</h1>
+    <p class="sub">An online bookstore with a built-in assistant that does the heavy lifting — writing, designing, translating, selling, and promoting your books.</p>
+    <span class="pill">What your store can do</span>
+  </section>
+
+  <section class="page">
+    <h2 class="section">Everything your store does</h2>
+    <p class="lead">No jargon. Here is what you get, in plain terms — and what it means for you day to day.</p>
+
+    <div class="grid">
+      <div class="card">
+        <div class="ico">🛍️</div>
+        <h3>A beautiful online shop</h3>
+        <p>Customers browse your books, buy in a couple of taps, and start reading instantly. Looks great on phones and computers.</p>
+      </div>
+      <div class="card">
+        <div class="ico">📚</div>
+        <h3>Every reader’s own library</h3>
+        <p>When someone buys a book, it’s saved to their personal library — theirs to open and read any time.</p>
+      </div>
+      <div class="card">
+        <div class="ico">💳</div>
+        <h3>Get paid securely</h3>
+        <p>Take card payments online safely. The money goes to you, and every sale is recorded automatically.</p>
+      </div>
+      <div class="card">
+        <div class="ico">✍️</div>
+        <h3>Write books with AI</h3>
+        <p>Describe an idea and the assistant drafts the whole book for you. Review it, tweak it, keep it.</p>
+        <span class="tag">Assistant</span>
+      </div>
+      <div class="card">
+        <div class="ico">🎨</div>
+        <h3>Instant book covers</h3>
+        <p>Generate a polished, professional cover in one click — no designer needed.</p>
+        <span class="tag">Assistant</span>
+      </div>
+      <div class="card">
+        <div class="ico">🌍</div>
+        <h3>Any language, one click</h3>
+        <p>Translate a book into any language and reach readers around the world — without hiring a translator.</p>
+        <span class="tag">Assistant</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" style="page-break-before: always;">
+    <div class="grid">
+      <div class="card">
+        <div class="ico">🚀</div>
+        <h3>Publish in one click</h3>
+        <p>When a book is ready, push it live to your store instantly. It’s on sale the moment you say so.</p>
+      </div>
+      <div class="card">
+        <div class="ico">📣</div>
+        <h3>Social media, done for you</h3>
+        <p>Create posts for TikTok, Instagram, Facebook and X — and publish to all of them at once.</p>
+        <span class="tag">Assistant</span>
+      </div>
+      <div class="card">
+        <div class="ico">📊</div>
+        <h3>Know your numbers</h3>
+        <p>See revenue per book, your best sellers, and how the store is doing — at a glance, whenever you ask.</p>
+      </div>
+      <div class="card">
+        <div class="ico">💬</div>
+        <h3>Just talk to your assistant</h3>
+        <p>Ask “how were sales this month?” and it answers with a clear chart. Ask it to write, translate, or post — it handles it.</p>
+        <span class="tag">Assistant</span>
+      </div>
+    </div>
+
+    <div class="control">
+      <h3>🛡️ You’re always in control</h3>
+      <p>The assistant never publishes a book, spends money, or posts to social media on its own. It prepares everything, shows it to you, and waits for your “yes” before anything goes live.</p>
+    </div>
+
+    <div class="foot">
+      <span>The Safety Shelf</span>
+      <span>What your store can do · for the store owner</span>
+    </div>
+  </section>
+
+</body>
+</html>

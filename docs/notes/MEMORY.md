@@ -1,0 +1,3 @@
+- [The Safety Shelf Scope](the-safety-shelf-scope.md) — locked v1 scope/stack for the AI bookstore (digital-only, propose-then-confirm agent, Postiz social, customer My Library)
+- [Docs-First Workflow](docs-first-workflow.md) — Boss wants ideas in docs/*.md before scaffolding code
+- [Headless Chrome Screenshot Gotcha](headless-chrome-screenshot-gotcha.md) — --window-size ≠ layout viewport; use CDP emulation for true mobile shots

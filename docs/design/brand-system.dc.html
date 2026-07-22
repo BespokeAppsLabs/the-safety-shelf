@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Safety Shelf — Brand System</title>
+<style>
+  :root {
+    --ink: #12312b;
+    --muted: #5d746d;
+    --paper: #fffaf0;
+    --card: #ffffff;
+    --green: #147a5c;
+    --green-2: #0f5f48;
+    --mint: #dff5ec;
+    --amber: #f6b73c;
+    --blue: #2f7dbd;
+    --red: #d94b3d;
+    --border: #d9e6df;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: linear-gradient(135deg, #fffaf0 0%, #eef8f3 45%, #e8f2fb 100%);
+    color: var(--ink);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  main { max-width: 1120px; margin: auto; padding: 40px 20px 64px; }
+  section { margin-top: 28px; }
+  .hero, .card {
+    background: rgba(255,255,255,.82);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    box-shadow: 0 18px 50px rgba(18,49,43,.08);
+  }
+  .hero { padding: 42px; display: grid; grid-template-columns: 1.2fr .8fr; gap: 32px; align-items: center; }
+  h1 { font-size: clamp(42px, 7vw, 82px); line-height: .92; margin: 0; letter-spacing: -.06em; }
+  h2 { font-size: 28px; margin: 0 0 14px; letter-spacing: -.03em; }
+  h3 { margin: 0 0 8px; }
+  p { margin: 0; }
+  .eyebrow { color: var(--green); text-transform: uppercase; letter-spacing: .18em; font-weight: 800; font-size: 12px; }
+  .subtitle { margin-top: 16px; color: var(--green-2); font-weight: 800; font-size: 21px; }
+  .tagline { margin-top: 8px; color: var(--muted); font-size: 18px; }
+  .logo-box { display: grid; place-items: center; padding: 34px; background: var(--mint); border-radius: 24px; }
+  .logo { width: min(320px, 100%); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { padding: 24px; }
+  .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .swatch { min-height: 128px; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; justify-content: end; color: white; font-weight: 800; }
+  .swatch small { display: block; opacity: .85; font-weight: 600; }
+  .tone { font-size: 30px; margin-bottom: 8px; }
+  .pill { display: inline-flex; padding: 8px 12px; border-radius: 999px; background: var(--mint); color: var(--green-2); font-weight: 800; margin: 4px 6px 4px 0; }
+  .sample { background: var(--green); color: white; border-radius: 24px; padding: 28px; min-height: 260px; display: flex; flex-direction: column; justify-content: space-between; }
+  .sample button { border: 0; border-radius: 14px; background: var(--amber); color: #3d2700; padding: 12px 16px; font-weight: 900; width: fit-content; }
+  code { background: #eef8f3; padding: 2px 6px; border-radius: 8px; }
+  @media (max-width: 820px) { .hero, .grid, .swatches { grid-template-columns: 1fr; } h1 { font-size: 48px; } }
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Brand system v1</p>
+      <h1>The Safety Shelf</h1>
+      <p class="subtitle">Health and Safety Awareness</p>
+      <p class="tagline">Knowledge that Protects Lives</p>
+    </div>
+    <div class="logo-box">
+      <svg class="logo" viewBox="0 0 420 300" role="img" aria-label="The Safety Shelf logo concept">
+        <path d="M210 22 344 76v92c0 70-48 110-134 142C124 278 76 238 76 168V76L210 22Z" fill="#147a5c"/>
+        <path d="M210 52 314 94v72c0 51-34 82-104 110-70-28-104-59-104-110V94l104-42Z" fill="#dff5ec"/>
+        <rect x="135" y="126" width="150" height="18" rx="9" fill="#147a5c"/>
+        <rect x="145" y="94" width="34" height="72" rx="8" fill="#2f7dbd"/>
+        <rect x="193" y="84" width="34" height="82" rx="8" fill="#f6b73c"/>
+        <rect x="241" y="104" width="34" height="62" rx="8" fill="#d94b3d"/>
+        <path d="M210 190c24-25 62-8 47 23-9 19-31 31-47 41-16-10-38-22-47-41-15-31 23-48 47-23Z" fill="#147a5c"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card"><div class="tone">🛡️</div><h3>Protection first</h3><p>Every visual cue should feel safe, credible, and practical.</p></div>
+    <div class="card"><div class="tone">👶</div><h3>Family aware</h3><p>Pregnancy and child safety are core shelves, not side categories.</p></div>
+    <div class="card"><div class="tone">📚</div><h3>Knowledge shelf</h3><p>The product is still a bookstore: books, guides, checklists, and learning paths.</p></div>
+  </section>
+
+  <section class="card">
+    <h2>Colours</h2>
+    <div class="swatches">
+      <div class="swatch" style="background:#147a5c">Safety Green<small>#147A5C</small></div>
+      <div class="swatch" style="background:#0f5f48">Deep Green<small>#0F5F48</small></div>
+      <div class="swatch" style="background:#f6b73c;color:#3d2700">Caution Amber<small>#F6B73C</small></div>
+      <div class="swatch" style="background:#2f7dbd">Care Blue<small>#2F7DBD</small></div>
+      <div class="swatch" style="background:#d94b3d">Alert Red<small>#D94B3D</small></div>
+      <div class="swatch" style="background:#fffaf0;color:#12312b;border:1px solid #d9e6df">Warm Paper<small>#FFFAF0</small></div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card"><h2>Logo direction</h2><p>Use a <strong>shield + bookshelf</strong>. Shield means protection; shelf/books mean useful knowledge. Heart/cross stays optional.</p></div>
+    <div class="card"><h2>Typography</h2><p>Use the existing app font stack. No new font dependency until brand polish actually needs it.</p></div>
+    <div class="card"><h2>Voice</h2><p>Plain, calm, actionable. Avoid fear-mongering. Say what protects people.</p></div>
+  </section>
+
+  <section class="card">
+    <h2>Core shelves</h2>
+    <span class="pill">Pregnancy Safety</span><span class="pill">Child Safety</span><span class="pill">Home Safety</span><span class="pill">First Aid</span><span class="pill">Food & Hygiene</span><span class="pill">Emergency Preparedness</span><span class="pill">Workplace Safety</span>
+  </section>
+
+  <section class="sample">
+    <div>
+      <p class="eyebrow" style="color:#dff5ec">The Safety Shelf</p>
+      <h2 style="font-size:44px;margin-top:8px">Knowledge that Protects Lives</h2>
+      <p style="max-width:620px;color:#eafff7">Browse practical health and safety guides for pregnancy, child care, home emergencies, first aid, and everyday prevention.</p>
+    </div>
+    <button>Browse safety guides</button>
+  </section>
+
+  <section class="card">
+    <h2>Implementation notes</h2>
+    <p>Use this as the visual source for the first UI pass. Replace Midnight Library copy, global colour tokens, hero messaging, logo mark, and mock catalogue categories. Do not add a full design-token package.</p>
+  </section>
+</main>
+</body>
+</html>
