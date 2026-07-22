@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # ponytail: placeholders, not secrets — the build only needs these to be
+      # present and well-formed so prerendering doesn't crash. Real values live
+      # in Vercel. If a test ever needs to reach a live backend, it belongs in a
+      # separate job with repo secrets, not here.
+      NEXT_PUBLIC_CONVEX_URL: https://placeholder.convex.cloud
+      NEXT_PUBLIC_CONVEX_SITE_URL: https://placeholder.convex.site
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_cGxhY2Vob2xkZXIuY2xlcmsuYWNjb3VudHMuZGV2JA
+      CLERK_SECRET_KEY: sk_test_placeholder
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn test
+
+      - run: yarn build
