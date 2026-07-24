@@ -1,12 +1,12 @@
 "use node";
 import { ConvexError, v } from "convex/values";
 import { generateText } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
 import { action, type ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { PROVIDER_DEFAULTS } from "./aiCredentials/providers";
 import { decryptSecret } from "./lib/secrets";
+import { openRouterClient } from "./lib/openrouter";
+import { OPENROUTER_TEXT_MODEL } from "./aiCredentials/providers";
 import { socialPlatform, SOCIAL_PLATFORM_VALUES } from "../lib/social";
 
 async function ownerViewer(ctx: ActionCtx) {
@@ -15,18 +15,11 @@ async function ownerViewer(ctx: ActionCtx) {
   return viewer;
 }
 
-// Text client, same construction as convex/agent.ts (the store's connected
-// text provider — OpenAI or any OpenAI-compatible endpoint).
+// Text client, shared OpenRouter credential and routing used by the agent.
 async function textClient(ctx: ActionCtx, ownerId: Id<"users">) {
-  const credential = await ctx.runQuery(internal.aiCredentials.queries.getForOwner.getForOwner, {
-    ownerId,
-    purpose: "text",
-  });
-  if (!credential) throw new ConvexError("No text AI provider connected — set one up in Settings first.");
-  const apiKey = credential.provider === "ollama" ? "ollama-local" : decryptSecret(credential.encryptedKey!);
-  const modelId = credential.model ?? PROVIDER_DEFAULTS[credential.provider].model;
-  const client = createOpenAI({ apiKey, baseURL: credential.baseURL });
-  return { model: client.chat(modelId), modelId };
+  const credential = await ctx.runQuery(internal.aiCredentials.queries.getForOwner.getForOwner, { ownerId });
+  if (!credential?.encryptedKey) throw new ConvexError("No OpenRouter key connected — set one up in Settings first.");
+  return { model: openRouterClient(decryptSecret(credential.encryptedKey)).chat(OPENROUTER_TEXT_MODEL) };
 }
 
 async function writeCopy(

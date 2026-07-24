@@ -7,6 +7,7 @@ export const getById = viewerQuery({
   args: { bookId: v.id("books") },
   handler: async (ctx, { bookId }) => {
     requireOwner(ctx.viewer);
-    return ctx.db.get(bookId);
+    const book = await ctx.db.get(bookId);
+    return book ? { ...book, coverUrl: book.coverStorageId ? await ctx.storage.getUrl(book.coverStorageId) : null } : null;
   },
 });

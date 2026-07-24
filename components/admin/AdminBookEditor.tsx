@@ -14,8 +14,8 @@ import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { blocksToChapters, chaptersToBlocks, type Chapter } from "@/lib/bookContent";
 import { DEFAULT_ELEVENLABS_MODEL, ELEVENLABS_MODELS, type ElevenLabsModel } from "@/lib/elevenlabs";
-import { imageModelsFor, formatImageEstimate } from "@/lib/imageModels";
 import { languageLabel } from "@/lib/languages";
+import { isSavedTranslation } from "@/lib/translationState";
 
 const selectClass =
   "w-full rounded-full border border-border bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-primary";
@@ -209,9 +209,10 @@ function AudioTab({ book }: { book: Doc<"books"> }) {
   const variants = useQuery(api.bookVariants.list, { bookId: book._id });
   const [lang, setLang] = useState(book.originalLang);
 
-  const langs = [book.originalLang, ...(variants ?? []).map((v) => v.lang)];
+  const savedVariants = (variants ?? []).filter(isSavedTranslation);
+  const langs = [book.originalLang, ...savedVariants.map((v) => v.lang)];
   const audioStatus =
-    lang === book.originalLang ? book.audioStatus : variants?.find((v) => v.lang === lang)?.audioStatus;
+    lang === book.originalLang ? book.audioStatus : savedVariants.find((v) => v.lang === lang)?.audioStatus;
 
   return (
     <div className="space-y-4">
@@ -227,6 +228,133 @@ function AudioTab({ book }: { book: Doc<"books"> }) {
       </label>
       <AudiobookCard bookId={book._id} lang={lang} audioStatus={audioStatus} />
     </div>
+  );
+}
+
+function ContentTab({
+  book,
+  originalChapters,
+  onOriginalChange,
+}: {
+  book: Doc<"books">;
+  originalChapters: Chapter[];
+  onOriginalChange: (chapters: Chapter[]) => void;
+}) {
+  const variants = useQuery(api.bookVariants.list, { bookId: book._id });
+  const setOriginalBlocks = useMutation(api.bookBlocks.setBlocks);
+  const setVariantBlocks = useMutation(api.variantBlocks.setBlocks);
+  const [lang, setLang] = useState(book.originalLang);
+  const [editedVariantChapters, setEditedVariantChapters] = useState<Chapter[] | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const savedVariants = (variants ?? []).filter(isSavedTranslation);
+  const selectedVariant = savedVariants.find((variant) => variant.lang === lang);
+  const variantBlocks = useQuery(
+    api.variantBlocks.listByVariant,
+    selectedVariant ? { variantId: selectedVariant._id } : "skip",
+  );
+  const sourceChapters = lang === book.originalLang ? originalChapters : variantBlocks ? blocksToChapters(variantBlocks) : null;
+  const chapters = lang === book.originalLang ? originalChapters : editedVariantChapters ?? sourceChapters;
+
+  useEffect(() => {
+    if (lang !== book.originalLang && !selectedVariant && variants !== undefined) setLang(book.originalLang);
+  }, [book.originalLang, lang, selectedVariant, variants]);
+
+  async function save() {
+    if (!chapters) return;
+    setSaving(true);
+    setError(null);
+    try {
+      if (lang === book.originalLang) {
+        await setOriginalBlocks({ bookId: book._id, blocks: chaptersToBlocks(chapters) });
+      } else if (selectedVariant) {
+        await setVariantBlocks({ variantId: selectedVariant._id, blocks: chaptersToBlocks(chapters) });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Card className="space-y-4">
+      <label className="block max-w-xs">
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Content language</span>
+        <select className={selectClass} value={lang} onChange={(e) => {
+          setEditedVariantChapters(null);
+          setLang(e.target.value);
+        }}>
+          <option value={book.originalLang}>{languageLabel(book.originalLang)} (original)</option>
+          {savedVariants.map((variant) => (
+            <option key={variant._id} value={variant.lang}>{languageLabel(variant.lang)}</option>
+          ))}
+        </select>
+      </label>
+      <p className="text-sm font-semibold text-ink">{languageLabel(lang)} content</p>
+      {chapters === null ? <p className="text-sm text-muted">Loading translation…</p> : <ChapterEditor chapters={chapters} onChange={lang === book.originalLang ? onOriginalChange : setEditedVariantChapters} />}
+      <div>
+        <Button size="sm" disabled={saving || chapters === null || (lang !== book.originalLang && !selectedVariant)} onClick={() => void save()}>
+          {saving ? "Saving…" : `Save ${languageLabel(lang)} content`}
+        </Button>
+      </div>
+      {error ? <p className="text-sm font-semibold text-red-strong">{error}</p> : null}
+    </Card>
+  );
+}
+
+function ReadTab({
+  book,
+  originalChapters,
+  lang,
+  onLangChange,
+}: {
+  book: Doc<"books">;
+  originalChapters: Chapter[];
+  lang: string;
+  onLangChange: (lang: string) => void;
+}) {
+  const variants = useQuery(api.bookVariants.list, { bookId: book._id });
+  const savedVariants = (variants ?? []).filter(isSavedTranslation);
+  const selectedVariant = savedVariants.find((variant) => variant.lang === lang);
+  const variantBlocks = useQuery(
+    api.variantBlocks.listByVariant,
+    selectedVariant ? { variantId: selectedVariant._id } : "skip",
+  );
+
+  useEffect(() => {
+    if (lang !== book.originalLang && !selectedVariant && variants !== undefined) onLangChange(book.originalLang);
+  }, [book.originalLang, lang, onLangChange, selectedVariant, variants]);
+
+  const chapters = lang === book.originalLang ? originalChapters : variantBlocks ? blocksToChapters(variantBlocks) : null;
+  const title = selectedVariant?.title ?? book.title;
+
+  return (
+    <Card className="mx-auto max-w-3xl space-y-5">
+      <label className="block max-w-xs">
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Read language</span>
+        <select className={selectClass} value={lang} onChange={(e) => onLangChange(e.target.value)}>
+          <option value={book.originalLang}>{languageLabel(book.originalLang)} (original)</option>
+          {savedVariants.map((variant) => (
+            <option key={variant._id} value={variant.lang}>{languageLabel(variant.lang)}</option>
+          ))}
+        </select>
+      </label>
+      {chapters === null ? <p className="text-sm text-muted">Loading translation…</p> : <>
+        <h1 className="text-4xl font-semibold tracking-tight text-ink">{title}</h1>
+        {chapters.map((chapter, index) => (
+          <div key={index} className="space-y-4">
+            {chapter.heading ? <h2 className="pt-4 text-2xl font-semibold text-ink">{chapter.heading}</h2> : null}
+            {chapter.imageUrl ? <img src={chapter.imageUrl} alt="" className="aspect-square w-full rounded-3xl object-cover" /> : null}
+            {chapter.body.split(/\n\s*\n/).filter(Boolean).map((para, pi) => (
+              <p key={pi} className="text-base leading-8 text-muted">{para}</p>
+            ))}
+          </div>
+        ))}
+        <p className="pt-6 text-center text-sm italic text-muted">— end of guide —</p>
+      </>}
+    </Card>
   );
 }
 
@@ -251,27 +379,35 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "read", label: "Read" },
 ];
 
-export function AdminBookEditor({ slug }: { slug: string }) {
+export function AdminBookEditor({
+  slug,
+  bookId,
+  initialTab = "details",
+}: {
+  slug?: string;
+  bookId?: Id<"books">;
+  initialTab?: Tab;
+}) {
   const { isAuthenticated } = useConvexAuth();
-  const book = useQuery(api.books.getAnyBySlug, isAuthenticated ? { slug } : "skip");
+  const bookBySlug = useQuery(api.books.getAnyBySlug, isAuthenticated && slug ? { slug } : "skip");
+  const bookById = useQuery(api.books.getById, isAuthenticated && bookId ? { bookId } : "skip");
+  const book = bookId ? bookById : bookBySlug;
   const categories = useQuery(api.categories.list, isAuthenticated ? {} : "skip");
   const blocks = useQuery(api.bookBlocks.listByBook, book ? { bookId: book._id } : "skip");
   const aiStatus = useQuery(api.aiCredentials.getStatus, isAuthenticated ? {} : "skip");
   const updateBook = useMutation(api.books.update);
-  const setBlocks = useMutation(api.bookBlocks.setBlocks);
   const generateCover = useAction(api.images.generateCover);
   const generateChapterImage = useAction(api.images.generateChapterImage);
 
   const [meta, setMeta] = useState<Meta | null>(null);
   const [chapters, setChapters] = useState<Chapter[] | null>(null);
-  const [tab, setTab] = useState<Tab>("details");
+  const [tab, setTab] = useState<Tab>(initialTab);
+  const [readLang, setReadLang] = useState("");
   const [savingMeta, setSavingMeta] = useState(false);
-  const [savingContent, setSavingContent] = useState(false);
   const [generatingCover, setGeneratingCover] = useState(false);
   const [generatingChapter, setGeneratingChapter] = useState<number | null>(null);
-  const [coverPrompt, setCoverPrompt] = useState("");
-  const [imageModelId, setImageModelId] = useState("gpt-image-2");
-  const [chapterPrompts, setChapterPrompts] = useState<Record<number, string>>({});
+  const [coverCost, setCoverCost] = useState<number | null | undefined>(undefined);
+  const [chapterCosts, setChapterCosts] = useState<Record<number, number | null>>({});
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -292,13 +428,6 @@ export function AdminBookEditor({ slug }: { slug: string }) {
   useEffect(() => {
     if (blocks && chapters === null) setChapters(blocksToChapters(blocks));
   }, [blocks, chapters]);
-
-  const imageModels = imageModelsFor(aiStatus?.image?.provider);
-  const selectedImageModel = imageModels.find((model) => model.id === imageModelId) ?? imageModels[0];
-
-  useEffect(() => {
-    if (imageModels.length && !imageModels.some((model) => model.id === imageModelId)) setImageModelId(imageModels[0].id);
-  }, [imageModels, imageModelId]);
 
   if (book === undefined) return <p className="text-sm text-muted">Loading…</p>;
   if (book === null) return <p className="text-sm text-muted">Book not found.</p>;
@@ -327,26 +456,13 @@ export function AdminBookEditor({ slug }: { slug: string }) {
     }
   }
 
-  async function saveContent() {
-    if (!book || !chapters) return;
-    setSavingContent(true);
-    setError(null);
-    try {
-      await setBlocks({ bookId: book._id, blocks: chaptersToBlocks(chapters) });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setSavingContent(false);
-    }
-  }
-
-
   async function runCoverGeneration() {
-    if (!book || !selectedImageModel) return;
+    if (!book) return;
     setGeneratingCover(true);
     setError(null);
     try {
-      await generateCover({ bookId: book._id, modelId: selectedImageModel.id, prompt: coverPrompt.trim() || undefined });
+      const result = await generateCover({ bookId: book._id });
+      setCoverCost(result.actualCostUsd);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -355,13 +471,14 @@ export function AdminBookEditor({ slug }: { slug: string }) {
   }
 
   async function runChapterImage(index: number) {
-    if (!book || !chapters || !selectedImageModel) return;
+    if (!book || !chapters) return;
     const chapter = index + 1;
     setGeneratingChapter(chapter);
     setError(null);
     try {
-      const result = await generateChapterImage({ bookId: book._id, chapter, modelId: selectedImageModel.id, prompt: chapterPrompts[chapter]?.trim() || undefined });
+      const result = await generateChapterImage({ bookId: book._id, chapter });
       setChapters(chapters.map((c, i) => i === index ? { ...c, imageStorageId: result.storageId, imageUrl: result.url } : c));
+      setChapterCosts({ ...chapterCosts, [chapter]: result.actualCostUsd });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -453,20 +570,11 @@ export function AdminBookEditor({ slug }: { slug: string }) {
             </div>
             <div className="space-y-3">
               <p className="text-sm font-semibold text-ink">Cover image</p>
-              {aiStatus?.image ? (
-                <label className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Image model · estimated cost</span>
-                  <select className={selectClass} value={selectedImageModel?.id ?? ""} onChange={(e) => setImageModelId(e.target.value)}>
-                    {imageModels.map((model) => (
-                      <option key={model.id} value={model.id}>{model.label} · {formatImageEstimate(model.estimateCents, model.estimateCredits)}</option>
-                    ))}
-                  </select>
-                </label>
-              ) : <p className="text-sm text-muted">Connect a separate image provider key in Settings first.</p>}
-              <Textarea className="min-h-24" placeholder="Optional image prompt; blank uses title + blurb." value={coverPrompt} onChange={(e) => setCoverPrompt(e.target.value)} />
-              <Button size="sm" variant="ghost" disabled={generatingCover || !aiStatus?.image || !selectedImageModel} onClick={() => void runCoverGeneration()}>
-                {generatingCover ? "Generating…" : `${book.coverStorageId ? "Regenerate" : "Generate"} cover${selectedImageModel ? ` (${formatImageEstimate(selectedImageModel.estimateCents, selectedImageModel.estimateCredits)} est.)` : ""}`}
+              <p className="text-sm text-muted">Generated with OpenRouter.</p>
+              <Button size="sm" variant="ghost" disabled={generatingCover || !aiStatus?.openrouter} onClick={() => void runCoverGeneration()}>
+                {generatingCover ? "Generating…" : `${book.coverStorageId ? "Regenerate" : "Generate"} cover`}
               </Button>
+              {coverCost !== undefined ? <p className="text-xs text-muted">Actual cost: {coverCost === null ? "not reported" : `$${coverCost.toFixed(4)}`}</p> : null}
             </div>
           </div>
           <div>
@@ -477,17 +585,7 @@ export function AdminBookEditor({ slug }: { slug: string }) {
         </Card>
       ) : null}
 
-      {tab === "content" ? (
-        <Card className="space-y-4">
-          <p className="text-sm font-semibold text-ink">Original content · {languageLabel(book.originalLang)}</p>
-          <ChapterEditor chapters={chapters} onChange={setChapters} />
-          <div>
-            <Button size="sm" disabled={savingContent} onClick={() => void saveContent()}>
-              {savingContent ? "Saving…" : "Save content"}
-            </Button>
-          </div>
-        </Card>
-      ) : null}
+      {tab === "content" ? <ContentTab book={book} originalChapters={chapters} onOriginalChange={setChapters} /> : null}
 
       {tab === "images" ? (
         <Card className="space-y-5">
@@ -496,16 +594,7 @@ export function AdminBookEditor({ slug }: { slug: string }) {
               <p className="text-sm font-semibold text-ink">Page and chapter images</p>
               <p className="mt-1 text-xs text-muted">One generated image is attached to each chapter/page block. Save content after regenerating if you changed chapter structure.</p>
             </div>
-            {aiStatus?.image ? (
-              <label className="block min-w-64">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Model · estimated cost each</span>
-                <select className={selectClass} value={selectedImageModel?.id ?? ""} onChange={(e) => setImageModelId(e.target.value)}>
-                  {imageModels.map((model) => (
-                    <option key={model.id} value={model.id}>{model.label} · {formatImageEstimate(model.estimateCents, model.estimateCredits)}</option>
-                  ))}
-                </select>
-              </label>
-            ) : <p className="text-sm text-muted">Connect a separate image provider in Settings first.</p>}
+            {!aiStatus?.openrouter ? <p className="text-sm text-muted">Connect OpenRouter in Settings first.</p> : null}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -520,15 +609,10 @@ export function AdminBookEditor({ slug }: { slug: string }) {
                   {chapter.imageUrl ? <img src={chapter.imageUrl} alt="" className="aspect-square w-full rounded-3xl object-cover" /> : (
                     <div className="flex aspect-square items-center justify-center rounded-3xl border border-dashed border-border bg-white text-sm text-muted">No image yet</div>
                   )}
-                  <Textarea
-                    className="min-h-24 bg-white"
-                    placeholder="Optional prompt; blank uses this page/chapter text."
-                    value={chapterPrompts[chapterNo] ?? ""}
-                    onChange={(e) => setChapterPrompts({ ...chapterPrompts, [chapterNo]: e.target.value })}
-                  />
-                  <Button size="sm" variant="ghost" disabled={generatingChapter === chapterNo || !aiStatus?.image || !selectedImageModel} onClick={() => void runChapterImage(index)}>
-                    {generatingChapter === chapterNo ? "Generating…" : `${chapter.imageStorageId ? "Regenerate" : "Generate"} page image${selectedImageModel ? ` (${formatImageEstimate(selectedImageModel.estimateCents, selectedImageModel.estimateCredits)} est.)` : ""}`}
+                  <Button size="sm" variant="ghost" disabled={generatingChapter === chapterNo || !aiStatus?.openrouter} onClick={() => void runChapterImage(index)}>
+                    {generatingChapter === chapterNo ? "Generating…" : `${chapter.imageStorageId ? "Regenerate" : "Generate"} page image`}
                   </Button>
+                  {chapterNo in chapterCosts ? <p className="text-xs text-muted">Actual cost: {chapterCosts[chapterNo] === null ? "not reported" : `$${chapterCosts[chapterNo].toFixed(4)}`}</p> : null}
                 </div>
               );
             })}
@@ -536,25 +620,14 @@ export function AdminBookEditor({ slug }: { slug: string }) {
         </Card>
       ) : null}
 
-      {tab === "translations" ? <TranslationsPanel bookId={book._id} originalLang={book.originalLang} /> : null}
+      {tab === "translations" ? <TranslationsPanel bookId={book._id} originalLang={book.originalLang} onSaved={(lang) => {
+        setReadLang(lang);
+        setTab("read");
+      }} /> : null}
 
       {tab === "audio" ? <AudioTab book={book} /> : null}
 
-      {tab === "read" ? (
-        <Card className="mx-auto max-w-3xl space-y-5">
-          <h1 className="text-4xl font-semibold tracking-tight text-ink">{meta.title}</h1>
-          {chapters.map((chapter, index) => (
-            <div key={index} className="space-y-4">
-              {chapter.heading ? <h2 className="pt-4 text-2xl font-semibold text-ink">{chapter.heading}</h2> : null}
-              {chapter.imageUrl ? <img src={chapter.imageUrl} alt="" className="aspect-square w-full rounded-3xl object-cover" /> : null}
-              {chapter.body.split(/\n\s*\n/).filter(Boolean).map((para, pi) => (
-                <p key={pi} className="text-base leading-8 text-muted">{para}</p>
-              ))}
-            </div>
-          ))}
-          <p className="pt-6 text-center text-sm italic text-muted">— end of guide —</p>
-        </Card>
-      ) : null}
+      {tab === "read" ? <ReadTab book={book} originalChapters={chapters} lang={readLang || book.originalLang} onLangChange={setReadLang} /> : null}
     </div>
   );
 }

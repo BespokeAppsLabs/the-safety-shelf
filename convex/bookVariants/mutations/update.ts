@@ -7,6 +7,7 @@ export const update = viewerMutation({
     variantId: v.id("bookVariants"),
     title: v.optional(v.string()),
     blurb: v.optional(v.string()),
+    isSaved: v.optional(v.boolean()),
     status: v.optional(v.union(v.literal("draft"), v.literal("live"))),
   },
   handler: async (ctx, { variantId, ...fields }) => {

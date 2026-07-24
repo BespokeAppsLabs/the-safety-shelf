@@ -1,4 +1,5 @@
 import { viewerQuery, requireOwner } from "../../lib/auth";
+import { isSavedTranslation } from "../../../lib/translationState";
 
 // Catalog rows — one per book, augmented with the languages it exists in as
 // text (original + variants) and as audio (distinct bookAudio langs; rows with
@@ -18,7 +19,7 @@ export const catalog = viewerQuery({
     return books.map((book) => {
       const textLangs = [
         book.originalLang,
-        ...variants.filter((variant) => variant.bookId === book._id).map((variant) => variant.lang),
+        ...variants.filter((variant) => variant.bookId === book._id && isSavedTranslation(variant)).map((variant) => variant.lang),
       ];
       const audioLangs = audio
         .filter((row) => row.bookId === book._id)

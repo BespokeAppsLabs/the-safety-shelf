@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { ChapterEditor } from "@/components/admin/ChapterEditor";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -12,67 +11,47 @@ import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { blocksToChapters, chaptersToBlocks, type Chapter } from "@/lib/bookContent";
 import { LANGUAGES, languageLabel } from "@/lib/languages";
+import { isSavedTranslation } from "@/lib/translationState";
 
 const selectClass =
   "rounded-full border border-border bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-primary";
 
-function VariantEditor({ variant }: { variant: Doc<"bookVariants"> }) {
+function VariantEditor({ variant, onSaved }: { variant: Doc<"bookVariants">; onSaved: (lang: string) => void }) {
   const blocks = useQuery(api.variantBlocks.listByVariant, { variantId: variant._id });
-  const translate = useAction(api.translate.translate);
   const updateVariant = useMutation(api.bookVariants.update);
   const setBlocks = useMutation(api.variantBlocks.setBlocks);
 
   const [title, setTitle] = useState(variant.title ?? "");
   const [blurb, setBlurb] = useState(variant.blurb ?? "");
   const [chapters, setChapters] = useState<Chapter[] | null>(null);
-  const [busy, setBusy] = useState<null | "save" | "translate" | "publish">(null);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (blocks && chapters === null) setChapters(blocksToChapters(blocks));
   }, [blocks, chapters]);
 
-  async function run(kind: "save" | "translate" | "publish", fn: () => Promise<unknown>) {
-    setBusy(kind);
+  async function save() {
+    if (chapters === null) return;
+    setSaving(true);
     setError(null);
     try {
-      await fn();
+      // Save blocks first: Read never exposes half-saved content.
+      await setBlocks({ variantId: variant._id, blocks: chaptersToBlocks(chapters) });
+      await updateVariant({ variantId: variant._id, title, blurb, isSaved: true });
+      onSaved(variant.lang);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(null);
+      setSaving(false);
     }
   }
 
   return (
     <Card className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-ink">{languageLabel(variant.lang)}</p>
-          <Badge variant={variant.status === "live" ? "success" : "info"}>{variant.status}</Badge>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={busy !== null}
-            onClick={() => void run("translate", () => translate({ bookId: variant.bookId, lang: variant.lang }))}
-          >
-            {busy === "translate" ? "Translating…" : "Auto-translate (overwrite)"}
-          </Button>
-          <Button
-            size="sm"
-            variant={variant.status === "live" ? "ghost" : "primary"}
-            disabled={busy !== null}
-            onClick={() =>
-              void run("publish", () =>
-                updateVariant({ variantId: variant._id, status: variant.status === "live" ? "draft" : "live" }),
-              )
-            }
-          >
-            {variant.status === "live" ? "Unpublish" : "Publish"}
-          </Button>
-        </div>
+      <div>
+        <p className="text-sm font-semibold text-ink">Review {languageLabel(variant.lang)}</p>
+        <p className="mt-1 text-xs text-muted">Save this translation to move it into Read.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -86,24 +65,11 @@ function VariantEditor({ variant }: { variant: Doc<"bookVariants"> }) {
         </label>
       </div>
 
-      {chapters === null ? (
-        <p className="text-sm text-muted">Loading…</p>
-      ) : (
-        <ChapterEditor chapters={chapters} onChange={setChapters} />
-      )}
+      {chapters === null ? <p className="text-sm text-muted">Loading…</p> : <ChapterEditor chapters={chapters} onChange={setChapters} />}
 
       <div>
-        <Button
-          size="sm"
-          disabled={busy !== null || chapters === null}
-          onClick={() =>
-            void run("save", async () => {
-              await updateVariant({ variantId: variant._id, title, blurb });
-              await setBlocks({ variantId: variant._id, blocks: chaptersToBlocks(chapters ?? []) });
-            })
-          }
-        >
-          {busy === "save" ? "Saving…" : "Save translation"}
+        <Button size="sm" disabled={saving || chapters === null} onClick={() => void save()}>
+          {saving ? "Saving…" : "Save translation"}
         </Button>
       </div>
 
@@ -112,9 +78,18 @@ function VariantEditor({ variant }: { variant: Doc<"bookVariants"> }) {
   );
 }
 
-export function TranslationsPanel({ bookId, originalLang }: { bookId: Id<"books">; originalLang: string }) {
+export function TranslationsPanel({
+  bookId,
+  originalLang,
+  onSaved,
+}: {
+  bookId: Id<"books">;
+  originalLang: string;
+  onSaved: (lang: string) => void;
+}) {
   const variants = useQuery(api.bookVariants.list, { bookId });
   const translate = useAction(api.translate.translate);
+  const pending = (variants ?? []).filter((variant) => !isSavedTranslation(variant));
 
   const [addLang, setAddLang] = useState("");
   const [adding, setAdding] = useState(false);
@@ -128,7 +103,7 @@ export function TranslationsPanel({ bookId, originalLang }: { bookId: Id<"books"
   }, [available, addLang]);
 
   async function add() {
-    if (!addLang) return;
+    if (!addLang || pending.length) return;
     setAdding(true);
     setError(null);
     try {
@@ -140,34 +115,36 @@ export function TranslationsPanel({ bookId, originalLang }: { bookId: Id<"books"
     }
   }
 
+  const blocked = pending.length > 0;
+
   return (
     <div className="space-y-6">
       <Card className="space-y-3">
         <p className="text-sm font-semibold text-ink">Add a language</p>
         <p className="text-xs text-muted">
-          Auto-translates the original with your connected AI provider into an editable draft. Original is{" "}
-          {languageLabel(originalLang)}.
+          Auto-translates the original into a review draft. Save it before generating another translation. Original is {languageLabel(originalLang)}.
         </p>
         <div className="flex flex-wrap items-center gap-3">
-          <select className={selectClass} value={addLang} onChange={(e) => setAddLang(e.target.value)} disabled={!available.length}>
+          <select className={selectClass} value={addLang} onChange={(e) => setAddLang(e.target.value)} disabled={blocked || !available.length}>
             {available.map((lang) => (
               <option key={lang.code} value={lang.code}>{lang.label}</option>
             ))}
           </select>
-          <Button size="sm" disabled={adding || !available.length} onClick={() => void add()}>
+          <Button size="sm" disabled={adding || blocked || !available.length} onClick={() => void add()}>
             {adding ? "Translating…" : "Auto-translate"}
           </Button>
-          {!available.length ? <span className="text-xs text-muted">All supported languages added.</span> : null}
+          {blocked ? <span className="text-xs text-muted">Save the translation below before adding another language.</span> : null}
+          {!blocked && !available.length ? <span className="text-xs text-muted">All supported languages added.</span> : null}
         </div>
         {error ? <p className="text-sm font-semibold text-red-strong">{error}</p> : null}
       </Card>
 
       {variants === undefined ? (
         <p className="text-sm text-muted">Loading…</p>
-      ) : variants.length === 0 ? (
-        <p className="text-sm text-muted">No translations yet.</p>
+      ) : pending.length === 0 ? (
+        <p className="text-sm text-muted">No translations waiting to be saved.</p>
       ) : (
-        variants.map((variant) => <VariantEditor key={variant._id} variant={variant} />)
+        pending.map((variant) => <VariantEditor key={variant._id} variant={variant} onSaved={onSaved} />)
       )}
     </div>
   );

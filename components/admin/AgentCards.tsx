@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { agentImageUrl } from "@/lib/agentImage";
 import { formatPrice } from "@/lib/money";
 
 // Cover art: real cover image when one's been uploaded (coverUrl), otherwise
@@ -166,6 +167,29 @@ export function NavigateCard({ href, label }: { href: string; label: string }) {
   );
 }
 
+export function WebResearchCard({
+  query,
+  sources,
+}: {
+  query: string;
+  sources: { title: string; url: string; description?: string }[];
+}) {
+  return (
+    <Card className="max-w-md">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Web research</p>
+      <p className="mt-2 text-sm font-semibold text-ink">{query}</p>
+      <div className="mt-3 space-y-3">
+        {sources.map((source) => (
+          <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="block text-sm">
+            <p className="font-semibold text-primary">{source.title} ↗</p>
+            {source.description ? <p className="mt-1 text-xs text-muted">{source.description}</p> : null}
+          </a>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 // Propose-then-confirm controls shared by every write-tool card. Subscribes to
 // the proposal so Approve/Reject in one card reflects immediately; Approve runs
 // the write server-side (agentActions.approveAndExecute), Reject just records
@@ -272,23 +296,20 @@ export function ImageGenerationProposalCard({
   bookId,
   chapter,
   title,
-  modelId,
   prompt,
-  estimate,
 }: {
   actionId: string;
   target: "cover" | "page";
   bookId: string;
   chapter?: number;
   title: string;
-  modelId: string;
   prompt: string;
-  estimate: string;
 }) {
   const id = actionId as Id<"agentActions">;
   const action = useQuery(api.agentActions.get, { actionId: id });
   const decide = useMutation(api.agentActions.decide);
   const complete = useMutation(api.agentActions.complete);
+  const appendActionUpdate = useMutation(api.agentChats.appendActionUpdate);
   const generateCover = useAction(api.images.generateCover);
   const generateChapterImage = useAction(api.images.generateChapterImage);
   const [busy, setBusy] = useState(false);
@@ -298,7 +319,7 @@ export function ImageGenerationProposalCard({
   const status = action?.status ?? "proposed";
   // Re-render the image after a page reload too: the executed action stores the
   // result URL, so a card that finished in an earlier session still shows it.
-  const resultUrl = imageUrl ?? (action?.result as { url?: string } | undefined)?.url ?? null;
+  const resultUrl = imageUrl ?? agentImageUrl(action?.result);
 
   async function approve() {
     setBusy(true);
@@ -308,14 +329,17 @@ export function ImageGenerationProposalCard({
       await decide({ actionId: id, decision: "approved" });
       approved = true;
       const result = target === "cover"
-        ? await generateCover({ bookId: bookId as Id<"books">, modelId, prompt })
-        : await generateChapterImage({ bookId: bookId as Id<"books">, chapter: chapter ?? 1, modelId, prompt });
+        ? await generateCover({ bookId: bookId as Id<"books">, prompt })
+        : await generateChapterImage({ bookId: bookId as Id<"books">, chapter: chapter ?? 1, prompt });
       setImageUrl(result.url ?? null);
       await complete({ actionId: id, status: "executed", result });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
-      if (approved) await complete({ actionId: id, status: "failed", result: { error: message } }).catch(() => {});
+      if (approved) {
+        await complete({ actionId: id, status: "failed", result: { error: message } }).catch(() => {});
+        await appendActionUpdate({ actionId: id, content: `I couldn’t generate the ${target === "cover" ? "cover" : `image for page ${chapter ?? 1}`} for “${title}”: ${message}` }).catch(() => {});
+      }
     } finally {
       setBusy(false);
     }
@@ -337,11 +361,10 @@ export function ImageGenerationProposalCard({
     <Card className="max-w-md">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Image generation · needs approval</p>
       <p className="mt-2 text-sm font-semibold text-ink">{target === "cover" ? "Cover" : `Page ${chapter}`} · {title}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Badge>{modelId}</Badge>
-        <Badge variant="warning">{estimate} est.</Badge>
+      <div className="mt-3 rounded-xl bg-surface px-3 py-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Generation prompt</p>
+        <p className="mt-1 max-h-48 overflow-y-auto whitespace-pre-wrap break-words text-xs leading-5 text-muted">{prompt}</p>
       </div>
-      <p className="mt-3 line-clamp-4 text-xs text-muted">{prompt}</p>
       {status === "proposed" ? (
         <div className="mt-4 flex gap-2">
           <Button size="sm" disabled={busy} onClick={() => void approve()}>{busy ? "Generating…" : "Approve & generate"}</Button>
@@ -352,6 +375,7 @@ export function ImageGenerationProposalCard({
           <Badge variant={status === "executed" ? "success" : status === "rejected" ? "neutral" : "danger"}>
             {status === "executed" ? "Generated" : status === "rejected" ? "Rejected" : status}
           </Badge>
+          {status === "executed" ? <p className="mt-2 text-xs text-muted">Actual cost: {(action?.result as { actualCostUsd?: number | null } | undefined)?.actualCostUsd == null ? "not reported" : `$${(action?.result as { actualCostUsd: number }).actualCostUsd.toFixed(4)}`}</p> : null}
         </div>
       )}
       {resultUrl ? (
@@ -363,6 +387,47 @@ export function ImageGenerationProposalCard({
   );
 }
 
+export function ImageBatchProposalCard({ actionId, bookId, title, chapters }: { actionId: string; bookId: string; title: string; chapters: number[] }) {
+  const id = actionId as Id<"agentActions">;
+  const action = useQuery(api.agentActions.get, { actionId: id });
+  const decide = useMutation(api.agentActions.decide);
+  const complete = useMutation(api.agentActions.complete);
+  const appendActionUpdate = useMutation(api.agentChats.appendActionUpdate);
+  const generateChapterImage = useAction(api.images.generateChapterImage);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const status = action?.status ?? "proposed";
+
+  async function approve() {
+    setBusy(true);
+    let approved = false;
+    try {
+      await decide({ actionId: id, decision: "approved" });
+      approved = true;
+      const results = [];
+      for (const chapter of chapters) results.push(await generateChapterImage({ bookId: bookId as Id<"books">, chapter }));
+      await complete({ actionId: id, status: "executed", result: { chapters: results.length, actualCostUsd: results.reduce((sum, row) => sum + (row.actualCostUsd ?? 0), 0) } });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+      if (approved) {
+        await complete({ actionId: id, status: "failed", result: { error: message } }).catch(() => {});
+        await appendActionUpdate({ actionId: id, content: `I couldn’t generate the page-image batch for “${title}”: ${message}` }).catch(() => {});
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return <Card className="max-w-md">
+    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Page-image batch · needs approval</p>
+    <p className="mt-2 text-sm font-semibold text-ink">{title}</p>
+    <p className="mt-2 text-xs text-muted">Generate images for pages {chapters.join(", ")}. Each uses its chapter context.</p>
+    {status === "proposed" ? <div className="mt-4 flex gap-2"><Button size="sm" disabled={busy} onClick={() => void approve()}>{busy ? "Generating…" : "Approve all"}</Button><Button size="sm" variant="ghost" disabled={busy} onClick={() => void decide({ actionId: id, decision: "rejected" })}>Reject</Button></div> : <div className="mt-4"><Badge variant={status === "executed" ? "success" : status === "rejected" ? "neutral" : "danger"}>{status === "executed" ? "Generated" : status}</Badge></div>}
+    {error ? <p className="mt-2 text-xs font-semibold text-red-strong">{error}</p> : null}
+  </Card>;
+}
+
 // Single registry — the same map both the chat cards and (future) dashboard
 // grid look tool/component names up in, per docs/03-admin-agent.md.
 export const AGENT_COMPONENTS: Record<string, ComponentType<any>> = {
@@ -370,7 +435,9 @@ export const AGENT_COMPONENTS: Record<string, ComponentType<any>> = {
   TopSellersTable,
   RevenueStatsCard,
   NavigateCard,
+  WebResearchCard,
   ProposalCard,
   BookDraftCard,
   ImageGenerationProposalCard,
+  ImageBatchProposalCard,
 };

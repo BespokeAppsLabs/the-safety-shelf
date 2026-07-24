@@ -16,9 +16,6 @@ export const getStatus = viewerQuery({
   handler: async (ctx) => {
     requireOwner(ctx.viewer);
     const rows = await ctx.db.query("aiCredentials").withIndex("by_owner", (q) => q.eq("ownerId", ctx.viewer._id)).collect();
-    return {
-      text: mask(rows.find((row) => (row.purpose ?? "text") === "text" && row.isActive)),
-      image: mask(rows.find((row) => row.purpose === "image" && row.isActive)),
-    };
+    return { openrouter: mask(rows.find((row) => row.provider === "openrouter" && row.isActive)) };
   },
 });

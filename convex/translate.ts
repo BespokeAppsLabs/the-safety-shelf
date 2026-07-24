@@ -2,45 +2,48 @@
 import { ConvexError, v } from "convex/values";
 import { generateObject, NoObjectGeneratedError } from "ai";
 import { z } from "zod";
-import { createOpenAI } from "@ai-sdk/openai";
 import { action, type ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
-import { PROVIDER_DEFAULTS } from "./aiCredentials/providers";
+import { OPENROUTER_TEXT_MODEL } from "./aiCredentials/providers";
 import { decryptSecret } from "./lib/secrets";
+import { openRouterClient } from "./lib/openrouter";
 import { blocksToChapters, chaptersToBlocks, type Chapter } from "../lib/bookContent";
 import { languageLabel } from "../lib/languages";
+import { isSavedTranslation } from "../lib/translationState";
 
 // Constrained decoding, not prose parsing: the schema goes to the provider as
 // response_format, so a small local model physically cannot emit a dropped
 // quote or a chatty preamble.
-const translationSchema = z.object({
+const translationMetaSchema = z.object({
   title: z.string(),
   blurb: z.string(),
-  chapters: z.array(z.object({ heading: z.string(), paragraphs: z.array(z.string()) })),
 });
+const translatedChapterSchema = z.object({ heading: z.string(), paragraphs: z.array(z.string()) });
 
-// LLM auto-translate: reads the original book, produces a translated variant as
-// a DRAFT the owner can edit before publishing. Uses the connected BYOK
-// provider, same client as the agent. ponytail: whole book in one call — chunk
-// per chapter if a book ever overflows the model's context.
+export function splitParagraphs(body: string) {
+  return body.split(/\n\s*\n/).filter(Boolean);
+}
+
+// LLM auto-translate: one structured response per chapter keeps output bounded
+// and prevents a long book from being truncated before its closing JSON brace.
 export const translate = action({
   args: { bookId: v.id("books"), lang: v.string() },
   handler: async (ctx: ActionCtx, { bookId, lang }): Promise<{ ok: true; chapters: number }> => {
     const viewer = await ctx.runQuery(api.users.getViewer, {});
     if (!viewer || viewer.role !== "owner") throw new ConvexError("Owner only");
 
-    const credential = await ctx.runQuery(internal.aiCredentials.queries.getForOwner.getForOwner, {
-      ownerId: viewer._id,
-      purpose: "text",
-    });
-    if (!credential) throw new ConvexError("No AI provider connected — set one up in Settings first.");
+    const credential = await ctx.runQuery(internal.aiCredentials.queries.getForOwner.getForOwner, { ownerId: viewer._id });
+    if (!credential?.encryptedKey) throw new ConvexError("No OpenRouter key connected — set one up in Settings first.");
 
     const book = await ctx.runQuery(api.books.getById, { bookId });
     if (!book) throw new ConvexError("Book not found");
 
-    const apiKey = credential.provider === "ollama" ? "ollama-local" : decryptSecret(credential.encryptedKey!);
-    const modelId = credential.model ?? PROVIDER_DEFAULTS[credential.provider].model;
-    const client = createOpenAI({ apiKey, baseURL: credential.baseURL });
+    const variants = await ctx.runQuery(api.bookVariants.list, { bookId });
+    if (variants.some((variant) => !isSavedTranslation(variant))) {
+      throw new ConvexError("Save the current translation before generating another.");
+    }
+
+    const client = openRouterClient(decryptSecret(credential.encryptedKey));
 
     const blocks = await ctx.runQuery(api.bookBlocks.listByBook, { bookId });
     // Text only — the image fields on a chapter are prompt bloat the model
@@ -48,53 +51,63 @@ export const translate = action({
     const source = {
       title: book.title,
       blurb: book.blurb,
-      chapters: blocksToChapters(blocks).map(({ heading, body }) => ({ heading, body })),
+      chapters: blocksToChapters(blocks).map(({ heading, body }) => ({ heading, paragraphs: splitParagraphs(body) })),
     };
     if (!source.chapters.length) throw new ConvexError("This book has no content to translate.");
 
-    // generateObject reads the message channel only — a thinking model's
-    // reasoning never reaches `object`, and the schema rides along as
-    // response_format so the reply is constrained JSON, not parsed prose.
-    let translated: z.infer<typeof translationSchema>;
+    let translated: z.infer<typeof translationMetaSchema>;
+    let translatedChapters: z.infer<typeof translatedChapterSchema>[] = [];
     try {
       ({ object: translated } = await generateObject({
-        model: client.chat(modelId),
-        schema: translationSchema,
-        // Thinking and constrained JSON decoding fight each other on Ollama:
-        // with both on, gemma4 emitted structural fragments ("]") as prose and
-        // stopped at chapter 2 of 6. Off, the same book comes back complete in
-        // ~90s. Ollama-only — OpenAI rejects reasoning_effort on its
-        // non-reasoning models.
-        providerOptions: credential.provider === "ollama" ? { openai: { reasoningEffort: "none" } } : undefined,
+        model: client.chat(OPENROUTER_TEXT_MODEL),
+        schema: translationMetaSchema,
+        maxOutputTokens: 500,
         prompt:
-          `Translate this health & safety guide into ${languageLabel(lang)} (${lang}). Keep the tone calm, plain, and ` +
-          `non-alarmist. Preserve the chapter and paragraph structure exactly — one paragraph in, one paragraph out.\n\n` +
-          `Original:\n${JSON.stringify(source)}`,
+          `Translate this health & safety guide metadata into ${languageLabel(lang)} (${lang}). Keep the tone calm, plain, and non-alarmist.\n\n` +
+          `Original:\n${JSON.stringify({ title: source.title, blurb: source.blurb })}`,
       }));
+      translatedChapters = [];
+      for (const [index, chapter] of source.chapters.entries()) {
+        if (!chapter.paragraphs.length) {
+          translatedChapters.push({ heading: chapter.heading, paragraphs: [] });
+          continue;
+        }
+        const { object } = await generateObject({
+          model: client.chat(OPENROUTER_TEXT_MODEL),
+          schema: translatedChapterSchema,
+          maxOutputTokens: 4000,
+          prompt:
+            `Translate this one health & safety chapter into ${languageLabel(lang)} (${lang}). Keep the tone calm, plain, and non-alarmist. ` +
+            `Return exactly ${chapter.paragraphs.length} translated paragraphs in the same order.\n\nOriginal chapter:\n${JSON.stringify(chapter)}`,
+        });
+        if (object.paragraphs.length !== chapter.paragraphs.length) {
+          throw new ConvexError(`Translation chapter ${index + 1} changed the paragraph count. Please retry.`);
+        }
+        translatedChapters.push(object);
+      }
     } catch (error) {
       // A thinking model that runs out of context spends its whole budget
       // reasoning and returns an empty message — the symptom is "length".
       if (NoObjectGeneratedError.isInstance(error) && error.finishReason === "length") {
         throw new ConvexError(
-          `${modelId} ran out of context before finishing the translation. Raise the model's context window ` +
-            `(Ollama: OLLAMA_CONTEXT_LENGTH, default 4096) or translate a shorter book.`,
+          `OpenRouter ran out of context before finishing a translation chapter. Split that chapter into shorter sections and retry.`,
         );
       }
       throw error;
     }
 
-    const chapters: Chapter[] = translated.chapters.map((chapter) => ({
+    const chapters: Chapter[] = translatedChapters.map((chapter) => ({
       heading: chapter.heading,
       body: chapter.paragraphs.join("\n\n"),
     }));
 
-    const variants = await ctx.runQuery(api.bookVariants.list, { bookId });
     const existing = variants.find((variant) => variant.lang === lang);
     const variantId = existing
       ? (await ctx.runMutation(api.bookVariants.update, {
           variantId: existing._id,
           title: translated.title,
           blurb: translated.blurb,
+          isSaved: false,
         }),
         existing._id)
       : await ctx.runMutation(api.bookVariants.create, {

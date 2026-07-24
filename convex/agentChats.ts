@@ -4,4 +4,5 @@ export { list } from "./agentChats/queries/list";
 export { get } from "./agentChats/queries/get";
 export { getForOwner } from "./agentChats/queries/getForOwner";
 export { appendTurn } from "./agentChats/mutations/append";
+export { appendActionUpdate } from "./agentChats/mutations/appendActionUpdate";
 export { remove } from "./agentChats/mutations/remove";

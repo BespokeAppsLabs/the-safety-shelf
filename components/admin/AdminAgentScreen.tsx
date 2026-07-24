@@ -95,6 +95,7 @@ function ChatPanel({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const runIdRef = useRef<string | null>(null);
 
@@ -130,6 +131,13 @@ function ChatPanel({
     cards?: AgentCard[];
     stopped?: boolean;
   }[];
+
+  // The conversation is a live feed: every new turn, pending echo, or chat
+  // selection lands at the bottom so the newest message is immediately visible.
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [activeChatId, messages.length, pending, sending]);
 
   async function send() {
     const text = draft.trim();
@@ -183,14 +191,14 @@ function ChatPanel({
     <Card className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between gap-3">
         <p className="text-sm font-semibold text-ink">Live session</p>
-        {status?.text ? (
-          <Badge variant="success">{status.text.provider} · {status.text.model}</Badge>
+        {status?.openrouter ? (
+          <Badge variant="success">OpenRouter · connected</Badge>
         ) : (
-          <Badge variant="warning">No text provider connected</Badge>
+          <Badge variant="warning">No OpenRouter key connected</Badge>
         )}
       </div>
 
-      <div className="mt-4 flex-1 space-y-4 overflow-y-auto rounded-3xl bg-background p-4">
+      <div ref={messagesRef} className="mt-4 flex-1 space-y-4 overflow-y-auto rounded-3xl bg-background p-4">
         {messages.length === 0 && !pending ? (
           <p className="text-sm text-muted">
             Ask about sales, top sellers, or revenue — or say &ldquo;take me to the catalog&rdquo; and the agent will
@@ -205,7 +213,7 @@ function ChatPanel({
                     ? "bg-transparent italic text-muted"
                     : msg.role === "user"
                       ? "bg-primary text-white"
-                      : "bg-white text-ink shadow-soft"
+                  : "whitespace-pre-wrap break-words leading-6 bg-white text-ink shadow-soft"
                 }`}
               >
                 {msg.content}

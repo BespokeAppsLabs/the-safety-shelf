@@ -22,6 +22,6 @@ export const create = viewerMutation({
       .unique();
     if (existing) throw new ConvexError(`A "${lang}" variant already exists for this book`);
 
-    return ctx.db.insert("bookVariants", { bookId, lang, status: "draft", title, blurb });
+    return ctx.db.insert("bookVariants", { bookId, lang, status: "draft", title, blurb, isSaved: false });
   },
 });

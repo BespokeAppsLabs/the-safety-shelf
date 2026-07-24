@@ -131,7 +131,7 @@ export function AdminApprovalsScreen() {
                 <p className="mt-3 text-sm text-muted">{book.blurb}</p>
                 <div className="mt-4 flex items-center gap-3">
                   <PublishButton bookId={book._id} />
-                  <Link href={`/book/${book.slug}`} className="text-sm font-semibold text-primary">
+                  <Link href={`/admin/books/preview/${book._id}`} className="text-sm font-semibold text-primary">
                     Preview →
                   </Link>
                 </div>

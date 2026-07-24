@@ -87,6 +87,9 @@ export default defineSchema({
     status: v.union(v.literal("draft"), v.literal("live")),
     title: v.optional(v.string()),
     blurb: v.optional(v.string()),
+    // New AI output stays out of reading/audio until the owner saves it.
+    // Undefined is intentionally treated as saved for legacy rows.
+    isSaved: v.optional(v.boolean()),
     // Per-language audiobook state (the original's lives on books.audioStatus).
     audioStatus: v.optional(v.union(v.literal("generating"), v.literal("ready"), v.literal("failed"))),
   })
@@ -134,12 +137,13 @@ export default defineSchema({
   aiCredentials: defineTable({
     ownerId: v.id("users"),
     purpose: v.optional(v.union(v.literal("text"), v.literal("image"))),
-    provider: v.union(v.literal("openai"), v.literal("deepseek"), v.literal("kimi"), v.literal("glm"), v.literal("ollama"), v.literal("stability"), v.literal("higgsfield")),
+    // Retired literals stay readable for deployed legacy rows. Only OpenRouter
+    // is active at runtime.
+    provider: v.union(v.literal("openrouter"), v.literal("openai"), v.literal("deepseek"), v.literal("kimi"), v.literal("glm"), v.literal("ollama"), v.literal("stability"), v.literal("higgsfield")),
     kind: v.union(v.literal("apiKey"), v.literal("chatgptOAuth"), v.literal("mcp")),
     encryptedKey: v.optional(v.string()),
     keyLast4: v.optional(v.string()),
     baseURL: v.optional(v.string()),
-    // Local Ollama has no fixed "the" model — whatever the owner has pulled.
     model: v.optional(v.string()),
     encryptedRefreshToken: v.optional(v.string()),
     accessTokenExpiresAt: v.optional(v.number()),
@@ -151,16 +155,6 @@ export default defineSchema({
     .index("by_owner", ["ownerId"])
     .index("by_owner_purpose", ["ownerId", "purpose"]),
 
-
-  oauthStates: defineTable({
-    state: v.string(),
-    ownerId: v.id("users"),
-    provider: v.union(v.literal("higgsfield")),
-    codeVerifier: v.string(),
-    clientId: v.string(),
-    redirectUri: v.string(),
-    expiresAt: v.number(),
-  }).index("by_state", ["state"]),
 
   socialAccounts: defineTable({
     platform: v.union(
@@ -202,7 +196,8 @@ export default defineSchema({
     relatedBookId: v.optional(v.id("books")),
   })
     .index("by_tool", ["tool"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_proposedAt", ["proposedAt"]),
 
   // Versioned system prompt for the agent — append-only. Editing never
   // mutates a row; it inserts a new version and deactivates the old one, so
@@ -230,6 +225,9 @@ export default defineSchema({
         role: v.union(v.literal("user"), v.literal("assistant")),
         content: v.string(),
         cards: v.optional(v.array(v.object({ component: v.string(), props: v.any() }))),
+        // Links an automatic action outcome to its proposal card and prevents
+        // duplicate failure notices when a client retries a request.
+        actionId: v.optional(v.id("agentActions")),
         // A turn the owner stopped mid-flight: kept for the human-facing thread
         // (get) but excluded from the model's history (getForOwner), so the
         // agent never sees — or tries to resume — an abandoned request.

@@ -68,6 +68,7 @@ export default defineSchema({
     status: v.union(v.literal("draft"), v.literal("live")),
     title: v.optional(v.string()), // falls back to books.title if absent
     blurb: v.optional(v.string()),
+    isSaved: v.optional(v.boolean()), // false while new AI output awaits owner save; legacy undefined is readable
   }).index("by_book_lang", ["bookId", "lang"]),
 
   variantBlocks: defineTable({
@@ -110,14 +111,12 @@ export default defineSchema({
 
   aiCredentials: defineTable({
     ownerId: v.id("users"),
-    provider: v.union(v.literal("openai"), v.literal("deepseek"), v.literal("kimi"), v.literal("glm")),
-    kind: v.union(v.literal("apiKey"), v.literal("chatgptOAuth")),
-    encryptedKey: v.optional(v.string()), // envelope-encrypted; apiKey kind
+    provider: v.union(v.literal("openrouter")), // legacy provider values remain schema-compatible
+    kind: v.literal("apiKey"),
+    encryptedKey: v.optional(v.string()), // encrypted OpenRouter API key
     keyLast4: v.optional(v.string()),
     baseURL: v.optional(v.string()),
-    encryptedRefreshToken: v.optional(v.string()), // chatgptOAuth kind
-    accessTokenExpiresAt: v.optional(v.number()),
-    isActive: v.boolean(),
+        isActive: v.boolean(),
     validatedAt: v.optional(v.number()),
   }).index("by_owner", ["ownerId"]),
 
@@ -174,7 +173,7 @@ export default defineSchema({
       v.literal("orchestrator"), v.literal("writer"), v.literal("reviewer"),
       v.literal("translator"), v.literal("social"), v.literal("analyst"),
     ),
-    model: v.string(), // e.g. "kimi-k2.7", snapshot of what actually served the call
+    model: v.string(), // e.g. OpenRouter returned model, snapshot of what actually served the call
     tool: v.optional(v.string()), // unset for plain chat turns with no tool call
     inputTokens: v.number(),
     outputTokens: v.number(),

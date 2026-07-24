@@ -5,6 +5,7 @@ import type { Id } from "./_generated/dataModel";
 import { api, internal } from "./_generated/api";
 import { blocksToChapters } from "../lib/bookContent";
 import { DEFAULT_ELEVENLABS_VOICE_ID, isElevenLabsModel, planNarration } from "../lib/elevenlabs";
+import { isSavedTranslation } from "../lib/translationState";
 
 // ElevenLabs audiobook pipeline. Explicit, owner-triggered (never auto) — each
 // run spends real ElevenLabs credits. Content is narrated one request per
@@ -49,6 +50,7 @@ export const generate = action({
       const variants = await ctx.runQuery(api.bookVariants.list, { bookId });
       const variant = variants.find((v) => v.lang === targetLang);
       if (!variant) throw new ConvexError(`No "${targetLang}" translation yet — translate the book first.`);
+      if (!isSavedTranslation(variant)) throw new ConvexError("Save the translation before generating its audiobook.");
       blocks = await ctx.runQuery(api.variantBlocks.listByVariant, { variantId: variant._id });
     }
 
