@@ -1,19 +1,32 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { AdminAccessDenied } from "@/components/auth/AdminAccessDenied";
 import { Logo } from "@/components/ui/Logo";
+import { api } from "@/convex/_generated/api";
+import { isAdminOwner } from "@/lib/adminAccess";
 import { ADMIN_NAV } from "@/lib/nav";
 
 const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
-// Resource-based auth check (Clerk's current guidance, replacing path-matcher
-// middleware): redirects to sign-in if signed out. Owner-only authorization
-// itself is enforced per-request in Convex (requireOwner) — this only checks
-// "signed in or not". Skipped until real Clerk keys are set (auth.protect()
-// throws hard without a publishableKey) — admin stays open in the interim,
-// same as before Clerk was wired.
+// Fail closed before rendering any admin UI. Clerk identifies the request and
+// Convex remains the role authority, so a customer cannot reach this layout
+// merely by knowing an /admin URL.
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  if (clerkConfigured) await auth.protect();
+  if (!clerkConfigured) return <AdminAccessDenied />;
+
+  await auth.protect();
+  try {
+    const { getToken, sessionClaims } = await auth();
+    const token = sessionClaims?.aud === "convex"
+      ? await getToken()
+      : await getToken({ template: "convex" });
+    const viewer = token ? await fetchQuery(api.users.getViewer, {}, { token }) : null;
+    if (!isAdminOwner(viewer?.role)) return <AdminAccessDenied />;
+  } catch {
+    return <AdminAccessDenied />;
+  }
 
   return (
     <div className="flex min-h-screen w-full gap-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -42,9 +55,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Owner view</p>
             <p className="text-sm text-muted">
-              {clerkConfigured
-                ? "Mock dashboard cards now. Live agent tools later."
-                : "No Clerk keys set — admin is unprotected. Add keys to .env.local to lock this down."}
+              Owner-authorized workspace
             </p>
           </div>
           <div className="flex items-center gap-3">
