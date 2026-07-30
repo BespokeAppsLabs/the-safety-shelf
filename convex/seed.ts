@@ -1,5 +1,6 @@
 // One-shot demo data, ported from the old lib/catalog.ts / lib/landing.ts
 // local arrays. Run once with: npx convex run seed:seed
+import { ConvexError, v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 
 type SeedBlock = { chapter: number; ord: number; type: "h" | "p"; text: string };
@@ -95,6 +96,38 @@ const BOOKS: Array<{
       { chapter: 2, ord: 1, type: "p", text: "A hazard logged without follow-through is only better than silence for one afternoon." },
     ],
   },
+  {
+    slug: "safe-travels-a-toddler-s-car-safety-guide", title: "Safe Travels: A Toddler's Car Safety Guide", author: "The Safety Shelf",
+    priceCents: 999, categorySlug: "child-safety", ageGroup: "Parents",
+    blurb: "Ensure every journey is smooth and secure. This guide provides practical, calm, and actionable advice for installing car seats, managing toddler distractions, and maintaining safety routines during family road trips.",
+    gradientFrom: "#2f7dbd", gradientTo: "#f6b73c",
+    blocks: [
+      { chapter: 1, ord: 0, type: "h", text: "Introduction: The Joy of Safe Travel" },
+      { chapter: 1, ord: 1, type: "p", text: "Traveling with a toddler can be one of life's greatest adventures, but it also comes with new responsibilities. Proper preparation ensures that your family can focus on the journey rather than worrying about safety." },
+      { chapter: 1, ord: 2, type: "p", text: "This guide is designed to provide you with calm, actionable steps to make every trip—from quick errands to long road trips—as secure and stress-free as possible." },
+      { chapter: 2, ord: 0, type: "h", text: "The Perfect Fit: Understanding Car Seats" },
+      { chapter: 2, ord: 1, type: "p", text: "Choosing the right car seat is the foundation of vehicle safety. It is essential to select a seat that matches your toddler's specific age, weight, and height requirements." },
+      { chapter: 2, ord: 2, type: "p", text: "Regularly check your seat's installation to ensure it hasn't loosened over time due to vibrations or frequent use. A secure seat is a safe seat." },
+      { chapter: 3, ord: 0, type: "h", text: "Securing the Passenger" },
+      { chapter: 3, ord: 1, type: "p", text: "Once the seat is installed, the focus shifts to the harness. Always ensure the straps are adjusted to the correct height for your child's shoulders." },
+      { chapter: 3, ord: 2, type: "p", text: "Use the \"pinch test\" to ensure a snug fit: if you can pinch any slack in the harness webbing at the shoulder, it needs to be tightened further." },
+      { chapter: 4, ord: 0, type: "h", text: "Managing Distractions & Comfort" },
+      { chapter: 4, ord: 1, type: "p", text: "A calm toddler often leads to a more focused driver. Keep essentials like water, healthy snacks, and favorite toys within easy reach to prevent the need for sudden stops or reaching while driving." },
+      { chapter: 4, ord: 2, type: "p", text: "Use sunshades on side windows and baby mirrors to help you monitor your child without taking your eyes off the road for extended periods." },
+      { chapter: 5, ord: 0, type: "h", text: "Safety Checklists for Every Trip" },
+      { chapter: 5, ord: 1, type: "p", text: "Establishing a pre-departure routine helps prevent oversight. Check the harness, ensure the car seat is tight, and verify that all doors are securely latched." },
+      { chapter: 5, ord: 2, type: "p", text: "Know your emergency plan. Familiarize yourself with where your first aid kit is located and identify safe places to pull over if an unexpected stop is needed." },
+      { chapter: 6, ord: 0, type: "h", text: "Loading and Unloading Safely" },
+      { chapter: 6, ord: 1, type: "p", text: "When arriving at your destination, especially in busy parking lots, always look for a safe area away from moving traffic to exit the vehicle." },
+      { chapter: 6, ord: 2, type: "p", text: "Never move the vehicle until you have visually confirmed that the child is fully secured and the harness is properly adjusted." },
+      { chapter: 7, ord: 0, type: "h", text: "Rear-Facing vs. Forward-Facing" },
+      { chapter: 7, ord: 1, type: "p", text: "Rear-facing seats provide the best protection for the developing neck and spine of a toddler. Continue using a rear-facing seat for as long as the manufacturer's height and weight limits allow." },
+      { chapter: 7, ord: 2, type: "p", text: "When it is time to transition to a forward-facing seat, do so gradually and ensure the new seat is correctly fitted for your child's current stage of growth." },
+      { chapter: 8, ord: 0, type: "h", text: "The Car Safety Toolkit" },
+      { chapter: 8, ord: 1, type: "p", text: "Your vehicle should be equipped with a small safety kit. This should include basic first aid supplies, a flashlight, and a portable phone charger." },
+      { chapter: 8, ord: 2, type: "p", text: "Managing temperature is also key to safety. Keep a lightweight blanket and a small portable fan available to ensure your toddler remains comfortable in varying weather conditions." },
+    ],
+  },
 ];
 
 export const seed = internalMutation({
@@ -133,5 +166,23 @@ export const seed = internalMutation({
     }
 
     return "seeded";
+  },
+});
+
+export const createCoverUploadUrl = internalMutation({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    const book = await ctx.db.query("books").withIndex("by_slug", (q) => q.eq("slug", slug)).unique();
+    if (!book) throw new ConvexError(`Book "${slug}" not found; run seed:seed first`);
+    return book.coverStorageId ? null : ctx.storage.generateUploadUrl();
+  },
+});
+
+export const attachCover = internalMutation({
+  args: { slug: v.string(), storageId: v.id("_storage") },
+  handler: async (ctx, { slug, storageId }) => {
+    const book = await ctx.db.query("books").withIndex("by_slug", (q) => q.eq("slug", slug)).unique();
+    if (!book) throw new ConvexError(`Book "${slug}" not found`);
+    await ctx.db.patch(book._id, { coverStorageId: storageId });
   },
 });
