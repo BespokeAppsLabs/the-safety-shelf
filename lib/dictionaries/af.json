@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "Bewustheid van gesondheid en veiligheid",
+    "taglineShort": "Gesondheid en veiligheid",
+    "strapline": "Kennis wat lewens beskerm."
+  },
+  "nav": {
+    "home": "Tuis",
+    "store": "Winkel",
+    "admin": "Admin",
+    "library": "Biblioteek",
+    "shelves": "Rakke",
+    "featured": "Uitgesoek",
+    "purpose": "Ons doel",
+    "mainNavigation": "Hoofnavigasie",
+    "skipToContent": "Spring na inhoud",
+    "homeAria": "The Safety Shelf-tuisblad",
+    "language": "Taal"
+  },
+  "auth": {
+    "signIn": "Meld aan"
+  },
+  "landing": {
+    "bannerLeft": "Kennis wat lewens beskerm",
+    "bannerRight": "Lees enige plek, enige tyd",
+    "shopBooks": "Bekyk boeke",
+    "heroKicker": "’n Boekwinkel wat om omgee gebou is",
+    "heroTitleLine1": "Lees goed.",
+    "heroTitleLine2": "Leef veiliger.",
+    "heroBody": "Pragtige, praktiese gidse vir die oomblikke wat saak maak—van eerste asemteue en noodhulp tot veiliger huise, gesinne en gemeenskappe.",
+    "exploreCollection": "Verken die versameling",
+    "instantAccess": "Onmiddellike toegang · Geen aflewering nie",
+    "heroImageAlt": "’n Beeldhouagtige stapel veiligheidsboeke in ’n dramatiese geboë biblioteek",
+    "heroCaption": "Uitgesoekte kennis vir alledaagse moed",
+    "heroBadge": "Maak ’n boek oop\nBeskerm ’n lewe",
+    "promises": [
+      "Geskryf vir die werklike lewe",
+      "Onmiddellike digitale toegang",
+      "Kalm, praktiese leiding",
+      "Joune om te hou"
+    ],
+    "promisesLabel": "Ons beloftes",
+    "shelvesKicker": "Kry jou rak",
+    "shelvesTitle": "Begin waar die lewe dringend voel.",
+    "shelvesBody": "Geen eindelose gange nie. Net duidelike, betroubare paaie na die kennis wat jy nou nodig het.",
+    "browseEveryShelf": "Blaai deur elke rak",
+    "shelfLabel": "Rak",
+    "featuredKicker": "Die redaksie se keuses",
+    "featuredTitle": "Boeke om naby te hou.",
+    "seeFullCollection": "Sien die volle versameling",
+    "missionKicker": "Hoekom ons bestaan",
+    "missionQuote": "“Die regte bladsy, op die regte oomblik gevind, kan verander wat volgende gebeur.”",
+    "missionBody": "Kennis oor veiligheid behoort nie klinies, skrikwekkend of onvindbaar te voel nie. Ons maak noodsaaklike leiding in pragtige boeke wat mense werklik wil oopmaak—en onthou.",
+    "trustMarks": [
+      { "value": "100%", "label": "Digitaal eerste" },
+      { "value": "24/7", "label": "Biblioteektoegang" },
+      { "value": "1 idee", "label": "Op ’n slag" }
+    ],
+    "ctaKicker": "Jou veiliger rak begin hier",
+    "ctaTitle": "Een goeie boek kan ’n leeftyd by jou bly.",
+    "buildLibrary": "Bou jou biblioteek"
+  },
+  "storefront": {
+    "eyebrow": "Winkel",
+    "title": "Blaai deur praktiese veiligheidsgidse.",
+    "body": "Vir eers net digitale titels. Koop een keer, hou hulle in jou biblioteek en lees in die blaaier.",
+    "searchPlaceholder": "Soek gidse, onderwerpe of skrywers",
+    "all": "Alles",
+    "loading": "Gidse laai…",
+    "noResults": "Geen gidse pas by daardie soektog nie."
+  },
+  "product": {
+    "viewGuide": "Bekyk gids",
+    "by": "deur {author}",
+    "guidePreview": "Voorskou van die gids",
+    "backToStore": "Terug na die winkel",
+    "buyFor": "Koop vir {price}",
+    "signInToBuy": "Meld aan om vir {price} te koop",
+    "readGuide": "Lees die gids",
+    "processing": "Verwerk tans…",
+    "priceUnavailable": "Prys nie beskikbaar nie"
+  },
+  "library": {
+    "eyebrow": "My biblioteek",
+    "signedOutTitle": "Meld aan om jou biblioteek te sien.",
+    "signedOutBody": "Gekoopte gidse is aan jou rekening gekoppel.",
+    "title": "Jou gekoopte veiligheidsgidse.",
+    "loading": "Jou biblioteek laai…",
+    "countOne": "{count} gids gereed om te lees.",
+    "countOther": "{count} gidse gereed om te lees.",
+    "emptyBody": "Koop ’n gids een keer en dit bly hier.",
+    "continueReading": "Lees verder",
+    "emptyTitle": "Nog geen gidse in jou biblioteek nie.",
+    "emptyStateBody": "Jou gekoopte titels verskyn hier ná betaling.",
+    "browseStore": "Blaai deur die winkel"
+  },
+  "reader": {
+    "signInTitle": "Meld aan om hierdie gids te lees.",
+    "signInBody": "Jou gekoopte gidse is aan jou rekening gekoppel.",
+    "notOwnedTitle": "Jy besit hierdie gids nog nie.",
+    "notOwnedBody": "Koop eers die gids om die volle leser te ontsluit.",
+    "viewGuide": "Bekyk gids",
+    "loading": "Gids laai…",
+    "backToLibrary": "Biblioteek",
+    "downloadPdf": "Laai PDF af",
+    "endOfGuide": "— einde van die gids —"
+  },
+  "footer": {
+    "demoLine1": "The Safety Shelf se demo-winkelfront.",
+    "demoLine2": "Vir eers ’n toetskatalogus en plaaslike aankope. Convex, Clerk, Stripe en agent-gereedskap later.",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

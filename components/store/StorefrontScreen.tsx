@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { ProductCard } from "@/components/store/ProductCard";
@@ -7,13 +9,16 @@ import { Container } from "@/components/ui/Container";
 import { Input } from "@/components/ui/Input";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useDict } from "@/app/I18nProvider";
 
 export function StorefrontScreen() {
+  const dict = useDict();
   const books = useQuery(api.books.listLive);
   const categories = useQuery(api.categories.list);
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
-  const [categoryId, setCategoryId] = useState<Id<"categories"> | "all">("all");
+  const categorySlug = searchParams.get("category");
+  const categoryId = categories?.find((category) => category.slug === categorySlug)?._id ?? "all";
 
   const categoryTitleById = useMemo(
     () => new Map((categories ?? []).map((category) => [category._id, category.title])),
@@ -32,7 +37,7 @@ export function StorefrontScreen() {
   if (books === undefined || categories === undefined) {
     return (
       <Container>
-        <p className="py-20 text-center text-sm text-muted">Loading guides…</p>
+        <p className="py-20 text-center text-sm text-muted">{dict.storefront.loading}</p>
       </Container>
     );
   }
@@ -40,31 +45,33 @@ export function StorefrontScreen() {
   return (
     <Container>
       <SectionHeader
-        eyebrow="Storefront"
-        title="Browse practical safety guides."
-        body="Digital titles only for now. Buy once, keep them in your library, and read in-browser."
+        eyebrow={dict.storefront.eyebrow}
+        title={dict.storefront.title}
+        body={dict.storefront.body}
       />
       <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <Input
-          placeholder="Search guides, topics, or authors"
+          placeholder={dict.storefront.searchPlaceholder}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setCategoryId("all")}
+          <Link
+            href="/store"
+            aria-current={categoryId === "all" ? "page" : undefined}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition ${categoryId === "all" ? "bg-primary text-white" : "bg-white text-muted hover:bg-background hover:text-ink"}`}
           >
-            All
-          </button>
+            {dict.storefront.all}
+          </Link>
           {categories.map((category) => (
-            <button
+            <Link
               key={category._id}
-              onClick={() => setCategoryId(category._id)}
+              href={{ pathname: "/store", query: { category: category.slug } }}
+              aria-current={categoryId === category._id ? "page" : undefined}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition ${categoryId === category._id ? "bg-primary text-white" : "bg-white text-muted hover:bg-background hover:text-ink"}`}
             >
               {category.title}
-            </button>
+            </Link>
           ))}
         </div>
       </div>

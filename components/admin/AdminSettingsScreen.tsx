@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { api } from "@/convex/_generated/api";
+import { CurrencyPanel } from "@/components/admin/CurrencyPanel";
 
 export function AdminSettingsScreen() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
@@ -61,6 +62,15 @@ export function AdminSettingsScreen() {
       </Card>
 
       {error ? <Card className="border-red-soft bg-red-soft/40"><p className="text-sm font-semibold text-red-strong">{error}</p></Card> : null}
+
+      <div className="pt-4">
+        <h2 className="text-2xl font-semibold tracking-tight text-ink">Pricing &amp; currency</h2>
+        <p className="mt-2 text-base text-muted">
+          Books are priced once, in your base currency. Shoppers see their own currency, converted
+          and rounded to a whole amount.
+        </p>
+      </div>
+      <CurrencyPanel />
     </div>
   );
 }

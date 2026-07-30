@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "Bewustwording van gezondheid en veiligheid",
+    "taglineShort": "Gezondheid & veiligheid",
+    "strapline": "Kennis die levens beschermt."
+  },
+  "nav": {
+    "home": "Home",
+    "store": "Winkel",
+    "admin": "Beheer",
+    "library": "Bibliotheek",
+    "shelves": "Planken",
+    "featured": "Uitgelicht",
+    "purpose": "Ons doel",
+    "mainNavigation": "Hoofdnavigatie",
+    "skipToContent": "Naar de inhoud",
+    "homeAria": "The Safety Shelf, startpagina",
+    "language": "Taal"
+  },
+  "auth": {
+    "signIn": "Inloggen"
+  },
+  "landing": {
+    "bannerLeft": "Kennis die levens beschermt",
+    "bannerRight": "Lees overal, wanneer je wilt",
+    "shopBooks": "Bekijk de boeken",
+    "heroKicker": "Een boekhandel gebouwd rond zorg",
+    "heroTitleLine1": "Lees goed.",
+    "heroTitleLine2": "Leef veiliger.",
+    "heroBody": "Mooie, praktische gidsen voor de momenten die ertoe doen—van eerste ademhalingen en eerste hulp tot veiligere huizen, gezinnen en gemeenschappen.",
+    "exploreCollection": "Ontdek de collectie",
+    "instantAccess": "Direct toegang · Geen verzending",
+    "heroImageAlt": "Een sculpturale stapel veiligheidsboeken in een indrukwekkende gebogen bibliotheek",
+    "heroCaption": "Zorgvuldig gekozen kennis voor alledaagse moed",
+    "heroBadge": "Open een boek\nBescherm een leven",
+    "promises": [
+      "Geschreven voor het echte leven",
+      "Direct digitale toegang",
+      "Rustige, praktische begeleiding",
+      "Voor altijd van jou"
+    ],
+    "promisesLabel": "Onze beloften",
+    "shelvesKicker": "Vind jouw plank",
+    "shelvesTitle": "Begin waar het leven dringend is.",
+    "shelvesBody": "Geen eindeloze gangpaden. Alleen heldere, betrouwbare paden naar de kennis die je nu nodig hebt.",
+    "browseEveryShelf": "Bekijk alle planken",
+    "shelfLabel": "Plank",
+    "featuredKicker": "Keuze van de redactie",
+    "featuredTitle": "Boeken om dicht bij je te houden.",
+    "seeFullCollection": "Bekijk de hele collectie",
+    "missionKicker": "Waarom we bestaan",
+    "missionQuote": "“De juiste bladzijde, op het juiste moment gevonden, kan veranderen wat er daarna gebeurt.”",
+    "missionBody": "Kennis over veiligheid hoeft niet klinisch, beangstigend of onvindbaar te zijn. Wij maken van essentiële richtlijnen mooie boeken die mensen écht willen openslaan—en onthouden.",
+    "trustMarks": [
+      { "value": "100%", "label": "Digitaal eerst" },
+      { "value": "24/7", "label": "Toegang tot bibliotheek" },
+      { "value": "1 idee", "label": "Per keer" }
+    ],
+    "ctaKicker": "Jouw veiligere plank begint hier",
+    "ctaTitle": "Eén goed boek kan je een leven lang bijblijven.",
+    "buildLibrary": "Bouw je bibliotheek"
+  },
+  "storefront": {
+    "eyebrow": "Winkel",
+    "title": "Blader door praktische veiligheidsgidsen.",
+    "body": "Voorlopig alleen digitale titels. Koop één keer, bewaar ze in je bibliotheek en lees ze in de browser.",
+    "searchPlaceholder": "Zoek gidsen, onderwerpen of auteurs",
+    "all": "Alles",
+    "loading": "Gidsen laden…",
+    "noResults": "Geen gidsen gevonden voor die zoekopdracht."
+  },
+  "product": {
+    "viewGuide": "Bekijk gids",
+    "by": "door {author}",
+    "guidePreview": "Voorbeeld van de gids",
+    "backToStore": "Terug naar de winkel",
+    "buyFor": "Koop voor {price}",
+    "signInToBuy": "Log in om te kopen voor {price}",
+    "readGuide": "Lees de gids",
+    "processing": "Bezig…",
+    "priceUnavailable": "Prijs niet beschikbaar"
+  },
+  "library": {
+    "eyebrow": "Mijn bibliotheek",
+    "signedOutTitle": "Log in om je bibliotheek te zien.",
+    "signedOutBody": "Gekochte gidsen zijn gekoppeld aan je account.",
+    "title": "Je gekochte veiligheidsgidsen.",
+    "loading": "Je bibliotheek laden…",
+    "countOne": "{count} gids klaar om te lezen.",
+    "countOther": "{count} gidsen klaar om te lezen.",
+    "emptyBody": "Koop een gids één keer en hij blijft hier staan.",
+    "continueReading": "Verder lezen",
+    "emptyTitle": "Nog geen gidsen in je bibliotheek.",
+    "emptyStateBody": "Je gekochte titels verschijnen hier na het afrekenen.",
+    "browseStore": "Bekijk de winkel"
+  },
+  "reader": {
+    "signInTitle": "Log in om deze gids te lezen.",
+    "signInBody": "Je gekochte gidsen zijn gekoppeld aan je account.",
+    "notOwnedTitle": "Je hebt deze gids nog niet.",
+    "notOwnedBody": "Koop de gids om de volledige lezer te ontgrendelen.",
+    "viewGuide": "Bekijk gids",
+    "loading": "Gids laden…",
+    "backToLibrary": "Bibliotheek",
+    "downloadPdf": "Download pdf",
+    "endOfGuide": "— einde van de gids —"
+  },
+  "footer": {
+    "demoLine1": "Demowinkel van The Safety Shelf.",
+    "demoLine2": "Voorlopig een testcatalogus en lokale aankopen. Convex, Clerk, Stripe en agenttools volgen later.",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "건강과 안전에 대한 인식",
+    "taglineShort": "건강과 안전",
+    "strapline": "생명을 지키는 지식."
+  },
+  "nav": {
+    "home": "홈",
+    "store": "스토어",
+    "admin": "관리",
+    "library": "내 서재",
+    "shelves": "책장",
+    "featured": "추천",
+    "purpose": "우리의 목적",
+    "mainNavigation": "주요 내비게이션",
+    "skipToContent": "본문으로 건너뛰기",
+    "homeAria": "The Safety Shelf 홈",
+    "language": "언어"
+  },
+  "auth": {
+    "signIn": "로그인"
+  },
+  "landing": {
+    "bannerLeft": "생명을 지키는 지식",
+    "bannerRight": "언제 어디서나 읽기",
+    "shopBooks": "책 보기",
+    "heroKicker": "돌봄을 중심에 둔 서점",
+    "heroTitleLine1": "잘 읽고,",
+    "heroTitleLine2": "더 안전하게.",
+    "heroBody": "중요한 순간을 위한 아름답고 실용적인 가이드—첫 호흡과 응급처치부터 더 안전한 집, 가족, 지역사회까지.",
+    "exploreCollection": "컬렉션 둘러보기",
+    "instantAccess": "즉시 이용 · 배송 없음",
+    "heroImageAlt": "곡선형의 인상적인 도서관에 조형적으로 쌓인 안전 도서",
+    "heroCaption": "일상의 용기를 위한 엄선된 지식",
+    "heroBadge": "책을 펼치고\n생명을 지키세요",
+    "promises": [
+      "실제 생활을 위해 쓰였습니다",
+      "즉시 이용 가능한 디지털",
+      "차분하고 실용적인 안내",
+      "영원히 내 것"
+    ],
+    "promisesLabel": "우리의 약속",
+    "shelvesKicker": "당신의 책장을 찾으세요",
+    "shelvesTitle": "지금 가장 급한 곳에서 시작하세요.",
+    "shelvesBody": "끝없는 진열대는 없습니다. 지금 필요한 지식으로 가는 분명하고 믿을 수 있는 길만 있습니다.",
+    "browseEveryShelf": "모든 책장 보기",
+    "shelfLabel": "책장",
+    "featuredKicker": "편집자의 추천",
+    "featuredTitle": "곁에 두고 싶은 책들.",
+    "seeFullCollection": "전체 컬렉션 보기",
+    "missionKicker": "우리가 존재하는 이유",
+    "missionQuote": "“알맞은 순간에 만난 알맞은 한 쪽이, 그다음에 벌어질 일을 바꿉니다.”",
+    "missionBody": "안전에 대한 지식이 딱딱하거나 무섭거나 찾기 어려워서는 안 됩니다. 우리는 꼭 필요한 지침을 사람들이 정말 펼쳐보고 싶은—그리고 기억하는—아름다운 책으로 만듭니다.",
+    "trustMarks": [
+      { "value": "100%", "label": "디지털 우선" },
+      { "value": "24/7", "label": "서재 이용" },
+      { "value": "하나씩", "label": "차근차근" }
+    ],
+    "ctaKicker": "더 안전한 책장은 여기서 시작합니다",
+    "ctaTitle": "좋은 책 한 권은 평생 함께합니다.",
+    "buildLibrary": "내 서재 만들기"
+  },
+  "storefront": {
+    "eyebrow": "스토어",
+    "title": "실용적인 안전 가이드를 둘러보세요.",
+    "body": "현재는 디지털 도서만 제공합니다. 한 번 구매하면 내 서재에 보관되고 브라우저에서 읽을 수 있습니다.",
+    "searchPlaceholder": "가이드, 주제, 저자 검색",
+    "all": "전체",
+    "loading": "가이드를 불러오는 중…",
+    "noResults": "검색과 일치하는 가이드가 없습니다."
+  },
+  "product": {
+    "viewGuide": "가이드 보기",
+    "by": "{author} 지음",
+    "guidePreview": "가이드 미리보기",
+    "backToStore": "스토어로 돌아가기",
+    "buyFor": "{price}에 구매",
+    "signInToBuy": "로그인하고 {price}에 구매",
+    "readGuide": "가이드 읽기",
+    "processing": "처리 중…",
+    "priceUnavailable": "가격을 표시할 수 없습니다"
+  },
+  "library": {
+    "eyebrow": "내 서재",
+    "signedOutTitle": "로그인하고 내 서재를 확인하세요.",
+    "signedOutBody": "구매한 가이드는 계정에 연결됩니다.",
+    "title": "구매한 안전 가이드.",
+    "loading": "서재를 불러오는 중…",
+    "countOne": "{count}권을 읽을 수 있습니다.",
+    "countOther": "{count}권을 읽을 수 있습니다.",
+    "emptyBody": "한 번 구매하면 계속 여기에 남습니다.",
+    "continueReading": "이어서 읽기",
+    "emptyTitle": "아직 서재에 가이드가 없습니다.",
+    "emptyStateBody": "구매한 도서는 결제 후 여기에 표시됩니다.",
+    "browseStore": "스토어 둘러보기"
+  },
+  "reader": {
+    "signInTitle": "로그인하고 이 가이드를 읽으세요.",
+    "signInBody": "구매한 가이드는 계정에 연결됩니다.",
+    "notOwnedTitle": "아직 이 가이드를 보유하고 있지 않습니다.",
+    "notOwnedBody": "먼저 구매하면 전체 내용을 읽을 수 있습니다.",
+    "viewGuide": "가이드 보기",
+    "loading": "가이드를 불러오는 중…",
+    "backToLibrary": "내 서재",
+    "downloadPdf": "PDF 다운로드",
+    "endOfGuide": "— 가이드 끝 —"
+  },
+  "footer": {
+    "demoLine1": "The Safety Shelf 데모 스토어입니다.",
+    "demoLine2": "현재는 테스트 카탈로그와 로컬 구매만 지원합니다. Convex, Clerk, Stripe, 에이전트 도구는 추후 지원됩니다.",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

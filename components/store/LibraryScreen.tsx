@@ -8,8 +8,11 @@ import { ProductCard } from "@/components/store/ProductCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Container } from "@/components/ui/Container";
 import { api } from "@/convex/_generated/api";
+import { useDict } from "@/app/I18nProvider";
+import { plural } from "@/lib/i18n";
 
 export function LibraryScreen() {
+  const dict = useDict();
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
   const items = useQuery(api.entitlements.listForUser, isAuthenticated ? {} : "skip");
 
@@ -18,11 +21,11 @@ export function LibraryScreen() {
   if (!isAuthenticated) {
     return (
       <Container>
-        <SectionHeader eyebrow="My library" title="Sign in to see your library." body="Purchased guides are tied to your account." />
+        <SectionHeader eyebrow={dict.library.eyebrow} title={dict.library.signedOutTitle} body={dict.library.signedOutBody} />
         <div className="mt-8">
           <SignInButton mode="modal">
             <button className="inline-flex rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-strong">
-              Sign in
+              {dict.auth.signIn}
             </button>
           </SignInButton>
         </div>
@@ -33,7 +36,7 @@ export function LibraryScreen() {
   if (items === undefined) {
     return (
       <Container>
-        <p className="py-20 text-center text-sm text-muted">Loading your library…</p>
+        <p className="py-20 text-center text-sm text-muted">{dict.library.loading}</p>
       </Container>
     );
   }
@@ -41,9 +44,9 @@ export function LibraryScreen() {
   return (
     <Container>
       <SectionHeader
-        eyebrow="My library"
-        title="Your purchased safety guides."
-        body={items.length ? `${items.length} guide${items.length === 1 ? "" : "s"} ready to read.` : "Buy a guide once and it stays here."}
+        eyebrow={dict.library.eyebrow}
+        title={dict.library.title}
+        body={items.length ? plural(items.length, dict.library) : dict.library.emptyBody}
       />
       {items.length ? (
         <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -51,7 +54,7 @@ export function LibraryScreen() {
             <div key={book.slug} className="space-y-3">
               <ProductCard book={book} />
               <Link href={`/read/${book.slug}`} className="inline-flex rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-strong">
-                Continue reading
+                {dict.library.continueReading}
               </Link>
             </div>
           ))}
@@ -60,9 +63,9 @@ export function LibraryScreen() {
         <div className="mt-8">
           <EmptyState
             actionHref="/store"
-            actionLabel="Browse the store"
-            body="Your purchased titles will appear here after checkout."
-            title="No guides in your library yet."
+            actionLabel={dict.library.browseStore}
+            body={dict.library.emptyStateBody}
+            title={dict.library.emptyTitle}
           />
         </div>
       )}

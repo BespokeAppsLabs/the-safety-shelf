@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "Ukwazisa ngempilo nokhuseleko",
+    "taglineShort": "Impilo nokhuseleko",
+    "strapline": "Ulwazi olukhusela ubomi."
+  },
+  "nav": {
+    "home": "Ikhaya",
+    "store": "Ivenkile",
+    "admin": "Ulawulo",
+    "library": "Ithala lam",
+    "shelves": "Iishelfu",
+    "featured": "Ezikhethiweyo",
+    "purpose": "Injongo yethu",
+    "mainNavigation": "Ukukhangela okuphambili",
+    "skipToContent": "Tsibela kokuqulethweyo",
+    "homeAria": "Iphepha lasekhaya le-The Safety Shelf",
+    "language": "Ulwimi"
+  },
+  "auth": {
+    "signIn": "Ngena"
+  },
+  "landing": {
+    "bannerLeft": "Ulwazi olukhusela ubomi",
+    "bannerRight": "Funda naphi na, nanini na",
+    "shopBooks": "Jonga iincwadi",
+    "heroKicker": "Ivenkile yeencwadi eyakhelwe ukukhathala",
+    "heroTitleLine1": "Funda kakuhle.",
+    "heroTitleLine2": "Phila ukhuselekile.",
+    "heroBody": "Izikhokelo ezintle nezisebenzayo zamaxesha abalulekileyo—ukusuka kumphefumlo wokuqala noncedo lokuqala ukuya kumakhaya, iintsapho noluntu olukhuselekileyo.",
+    "exploreCollection": "Hlola ingqokelela",
+    "instantAccess": "Ufikelelo ngoko nangoko · Akukho kuthunyelwa",
+    "heroImageAlt": "Imfumba yeencwadi zokhuseleko eyakhiwe ngobuchule kwithala eligobileyo",
+    "heroCaption": "Ulwazi olukhethiweyo lwesibindi semihla ngemihla",
+    "heroBadge": "Vula incwadi\nKhusela ubomi",
+    "promises": [
+      "Zibhalelwe ubomi bokwenyani",
+      "Ufikelelo lwedijithali ngoko nangoko",
+      "Isikhokelo esizolileyo nesisebenzayo",
+      "Zezakho ngonaphakade"
+    ],
+    "promisesLabel": "Izithembiso zethu",
+    "shelvesKicker": "Fumana ishelfu yakho",
+    "shelvesTitle": "Qala apho ubomi bungxamisekileyo khona.",
+    "shelvesBody": "Akukho zindlela zingapheliyo. Ziindlela ezicacileyo nezithembekileyo eziya kulwazi olulufunayo ngoku.",
+    "browseEveryShelf": "Jonga zonke iishelfu",
+    "shelfLabel": "Ishelfu",
+    "featuredKicker": "Ukhetho lwabahleli",
+    "featuredTitle": "Iincwadi ekufanele uzigcine kufuphi.",
+    "seeFullCollection": "Jonga yonke ingqokelela",
+    "missionKicker": "Kutheni sikho",
+    "missionQuote": "“Iphepha elifanelekileyo, elifunyanwe ngexesha elifanelekileyo, linokutshintsha into eyenzekayo emva koko.”",
+    "missionBody": "Ulwazi ngokhuseleko akufanele lubonakale luqatha, lusoyikisa okanye lube nzima ukulufumana. Sitshintsha izikhokelo ezibalulekileyo zibe ziincwadi ezintle abantu abanqwenela ngokwenene ukuzivula—nokuzikhumbula.",
+    "trustMarks": [
+      { "value": "100%", "label": "Idijithali kuqala" },
+      { "value": "24/7", "label": "Ufikelelo kwithala" },
+      { "value": "Umbono omnye", "label": "Ngexesha" }
+    ],
+    "ctaKicker": "Ishelfu yakho ekhuselekileyo iqala apha",
+    "ctaTitle": "Incwadi enye elungileyo inokuhlala nawe ubomi bonke.",
+    "buildLibrary": "Yakha ithala lakho"
+  },
+  "storefront": {
+    "eyebrow": "Ivenkile",
+    "title": "Jonga izikhokelo zokhuseleko ezisebenzayo.",
+    "body": "Okwangoku zezedijithali kuphela. Thenga kanye, uzigcine kwithala lakho, uzifunde kwisikhangeli.",
+    "searchPlaceholder": "Khangela izikhokelo, imixholo okanye ababhali",
+    "all": "Zonke",
+    "loading": "Kulayishwa izikhokelo…",
+    "noResults": "Akukho zikhokelo zihambelana nolo khangelo."
+  },
+  "product": {
+    "viewGuide": "Jonga isikhokelo",
+    "by": "ngu-{author}",
+    "guidePreview": "Ukubona kwangaphambili kwesikhokelo",
+    "backToStore": "Buyela evenkileni",
+    "buyFor": "Thenga ngo-{price}",
+    "signInToBuy": "Ngena ukuze uthenge ngo-{price}",
+    "readGuide": "Funda isikhokelo",
+    "processing": "Iyaqhubeka…",
+    "priceUnavailable": "Ixabiso alifumaneki"
+  },
+  "library": {
+    "eyebrow": "Ithala lam",
+    "signedOutTitle": "Ngena ukuze ubone ithala lakho.",
+    "signedOutBody": "Izikhokelo ozithengileyo zidibene ne-akhawunti yakho.",
+    "title": "Izikhokelo zokhuseleko ozithengileyo.",
+    "loading": "Kulayishwa ithala lakho…",
+    "countOne": "Isikhokelo esi-{count} silungele ukufundwa.",
+    "countOther": "Izikhokelo ezingu-{count} zilungele ukufundwa.",
+    "emptyBody": "Thenga isikhokelo kanye size sihlale apha.",
+    "continueReading": "Qhubeka ufunda",
+    "emptyTitle": "Akukho zikhokelo kwithala lakho okwangoku.",
+    "emptyStateBody": "Iincwadi ozithengileyo ziya kubonakala apha emva kokuhlawula.",
+    "browseStore": "Jonga ivenkile"
+  },
+  "reader": {
+    "signInTitle": "Ngena ukuze ufunde esi sikhokelo.",
+    "signInBody": "Izikhokelo ozithengileyo zidibene ne-akhawunti yakho.",
+    "notOwnedTitle": "Awukabi naso esi sikhokelo.",
+    "notOwnedBody": "Thenga isikhokelo kuqala ukuze uvule konke.",
+    "viewGuide": "Jonga isikhokelo",
+    "loading": "Kulayishwa isikhokelo…",
+    "backToLibrary": "Ithala",
+    "downloadPdf": "Khuphela i-PDF",
+    "endOfGuide": "— ukuphela kwesikhokelo —"
+  },
+  "footer": {
+    "demoLine1": "Ivenkile yomzekelo ye-The Safety Shelf.",
+    "demoLine2": "Okwangoku yikhathalogu yovavanyo nokuthenga kwendawo. I-Convex, i-Clerk, i-Stripe kunye nezixhobo ze-agent kamva.",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

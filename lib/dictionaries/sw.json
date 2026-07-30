@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "Uelewa wa afya na usalama",
+    "taglineShort": "Afya na usalama",
+    "strapline": "Maarifa yanayolinda maisha."
+  },
+  "nav": {
+    "home": "Mwanzo",
+    "store": "Duka",
+    "admin": "Usimamizi",
+    "library": "Maktaba",
+    "shelves": "Rafu",
+    "featured": "Zilizoteuliwa",
+    "purpose": "Lengo letu",
+    "mainNavigation": "Urambazaji mkuu",
+    "skipToContent": "Rukia hadi maudhui",
+    "homeAria": "Ukurasa wa mwanzo wa The Safety Shelf",
+    "language": "Lugha"
+  },
+  "auth": {
+    "signIn": "Ingia"
+  },
+  "landing": {
+    "bannerLeft": "Maarifa yanayolinda maisha",
+    "bannerRight": "Soma popote, wakati wowote",
+    "shopBooks": "Tazama vitabu",
+    "heroKicker": "Duka la vitabu lililojengwa kwa kujali",
+    "heroTitleLine1": "Soma vizuri.",
+    "heroTitleLine2": "Ishi salama zaidi.",
+    "heroBody": "Miongozo mizuri na yenye manufaa kwa nyakati muhimu—kuanzia pumzi za kwanza na huduma ya kwanza hadi nyumba, familia na jamii salama zaidi.",
+    "exploreCollection": "Chunguza mkusanyiko",
+    "instantAccess": "Upatikanaji wa papo hapo · Hakuna usafirishaji",
+    "heroImageAlt": "Rundo la vitabu vya usalama lililopangwa kwa umbo la kipekee ndani ya maktaba yenye mviringo",
+    "heroCaption": "Maarifa teule kwa ujasiri wa kila siku",
+    "heroBadge": "Fungua kitabu\nLinda maisha",
+    "promises": [
+      "Vimeandikwa kwa maisha halisi",
+      "Upatikanaji wa kidijitali papo hapo",
+      "Mwongozo tulivu na wa vitendo",
+      "Ni vyako milele"
+    ],
+    "promisesLabel": "Ahadi zetu",
+    "shelvesKicker": "Tafuta rafu yako",
+    "shelvesTitle": "Anza pale ambapo maisha yana haraka.",
+    "shelvesBody": "Hakuna njia ndefu zisizoisha. Ni njia wazi na za kuaminika tu kuelekea maarifa unayohitaji sasa.",
+    "browseEveryShelf": "Vinjari kila rafu",
+    "shelfLabel": "Rafu",
+    "featuredKicker": "Chaguo la wahariri",
+    "featuredTitle": "Vitabu vinavyostahili kuwa karibu.",
+    "seeFullCollection": "Tazama mkusanyiko wote",
+    "missionKicker": "Kwa nini tupo",
+    "missionQuote": "“Ukurasa sahihi, ukipatikana wakati sahihi, unaweza kubadilisha kitakachofuata.”",
+    "missionBody": "Maarifa kuhusu usalama hayapaswi kuonekana magumu, ya kutisha au yasiyopatikana. Tunageuza mwongozo muhimu kuwa vitabu vizuri ambavyo watu hutamani kweli kuvifungua—na kuvikumbuka.",
+    "trustMarks": [
+      { "value": "100%", "label": "Kidijitali kwanza" },
+      { "value": "24/7", "label": "Upatikanaji wa maktaba" },
+      { "value": "Wazo 1", "label": "Kwa wakati" }
+    ],
+    "ctaKicker": "Rafu yako salama zaidi inaanzia hapa",
+    "ctaTitle": "Kitabu kimoja kizuri kinaweza kukaa nawe maisha yote.",
+    "buildLibrary": "Jenga maktaba yako"
+  },
+  "storefront": {
+    "eyebrow": "Duka",
+    "title": "Vinjari miongozo ya usalama yenye manufaa.",
+    "body": "Kwa sasa ni vitabu vya kidijitali pekee. Nunua mara moja, vihifadhi katika maktaba yako, na visome kwenye kivinjari.",
+    "searchPlaceholder": "Tafuta miongozo, mada au waandishi",
+    "all": "Zote",
+    "loading": "Inapakia miongozo…",
+    "noResults": "Hakuna mwongozo unaolingana na utafutaji huo."
+  },
+  "product": {
+    "viewGuide": "Tazama mwongozo",
+    "by": "na {author}",
+    "guidePreview": "Muhtasari wa mwongozo",
+    "backToStore": "Rudi dukani",
+    "buyFor": "Nunua kwa {price}",
+    "signInToBuy": "Ingia ili ununue kwa {price}",
+    "readGuide": "Soma mwongozo",
+    "processing": "Inashughulikia…",
+    "priceUnavailable": "Bei haipatikani"
+  },
+  "library": {
+    "eyebrow": "Maktaba yangu",
+    "signedOutTitle": "Ingia ili uone maktaba yako.",
+    "signedOutBody": "Miongozo uliyonunua imeunganishwa na akaunti yako.",
+    "title": "Miongozo ya usalama uliyonunua.",
+    "loading": "Inapakia maktaba yako…",
+    "countOne": "Mwongozo {count} uko tayari kusomwa.",
+    "countOther": "Miongozo {count} iko tayari kusomwa.",
+    "emptyBody": "Nunua mwongozo mara moja nao unabaki hapa.",
+    "continueReading": "Endelea kusoma",
+    "emptyTitle": "Bado hakuna miongozo katika maktaba yako.",
+    "emptyStateBody": "Vitabu ulivyonunua vitaonekana hapa baada ya malipo.",
+    "browseStore": "Vinjari duka"
+  },
+  "reader": {
+    "signInTitle": "Ingia ili usome mwongozo huu.",
+    "signInBody": "Miongozo uliyonunua imeunganishwa na akaunti yako.",
+    "notOwnedTitle": "Bado huna mwongozo huu.",
+    "notOwnedBody": "Nunua mwongozo kwanza ili ufungue usomaji kamili.",
+    "viewGuide": "Tazama mwongozo",
+    "loading": "Inapakia mwongozo…",
+    "backToLibrary": "Maktaba",
+    "downloadPdf": "Pakua PDF",
+    "endOfGuide": "— mwisho wa mwongozo —"
+  },
+  "footer": {
+    "demoLine1": "Duka la mfano la The Safety Shelf.",
+    "demoLine2": "Kwa sasa ni katalogi ya majaribio na manunuzi ya ndani. Convex, Clerk, Stripe na zana za wakala baadaye.",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

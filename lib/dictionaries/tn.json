@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "Kitsiso ka botsogo le pabalesego",
+    "taglineShort": "Botsogo le pabalesego",
+    "strapline": "Kitso e e sireletsang matshelo."
+  },
+  "nav": {
+    "home": "Legae",
+    "store": "Lebenkele",
+    "admin": "Tsamaiso",
+    "library": "Laeborari ya me",
+    "shelves": "Dishelefe",
+    "featured": "Tse di tlhophilweng",
+    "purpose": "Maikaelelo a rona",
+    "mainNavigation": "Tsamaiso e kgolo",
+    "skipToContent": "Tlolela mo diteng",
+    "homeAria": "Tsebe ya legae ya The Safety Shelf",
+    "language": "Puo"
+  },
+  "auth": {
+    "signIn": "Tsena"
+  },
+  "landing": {
+    "bannerLeft": "Kitso e e sireletsang matshelo",
+    "bannerRight": "Bala gongwe le gongwe, nako nngwe le nngwe",
+    "shopBooks": "Leba dibuka",
+    "heroKicker": "Lebenkele la dibuka le le agilweng ka tlhokomelo",
+    "heroTitleLine1": "Bala sentle.",
+    "heroTitleLine2": "Tshela o sireletsegile.",
+    "heroBody": "Dikaelo tse dintle le tse di berekang mo dinakong tsa botlhokwa—go simolola ka mowa wa ntlha le thuso ya ntlha go ya kwa magaeng, malapeng le baagi ba ba sireletsegileng.",
+    "exploreCollection": "Sekaseka kokoanyo",
+    "instantAccess": "Phitlhelelo ka bonako · Ga go romelwe",
+    "heroImageAlt": "Mokoa o montle wa dibuka tsa pabalesego mo laeborari e e kobegileng",
+    "heroCaption": "Kitso e e tlhophilweng ya bopelokgale jwa letsatsi le letsatsi",
+    "heroBadge": "Bula buka\nSireletsa botshelo",
+    "promises": [
+      "Di kwaletswe botshelo jwa nnete",
+      "Phitlhelelo ya dijithale ka bonako",
+      "Kaelo e e ritibetseng le e e berekang",
+      "Ke tsa gago ka bosakhutleng"
+    ],
+    "promisesLabel": "Ditsholofetso tsa rona",
+    "shelvesKicker": "Bona shelefe ya gago",
+    "shelvesTitle": "Simolola kwa botshelo bo potlakileng teng.",
+    "shelvesBody": "Ga go ditsela tse di sa khutleng. Ke ditsela tse di phepafetseng le tse di ikanyegang tse di isang kitsong e o e tlhokang jaanong.",
+    "browseEveryShelf": "Leba disheleyfe tsotlhe",
+    "shelfLabel": "Shelefe",
+    "featuredKicker": "Dikgetho tsa barulaganyi",
+    "featuredTitle": "Dibuka tse di tshwanetseng go nna gaufi.",
+    "seeFullCollection": "Bona kokoanyo yotlhe",
+    "missionKicker": "Goreng re le teng",
+    "missionQuote": "“Tsebe e e siameng, e e bonwang ka nako e e siameng, e ka fetola se se latelang.”",
+    "missionBody": "Kitso ka pabalesego ga e a tshwanela go utlwala e le thata, e e tshosang kgotsa e e sa bonweng. Re fetola dikaelo tsa botlhokwa gore e nne dibuka tse dintle tse batho ba tlholang ba batla go di bula—le go di gakologelwa.",
+    "trustMarks": [
+      { "value": "100%", "label": "Dijithale pele" },
+      { "value": "24/7", "label": "Phitlhelelo ya laeborari" },
+      { "value": "Kgopolo e le nngwe", "label": "Ka nako" }
+    ],
+    "ctaKicker": "Shelefe ya gago e e sireletsegileng e simolola fano",
+    "ctaTitle": "Buka e le nngwe e e molemo e ka nna le wena botshelo jotlhe.",
+    "buildLibrary": "Aga laeborari ya gago"
+  },
+  "storefront": {
+    "eyebrow": "Lebenkele",
+    "title": "Leba dikaelo tsa pabalesego tse di berekang.",
+    "body": "Ga jaana ke dibuka tsa dijithale fela. Reka gangwe, di boloke mo laeboraring ya gago, o di bale mo sebatling.",
+    "searchPlaceholder": "Batla dikaelo, ditlhogo kgotsa bakwadi",
+    "all": "Tsotlhe",
+    "loading": "Go laisiwa dikaelo…",
+    "noResults": "Ga go kaelo e e tsamaelanang le patlo eo."
+  },
+  "product": {
+    "viewGuide": "Leba kaelo",
+    "by": "ka {author}",
+    "guidePreview": "Ponelopele ya kaelo",
+    "backToStore": "Boela kwa lebenkeleng",
+    "buyFor": "Reka ka {price}",
+    "signInToBuy": "Tsena go reka ka {price}",
+    "readGuide": "Bala kaelo",
+    "processing": "E a bereka…",
+    "priceUnavailable": "Tlhwatlhwa ga e bonwe"
+  },
+  "library": {
+    "eyebrow": "Laeborari ya me",
+    "signedOutTitle": "Tsena go bona laeborari ya gago.",
+    "signedOutBody": "Dikaelo tse o di rekileng di golagantswe le akhaonto ya gago.",
+    "title": "Dikaelo tsa pabalesego tse o di rekileng.",
+    "loading": "Go laisiwa laeborari ya gago…",
+    "countOne": "Kaelo e le {count} e siametse go balwa.",
+    "countOther": "Dikaelo tse {count} di siametse go balwa.",
+    "emptyBody": "Reka kaelo gangwe mme e sale fano.",
+    "continueReading": "Tswelela go bala",
+    "emptyTitle": "Ga go dikaelo mo laeboraring ya gago ga jaana.",
+    "emptyStateBody": "Dibuka tse o di rekileng di tla bonala fano morago ga tuelo.",
+    "browseStore": "Leba lebenkele"
+  },
+  "reader": {
+    "signInTitle": "Tsena go bala kaelo eno.",
+    "signInBody": "Dikaelo tse o di rekileng di golagantswe le akhaonto ya gago.",
+    "notOwnedTitle": "Ga o na kaelo eno ga jaana.",
+    "notOwnedBody": "Reka kaelo pele go bula sebadi se se feletseng.",
+    "viewGuide": "Leba kaelo",
+    "loading": "Go laisiwa kaelo…",
+    "backToLibrary": "Laeborari",
+    "downloadPdf": "Laolola PDF",
+    "endOfGuide": "— bokhutlo jwa kaelo —"
+  },
+  "footer": {
+    "demoLine1": "Lebenkele la sekao la The Safety Shelf.",
+    "demoLine2": "Ga jaana ke katalogo ya teko le direko tsa selegae. Convex, Clerk, Stripe le didirisiwa tsa agent moragonyana.",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

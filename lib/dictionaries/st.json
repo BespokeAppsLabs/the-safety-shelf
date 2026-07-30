@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "Tsebo ka bophelo bo botle le polokeho",
+    "taglineShort": "Bophelo le polokeho",
+    "strapline": "Tsebo e sireletsang bophelo."
+  },
+  "nav": {
+    "home": "Lehae",
+    "store": "Lebenkele",
+    "admin": "Tsamaiso",
+    "library": "Laebrari ya ka",
+    "shelves": "Dishelefo",
+    "featured": "Tse kgethilweng",
+    "purpose": "Sepheo sa rona",
+    "mainNavigation": "Tsamaiso e kgolo",
+    "skipToContent": "Tlolela dikahare",
+    "homeAria": "Leqephe la lehae la The Safety Shelf",
+    "language": "Puo"
+  },
+  "auth": {
+    "signIn": "Kena"
+  },
+  "landing": {
+    "bannerLeft": "Tsebo e sireletsang bophelo",
+    "bannerRight": "Bala kae kapa kae, neng kapa neng",
+    "shopBooks": "Sheba dibuka",
+    "heroKicker": "Lebenkele la dibuka le hahilweng ka tlhokomelo",
+    "heroTitleLine1": "Bala hantle.",
+    "heroTitleLine2": "Phela o bolokehile.",
+    "heroBody": "Ditataiso tse ntle le tse sebetsang bakeng sa dinako tsa bohlokwa—ho tloha ho moya wa pele le thuso ya pele ho isa malapeng, malapeng le metseng e bolokehileng.",
+    "exploreCollection": "Hlahloba pokello",
+    "instantAccess": "Phihlello hang-hang · Ha ho romelwa",
+    "heroImageAlt": "Mokoloko o motle wa dibuka tsa polokeho ka har'a laebrari e kobehileng",
+    "heroCaption": "Tsebo e kgethilweng bakeng sa sebete sa letsatsi le letsatsi",
+    "heroBadge": "Bula buka\nSireletsa bophelo",
+    "promises": [
+      "Di ngoletswe bophelo ba nnete",
+      "Phihlello ya dijithale hang-hang",
+      "Tataiso e kgutsitseng le e sebetsang",
+      "Ke tsa hao ka ho sa feleng"
+    ],
+    "promisesLabel": "Ditshepiso tsa rona",
+    "shelvesKicker": "Fumana shelefo ya hao",
+    "shelvesTitle": "Qala moo bophelo bo potlakileng teng.",
+    "shelvesBody": "Ha ho ditsela tse sa feleng. Ke ditsela tse hlakileng le tse tshepahalang tse isang tsebong eo o e hlokang hona jwale.",
+    "browseEveryShelf": "Sheba dishelefo tsohle",
+    "shelfLabel": "Shelefo",
+    "featuredKicker": "Dikgetho tsa bahlophisi",
+    "featuredTitle": "Dibuka tse lokelang ho ba haufi.",
+    "seeFullCollection": "Sheba pokello kaofela",
+    "missionKicker": "Hobaneng re le teng",
+    "missionQuote": "“Leqephe le nepahetseng, le fumanweng ka nako e nepahetseng, le ka fetola se latelang.”",
+    "missionBody": "Tsebo ya polokeho ha ea lokela ho utlwahala e le thata, e tshosang kapa e sa fumanehe. Re fetola ditataiso tsa bohlokwa hore e be dibuka tse ntle tseo batho ba hlileng ba batlang ho di bula—le ho di hopola.",
+    "trustMarks": [
+      { "value": "100%", "label": "Dijithale pele" },
+      { "value": "24/7", "label": "Phihlello ya laebrari" },
+      { "value": "Mohopolo o le mong", "label": "Ka nako" }
+    ],
+    "ctaKicker": "Shelefo ya hao e bolokehileng e qala mona",
+    "ctaTitle": "Buka e le nngwe e ntle e ka dula le wena bophelo bohle.",
+    "buildLibrary": "Haha laebrari ya hao"
+  },
+  "storefront": {
+    "eyebrow": "Lebenkele",
+    "title": "Sheba ditataiso tsa polokeho tse sebetsang.",
+    "body": "Hajwale ke dibuka tsa dijithale feela. Reka hanngwe, di boloke laebraring ya hao, o di bale sebatling.",
+    "searchPlaceholder": "Batla ditataiso, dihlooho kapa bangodi",
+    "all": "Tsohle",
+    "loading": "Ho jarwa ditataiso…",
+    "noResults": "Ha ho tataiso e tsamaellanang le patlo eo."
+  },
+  "product": {
+    "viewGuide": "Sheba tataiso",
+    "by": "ka {author}",
+    "guidePreview": "Ponelopele ya tataiso",
+    "backToStore": "Kgutlela lebenkeleng",
+    "buyFor": "Reka ka {price}",
+    "signInToBuy": "Kena ho reka ka {price}",
+    "readGuide": "Bala tataiso",
+    "processing": "E ntse e sebetsa…",
+    "priceUnavailable": "Theko ha e fumanehe"
+  },
+  "library": {
+    "eyebrow": "Laebrari ya ka",
+    "signedOutTitle": "Kena ho bona laebrari ya hao.",
+    "signedOutBody": "Ditataiso tseo o di rekileng di hokahantswe le akhaonto ya hao.",
+    "title": "Ditataiso tsa polokeho tseo o di rekileng.",
+    "loading": "Ho jarwa laebrari ya hao…",
+    "countOne": "Tataiso e {count} e loketse ho balwa.",
+    "countOther": "Ditataiso tse {count} di loketse ho balwa.",
+    "emptyBody": "Reka tataiso hanngwe mme e dule mona.",
+    "continueReading": "Tswela pele ho bala",
+    "emptyTitle": "Ha ho ditataiso laebraring ya hao hajwale.",
+    "emptyStateBody": "Dibuka tseo o di rekileng di tla hlaha mona kamora tefo.",
+    "browseStore": "Sheba lebenkele"
+  },
+  "reader": {
+    "signInTitle": "Kena ho bala tataiso ena.",
+    "signInBody": "Ditataiso tseo o di rekileng di hokahantswe le akhaonto ya hao.",
+    "notOwnedTitle": "Ha o na tataiso ena hajwale.",
+    "notOwnedBody": "Reka tataiso pele ho bula sebadi se felletseng.",
+    "viewGuide": "Sheba tataiso",
+    "loading": "Ho jarwa tataiso…",
+    "backToLibrary": "Laebrari",
+    "downloadPdf": "Jarolla PDF",
+    "endOfGuide": "— pheletso ya tataiso —"
+  },
+  "footer": {
+    "demoLine1": "Lebenkele la mohlala la The Safety Shelf.",
+    "demoLine2": "Hajwale ke katalogo ya teko le direko tsa lehae. Convex, Clerk, Stripe le disebediswa tsa agent hamorao.",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

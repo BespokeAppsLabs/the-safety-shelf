@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "Sensibilisation à la santé et à la sécurité",
+    "taglineShort": "Santé et sécurité",
+    "strapline": "Un savoir qui protège des vies."
+  },
+  "nav": {
+    "home": "Accueil",
+    "store": "Boutique",
+    "admin": "Administration",
+    "library": "Bibliothèque",
+    "shelves": "Rayons",
+    "featured": "À la une",
+    "purpose": "Notre raison d'être",
+    "mainNavigation": "Navigation principale",
+    "skipToContent": "Aller au contenu",
+    "homeAria": "The Safety Shelf, accueil",
+    "language": "Langue"
+  },
+  "auth": {
+    "signIn": "Se connecter"
+  },
+  "landing": {
+    "bannerLeft": "Un savoir qui protège des vies",
+    "bannerRight": "Lisez partout, à tout moment",
+    "shopBooks": "Voir les livres",
+    "heroKicker": "Une librairie construite autour du soin",
+    "heroTitleLine1": "Bien lire.",
+    "heroTitleLine2": "Vivre plus sûr.",
+    "heroBody": "Des guides beaux et pratiques pour les moments qui comptent — des premiers souffles et des premiers secours à des foyers, des familles et des communautés plus sûrs.",
+    "exploreCollection": "Explorer la collection",
+    "instantAccess": "Accès immédiat · Sans livraison",
+    "heroImageAlt": "Une pile sculpturale de livres sur la sécurité dans une bibliothèque courbe et spectaculaire",
+    "heroCaption": "Un savoir choisi pour le courage du quotidien",
+    "heroBadge": "Ouvrez un livre\nProtégez une vie",
+    "promises": [
+      "Écrits pour la vraie vie",
+      "Accès numérique immédiat",
+      "Des conseils calmes et concrets",
+      "À vous pour toujours"
+    ],
+    "promisesLabel": "Nos engagements",
+    "shelvesKicker": "Trouvez votre rayon",
+    "shelvesTitle": "Commencez là où l'urgence se fait sentir.",
+    "shelvesBody": "Pas de rayons interminables. Juste des chemins clairs et fiables vers ce dont vous avez besoin maintenant.",
+    "browseEveryShelf": "Parcourir tous les rayons",
+    "shelfLabel": "Rayon",
+    "featuredKicker": "Les choix de la rédaction",
+    "featuredTitle": "Des livres à garder près de soi.",
+    "seeFullCollection": "Voir toute la collection",
+    "missionKicker": "Pourquoi nous existons",
+    "missionQuote": "« La bonne page, trouvée au bon moment, peut changer ce qui arrive ensuite. »",
+    "missionBody": "Le savoir sur la sécurité ne devrait être ni clinique, ni effrayant, ni introuvable. Nous transformons les conseils essentiels en beaux livres que l'on a vraiment envie d'ouvrir — et de retenir.",
+    "trustMarks": [
+      { "value": "100 %", "label": "Le numérique d'abord" },
+      { "value": "24/7", "label": "Accès à la bibliothèque" },
+      { "value": "1 idée", "label": "À la fois" }
+    ],
+    "ctaKicker": "Votre rayon plus sûr commence ici",
+    "ctaTitle": "Un bon livre peut vous accompagner toute une vie.",
+    "buildLibrary": "Composez votre bibliothèque"
+  },
+  "storefront": {
+    "eyebrow": "Boutique",
+    "title": "Parcourez des guides de sécurité concrets.",
+    "body": "Uniquement des titres numériques pour l'instant. Achetez une fois, gardez-les dans votre bibliothèque et lisez-les dans le navigateur.",
+    "searchPlaceholder": "Rechercher un guide, un sujet ou un auteur",
+    "all": "Tous",
+    "loading": "Chargement des guides…",
+    "noResults": "Aucun guide ne correspond à cette recherche."
+  },
+  "product": {
+    "viewGuide": "Voir le guide",
+    "by": "par {author}",
+    "guidePreview": "Aperçu du guide",
+    "backToStore": "Retour à la boutique",
+    "buyFor": "Acheter pour {price}",
+    "signInToBuy": "Connectez-vous pour acheter à {price}",
+    "readGuide": "Lire le guide",
+    "processing": "Traitement…",
+    "priceUnavailable": "Prix indisponible"
+  },
+  "library": {
+    "eyebrow": "Ma bibliothèque",
+    "signedOutTitle": "Connectez-vous pour voir votre bibliothèque.",
+    "signedOutBody": "Les guides achetés sont liés à votre compte.",
+    "title": "Vos guides de sécurité achetés.",
+    "loading": "Chargement de votre bibliothèque…",
+    "countOne": "{count} guide prêt à lire.",
+    "countOther": "{count} guides prêts à lire.",
+    "emptyBody": "Achetez un guide une fois, il reste ici.",
+    "continueReading": "Continuer la lecture",
+    "emptyTitle": "Aucun guide dans votre bibliothèque.",
+    "emptyStateBody": "Vos titres achetés apparaîtront ici après le paiement.",
+    "browseStore": "Parcourir la boutique"
+  },
+  "reader": {
+    "signInTitle": "Connectez-vous pour lire ce guide.",
+    "signInBody": "Vos guides achetés sont liés à votre compte.",
+    "notOwnedTitle": "Vous ne possédez pas encore ce guide.",
+    "notOwnedBody": "Achetez le guide pour débloquer la lecture complète.",
+    "viewGuide": "Voir le guide",
+    "loading": "Chargement du guide…",
+    "backToLibrary": "Bibliothèque",
+    "downloadPdf": "Télécharger le PDF",
+    "endOfGuide": "— fin du guide —"
+  },
+  "footer": {
+    "demoLine1": "Vitrine de démonstration The Safety Shelf.",
+    "demoLine2": "Catalogue de test et achats locaux pour l'instant. Convex, Clerk, Stripe et les outils d'agent plus tard.",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

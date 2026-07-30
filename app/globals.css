@@ -20,7 +20,14 @@
   --color-red-soft: #fde9e7;
   --color-red-strong: #b33a2e;
 
-  --font-sans: var(--font-geist-sans);
+  /* Geist covers Latin and Latin-ext only. Greek, Arabic, Devanagari, Hangul and
+     Kana have no Geist glyphs, so the browser falls
+     through to the platform's own script fonts — every OS ships them, which is
+     why this is a fallback chain and not four more webfont downloads. Without
+     it those markets render tofu boxes. */
+  --font-sans: var(--font-geist-sans), "Noto Sans Greek", "Noto Sans Arabic", "Noto Sans Devanagari",
+    "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", "Apple SD Gothic Neo",
+    "Malgun Gothic", "Noto Sans KR", "Segoe UI", system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --radius-card: 28px;
   --shadow-soft: 0 18px 50px rgba(18, 49, 43, 0.08);
@@ -45,4 +52,203 @@ body {
 
 ::selection {
   background: #dff5ec;
+}
+
+/* Reader → PDF. The browser's "Save as PDF" is the generator; this block is
+   the whole book template. Keep it in sync with ReaderScreen's block markup. */
+@media print {
+  @page {
+    margin: 18mm 16mm;
+  }
+
+  body {
+    background: #fff;
+    /* Cover/gradients still print when the user leaves background graphics on. */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .book-print {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .book-print-cover {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+    /* Fills the first printed page without a fixed height fighting @page. */
+    min-height: 80vh;
+    break-after: page;
+    text-align: center;
+  }
+
+  /* A heading must not be the last thing on a page. */
+  .book-print h1,
+  .book-print h2 {
+    break-after: avoid;
+  }
+
+  .book-print p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Reader art is aspect-square w-full — unconstrained that eats a whole page. */
+  .book-print img {
+    width: auto;
+    max-width: 100%;
+    max-height: 10cm;
+    aspect-ratio: auto;
+    break-inside: avoid;
+    object-fit: contain;
+  }
+}
+
+.landing-page {
+  --landing-ink: #10251f;
+  --landing-green: #147a5c;
+  --landing-amber: #efaa35;
+}
+
+.landing-display {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+}
+
+.landing-kicker {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.landing-nav-link {
+  position: relative;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.landing-nav-link::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.45rem;
+  left: 0;
+  height: 1px;
+  content: "";
+  background: var(--landing-green);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 180ms ease;
+}
+
+.landing-nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.landing-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  width: fit-content;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid rgb(16 37 31 / 35%);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.landing-text-link span {
+  transition: transform 180ms ease;
+}
+
+.landing-text-link:hover span {
+  transform: translateX(0.3rem);
+}
+
+.landing-category {
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+  transition: transform 250ms ease, box-shadow 250ms ease;
+}
+
+.landing-category::before {
+  position: absolute;
+  z-index: -1;
+  right: -5rem;
+  bottom: -6rem;
+  width: 14rem;
+  height: 14rem;
+  border: 3.5rem solid currentColor;
+  border-radius: 999px;
+  content: "";
+  opacity: 0.05;
+}
+
+.landing-category:hover {
+  box-shadow: 0 30px 70px rgb(16 37 31 / 16%);
+  transform: translateY(-0.4rem);
+}
+
+.landing-hero-frame {
+  box-shadow: 0 42px 80px rgb(16 37 31 / 25%);
+  transform: rotate(2deg);
+}
+
+.landing-orbit {
+  position: absolute;
+  border: 1px solid rgb(16 37 31 / 12%);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.landing-orbit-one {
+  top: -14rem;
+  left: -17rem;
+  width: 38rem;
+  height: 38rem;
+}
+
+.landing-orbit-two {
+  right: -10rem;
+  bottom: -18rem;
+  width: 34rem;
+  height: 34rem;
+}
+
+.landing-skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: white;
+  color: var(--landing-ink);
+  font-size: 0.75rem;
+  font-weight: 800;
+  transform: translateY(-200%);
+}
+
+.landing-skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-page *,
+  .landing-page *::before,
+  .landing-page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

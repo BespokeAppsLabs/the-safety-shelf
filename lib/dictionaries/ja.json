@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "健康と安全への意識を高める",
+    "taglineShort": "健康と安全",
+    "strapline": "命を守る知識を。"
+  },
+  "nav": {
+    "home": "ホーム",
+    "store": "ストア",
+    "admin": "管理",
+    "library": "ライブラリ",
+    "shelves": "本棚",
+    "featured": "おすすめ",
+    "purpose": "私たちの目的",
+    "mainNavigation": "メインナビゲーション",
+    "skipToContent": "本文へスキップ",
+    "homeAria": "The Safety Shelf ホーム",
+    "language": "言語"
+  },
+  "auth": {
+    "signIn": "サインイン"
+  },
+  "landing": {
+    "bannerLeft": "命を守る知識を",
+    "bannerRight": "いつでも、どこでも読める",
+    "shopBooks": "本を見る",
+    "heroKicker": "思いやりから生まれた書店",
+    "heroTitleLine1": "よく読む。",
+    "heroTitleLine2": "より安全に生きる。",
+    "heroBody": "大切な瞬間のための、美しく実用的なガイド。最初の呼吸や応急手当てから、より安全な住まい・家族・地域まで。",
+    "exploreCollection": "コレクションを見る",
+    "instantAccess": "すぐに読める · 配送なし",
+    "heroImageAlt": "曲線的で印象的な図書館に積み上げられた安全の本",
+    "heroCaption": "日々の勇気のために選ばれた知識",
+    "heroBadge": "本を開く\n命を守る",
+    "promises": [
+      "実生活のために書かれた",
+      "すぐに使えるデジタル版",
+      "落ち着いた実用的な案内",
+      "ずっとあなたのもの"
+    ],
+    "promisesLabel": "私たちの約束",
+    "shelvesKicker": "あなたの本棚を見つける",
+    "shelvesTitle": "今いちばん必要なところから。",
+    "shelvesBody": "延々と続く棚はありません。必要な知識へ、明確で信頼できる道だけを。",
+    "browseEveryShelf": "すべての本棚を見る",
+    "shelfLabel": "本棚",
+    "featuredKicker": "編集部のおすすめ",
+    "featuredTitle": "そばに置いておきたい本。",
+    "seeFullCollection": "コレクション全体を見る",
+    "missionKicker": "私たちが存在する理由",
+    "missionQuote": "「適切なページに、適切なときに出会えれば、次に起こることは変わります。」",
+    "missionBody": "安全の知識は、無機質で、怖くて、探しにくいものであるべきではありません。私たちは大切な指針を、思わず開きたくなる——そして記憶に残る——美しい本にします。",
+    "trustMarks": [
+      { "value": "100%", "label": "デジタル中心" },
+      { "value": "24/7", "label": "ライブラリ利用" },
+      { "value": "1つずつ", "label": "確実に" }
+    ],
+    "ctaKicker": "より安全な本棚はここから",
+    "ctaTitle": "一冊の良い本は、一生そばにいてくれます。",
+    "buildLibrary": "ライブラリをつくる"
+  },
+  "storefront": {
+    "eyebrow": "ストア",
+    "title": "実用的な安全ガイドを探す。",
+    "body": "現在はデジタル版のみ。一度購入すればライブラリに保存され、ブラウザで読めます。",
+    "searchPlaceholder": "ガイド・トピック・著者を検索",
+    "all": "すべて",
+    "loading": "ガイドを読み込み中…",
+    "noResults": "条件に合うガイドが見つかりません。"
+  },
+  "product": {
+    "viewGuide": "ガイドを見る",
+    "by": "著者：{author}",
+    "guidePreview": "ガイドのプレビュー",
+    "backToStore": "ストアに戻る",
+    "buyFor": "{price} で購入",
+    "signInToBuy": "サインインして {price} で購入",
+    "readGuide": "ガイドを読む",
+    "processing": "処理中…",
+    "priceUnavailable": "価格は表示できません"
+  },
+  "library": {
+    "eyebrow": "マイライブラリ",
+    "signedOutTitle": "サインインしてライブラリを表示。",
+    "signedOutBody": "購入したガイドはアカウントに紐づいています。",
+    "title": "購入した安全ガイド。",
+    "loading": "ライブラリを読み込み中…",
+    "countOne": "{count} 冊のガイドが読めます。",
+    "countOther": "{count} 冊のガイドが読めます。",
+    "emptyBody": "一度購入すれば、ここにずっと残ります。",
+    "continueReading": "続きを読む",
+    "emptyTitle": "ライブラリにガイドがまだありません。",
+    "emptyStateBody": "購入した書籍は決済後にここに表示されます。",
+    "browseStore": "ストアを見る"
+  },
+  "reader": {
+    "signInTitle": "サインインしてこのガイドを読む。",
+    "signInBody": "購入したガイドはアカウントに紐づいています。",
+    "notOwnedTitle": "このガイドはまだ購入されていません。",
+    "notOwnedBody": "購入すると全文を読めるようになります。",
+    "viewGuide": "ガイドを見る",
+    "loading": "ガイドを読み込み中…",
+    "backToLibrary": "ライブラリ",
+    "downloadPdf": "PDFをダウンロード",
+    "endOfGuide": "— ガイドはここまで —"
+  },
+  "footer": {
+    "demoLine1": "The Safety Shelf のデモストアです。",
+    "demoLine2": "現在はテストカタログとローカル購入のみ。Convex・Clerk・Stripe・エージェントツールは今後対応します。",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

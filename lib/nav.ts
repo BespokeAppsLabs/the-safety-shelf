@@ -1,8 +1,12 @@
+import type { Dictionary } from "./i18n";
+
+// Nav labels are dictionary keys, not literals: the storefront nav is
+// translated, the admin nav is not (owner-only, single operator).
 export const STORE_NAV = [
-  { href: "/", label: "Home" },
-  { href: "/store", label: "Store" },
-  { href: "/admin", label: "Admin" },
-];
+  { href: "/", key: "home" },
+  { href: "/store", key: "store" },
+  { href: "/admin", key: "admin" },
+] as const satisfies ReadonlyArray<{ href: string; key: keyof Dictionary["nav"] }>;
 
 export const ADMIN_NAV = [
   { href: "/admin", label: "Overview" },

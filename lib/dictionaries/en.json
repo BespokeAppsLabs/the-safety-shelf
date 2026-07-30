@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "Health and Safety Awareness",
+    "taglineShort": "Health & safety awareness",
+    "strapline": "Knowledge that protects lives."
+  },
+  "nav": {
+    "home": "Home",
+    "store": "Store",
+    "admin": "Admin",
+    "library": "Library",
+    "shelves": "Shelves",
+    "featured": "Featured",
+    "purpose": "Our purpose",
+    "mainNavigation": "Main navigation",
+    "skipToContent": "Skip to content",
+    "homeAria": "The Safety Shelf home",
+    "language": "Language"
+  },
+  "auth": {
+    "signIn": "Sign in"
+  },
+  "landing": {
+    "bannerLeft": "Knowledge that protects lives",
+    "bannerRight": "Read anywhere, anytime",
+    "shopBooks": "Shop books",
+    "heroKicker": "A bookstore built around care",
+    "heroTitleLine1": "Read well.",
+    "heroTitleLine2": "Live safer.",
+    "heroBody": "Beautiful, practical guides for the moments that matter—from first breaths and first aid to safer homes, families, and communities.",
+    "exploreCollection": "Explore the collection",
+    "instantAccess": "Instant access · No shipping",
+    "heroImageAlt": "A sculptural stack of safety books inside a dramatic curved library",
+    "heroCaption": "Curated knowledge for everyday courage",
+    "heroBadge": "Open a book\nProtect a life",
+    "promises": [
+      "Written for real life",
+      "Instant digital access",
+      "Calm, practical guidance",
+      "Yours to keep"
+    ],
+    "promisesLabel": "Store promises",
+    "shelvesKicker": "Find your shelf",
+    "shelvesTitle": "Start where life feels urgent.",
+    "shelvesBody": "No endless aisles. Just clear, trusted paths into the knowledge you need now.",
+    "browseEveryShelf": "Browse every shelf",
+    "shelfLabel": "Shelf",
+    "featuredKicker": "Editors' starting points",
+    "featuredTitle": "Books worth keeping close.",
+    "seeFullCollection": "See the full collection",
+    "missionKicker": "Why we exist",
+    "missionQuote": "“The right page, found at the right moment, can change what happens next.”",
+    "missionBody": "Safety knowledge should not feel clinical, frightening, or impossible to find. We turn essential guidance into beautiful books people actually want to open—and remember.",
+    "trustMarks": [
+      { "value": "100%", "label": "Digital-first" },
+      { "value": "24/7", "label": "Library access" },
+      { "value": "1 idea", "label": "At a time" }
+    ],
+    "ctaKicker": "Your safer shelf starts here",
+    "ctaTitle": "One good book can stay with you for life.",
+    "buildLibrary": "Build your library"
+  },
+  "storefront": {
+    "eyebrow": "Storefront",
+    "title": "Browse practical safety guides.",
+    "body": "Digital titles only for now. Buy once, keep them in your library, and read in-browser.",
+    "searchPlaceholder": "Search guides, topics, or authors",
+    "all": "All",
+    "loading": "Loading guides…",
+    "noResults": "No guides match that search."
+  },
+  "product": {
+    "viewGuide": "View guide",
+    "by": "by {author}",
+    "guidePreview": "Guide preview",
+    "backToStore": "Back to store",
+    "buyFor": "Buy for {price}",
+    "signInToBuy": "Sign in to buy for {price}",
+    "readGuide": "Read guide",
+    "processing": "Processing…",
+    "priceUnavailable": "Price unavailable"
+  },
+  "library": {
+    "eyebrow": "My library",
+    "signedOutTitle": "Sign in to see your library.",
+    "signedOutBody": "Purchased guides are tied to your account.",
+    "title": "Your purchased safety guides.",
+    "loading": "Loading your library…",
+    "countOne": "{count} guide ready to read.",
+    "countOther": "{count} guides ready to read.",
+    "emptyBody": "Buy a guide once and it stays here.",
+    "continueReading": "Continue reading",
+    "emptyTitle": "No guides in your library yet.",
+    "emptyStateBody": "Your purchased titles will appear here after checkout.",
+    "browseStore": "Browse the store"
+  },
+  "reader": {
+    "signInTitle": "Sign in to read this guide.",
+    "signInBody": "Your purchased guides are tied to your account.",
+    "notOwnedTitle": "You do not own this guide yet.",
+    "notOwnedBody": "Buy the guide first to unlock the full reader.",
+    "viewGuide": "View guide",
+    "loading": "Loading guide…",
+    "backToLibrary": "Library",
+    "downloadPdf": "Download PDF",
+    "endOfGuide": "— end of guide —"
+  },
+  "footer": {
+    "demoLine1": "The Safety Shelf demo storefront.",
+    "demoLine2": "Mock catalog and local purchases now. Convex, Clerk, Stripe, and agent tools later.",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

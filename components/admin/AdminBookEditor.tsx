@@ -15,6 +15,7 @@ import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { blocksToChapters, chaptersToBlocks, type Chapter } from "@/lib/bookContent";
 import { DEFAULT_ELEVENLABS_MODEL, ELEVENLABS_MODELS, type ElevenLabsModel } from "@/lib/elevenlabs";
 import { languageLabel } from "@/lib/languages";
+import { BaseCurrencyCode, PriceInOtherCurrencies } from "@/components/admin/PriceInOtherCurrencies";
 import { isSavedTranslation } from "@/lib/translationState";
 
 const selectClass =
@@ -524,8 +525,11 @@ export function AdminBookEditor({
               <Input value={meta.author} onChange={(e) => setMeta({ ...meta, author: e.target.value })} />
             </label>
             <label className="block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Price (USD)</span>
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
+                Price (<BaseCurrencyCode />)
+              </span>
               <Input inputMode="decimal" value={meta.priceDollars} onChange={(e) => setMeta({ ...meta, priceDollars: e.target.value })} />
+              <PriceInOtherCurrencies priceMajor={meta.priceDollars} />
             </label>
             <label className="block">
               <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Age group</span>

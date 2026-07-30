@@ -34,8 +34,8 @@ export default defineSchema({
     coverStorageId: v.optional(v.id("_storage")),
     epubStorageId: v.optional(v.id("_storage")),
     pdfStorageId: v.optional(v.id("_storage")),
-    // No real cover images yet — card art is a CSS gradient. Swap to
-    // coverStorageId-driven art when real covers exist.
+    // Demo and generated covers live in Convex storage; the local demo-cover
+    // sources are retained under docs/demo-book-covers for clean reseeds.
     gradientFrom: v.optional(v.string()),
     gradientTo: v.optional(v.string()),
     // Audiobook generation state (ElevenLabs). Undefined = none generated.
@@ -44,6 +44,23 @@ export default defineSchema({
     .index("by_slug", ["slug"])
     .index("by_status", ["status"])
     .index("by_category", ["categoryId"]),
+
+  // Singleton (one row). Holds the currency the owner actually prices books in
+  // — books.priceCents is minor units OF THIS currency, never assumed to be
+  // USD. Nothing in the app hardcodes a currency; if this row is missing,
+  // prices are not rendered until the owner sets one in Admin → Settings.
+  storeSettings: defineTable({
+    baseCurrency: v.string(),
+  }),
+
+  // Owner-managed display rates: 1 unit of baseCurrency = `rate` units of
+  // `currency`. Used for storefront display only — orders are still recorded in
+  // base-currency minor units, so a rate edit never rewrites past revenue.
+  fxRates: defineTable({
+    currency: v.string(),
+    rate: v.number(),
+    updatedAt: v.number(),
+  }).index("by_currency", ["currency"]),
 
   bookBlocks: defineTable({
     bookId: v.id("books"),

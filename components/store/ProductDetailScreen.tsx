@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { BuyButton } from "@/components/store/BuyButton";
 import { Badge } from "@/components/ui/Badge";
@@ -8,7 +10,9 @@ import type { Doc } from "@/convex/_generated/dataModel";
 type BookWithCover = Doc<"books"> & { coverUrl?: string | null };
 type BlockWithImage = Doc<"bookBlocks"> & { imageUrl?: string | null };
 import { bookFormats } from "@/lib/formats";
-import { formatPrice } from "@/lib/money";
+import { Price } from "@/components/store/Price";
+import { useDict } from "@/app/I18nProvider";
+import { fill } from "@/lib/i18n";
 
 export function ProductDetailScreen({
   book,
@@ -19,6 +23,7 @@ export function ProductDetailScreen({
   categoryTitle: string;
   sample: BlockWithImage[];
 }) {
+  const dict = useDict();
   return (
     <Container>
       <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
@@ -45,15 +50,15 @@ export function ProductDetailScreen({
             ))}
           </div>
           <h2 className="mt-4 text-4xl font-semibold tracking-tight text-ink">{book.title}</h2>
-          <p className="mt-2 text-lg text-muted">by {book.author}</p>
+          <p className="mt-2 text-lg text-muted">{fill(dict.product.by, { author: book.author })}</p>
           <p className="mt-6 max-w-2xl text-base leading-7 text-muted">{book.blurb}</p>
           <div className="mt-6 flex flex-wrap items-center gap-4">
-            <span className="text-3xl font-semibold text-primary">{formatPrice(book.priceCents)}</span>
+            <Price cents={book.priceCents} className="text-3xl font-semibold text-primary" />
             <BuyButton book={book} />
           </div>
 
           <Card className="mt-8">
-            <h3 className="text-lg font-semibold text-ink">Guide preview</h3>
+            <h3 className="text-lg font-semibold text-ink">{dict.product.guidePreview}</h3>
             <div className="mt-4 space-y-3">
               {sample.map((block) =>
                 block.type === "h" ? (
@@ -68,7 +73,7 @@ export function ProductDetailScreen({
           </Card>
 
           <Link href="/store" className="mt-6 inline-flex text-sm font-semibold text-primary">
-            ← Back to store
+            ← {dict.product.backToStore}
           </Link>
         </div>
       </div>

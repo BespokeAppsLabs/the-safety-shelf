@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { formatPrice } from "@/lib/money";
+import { Price, usePriceFormatter } from "@/components/store/Price";
 
 const DECISION_VARIANT = {
   executed: "success",
@@ -19,14 +19,20 @@ const DECISION_VARIANT = {
 } as const;
 
 // Human-readable line for a proposed agent write, from the tool + its args.
-function summarize(action: Doc<"agentActions">): { label: string; detail: string } {
+// `formatPrice` is injected rather than imported: the store's currency lives in
+// the database, so only a component inside the provider can resolve it.
+function summarize(
+  action: Doc<"agentActions">,
+  formatPrice: (cents: number) => string | null,
+): { label: string; detail: string } {
   const args = (action.args ?? {}) as Record<string, unknown>;
   if (action.tool === "publishBook") {
     return { label: `Publish “${String(args.title ?? "book")}”`, detail: "Make an existing draft live and purchasable." };
   }
   if (action.tool === "writeBook") {
     const chapters = Array.isArray(args.chapters) ? args.chapters.length : 0;
-    const price = typeof args.priceCents === "number" ? ` · ${formatPrice(args.priceCents)}` : "";
+    const priceText = typeof args.priceCents === "number" ? formatPrice(args.priceCents) : null;
+    const price = priceText ? ` · ${priceText}` : "";
     return { label: `New draft: “${String(args.title ?? "untitled")}”`, detail: `${chapters} chapter${chapters === 1 ? "" : "s"}${price}` };
   }
   return { label: action.tool, detail: JSON.stringify(args).slice(0, 120) };
@@ -54,6 +60,7 @@ function PublishButton({ bookId }: { bookId: Id<"books"> }) {
 }
 
 export function AdminApprovalsScreen() {
+  const formatPrice = usePriceFormatter();
   const { isAuthenticated } = useConvexAuth();
   const actions = useQuery(api.agentActions.list, isAuthenticated ? {} : "skip");
   const books = useQuery(api.books.listAll, isAuthenticated ? {} : "skip");
@@ -92,7 +99,7 @@ export function AdminApprovalsScreen() {
         ) : (
           <div className="grid gap-4 xl:grid-cols-2">
             {pending.map((action) => {
-              const { label, detail } = summarize(action);
+              const { label, detail } = summarize(action, formatPrice);
               return (
                 <Card key={action._id}>
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">{action.tool}</p>
@@ -126,7 +133,7 @@ export function AdminApprovalsScreen() {
                     <p className="text-lg font-semibold text-ink">{book.title}</p>
                     <p className="mt-1 text-sm text-muted">{categoryTitle.get(book.categoryId) ?? "—"}</p>
                   </div>
-                  <Badge>{formatPrice(book.priceCents)}</Badge>
+                  <Badge><Price cents={book.priceCents} /></Badge>
                 </div>
                 <p className="mt-3 text-sm text-muted">{book.blurb}</p>
                 <div className="mt-4 flex items-center gap-3">
@@ -147,7 +154,7 @@ export function AdminApprovalsScreen() {
           <Card>
             <div className="space-y-2">
               {decided.slice(0, 12).map((action) => {
-                const { label } = summarize(action);
+                const { label } = summarize(action, formatPrice);
                 return (
                   <div key={action._id} className="flex items-center justify-between gap-3 rounded-2xl bg-background px-4 py-3">
                     <p className="min-w-0 truncate text-sm text-ink">{label}</p>

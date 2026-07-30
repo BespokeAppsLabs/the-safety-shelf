@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "Kesadaran kesehatan dan keselamatan",
+    "taglineShort": "Kesehatan & keselamatan",
+    "strapline": "Pengetahuan yang melindungi nyawa."
+  },
+  "nav": {
+    "home": "Beranda",
+    "store": "Toko",
+    "admin": "Admin",
+    "library": "Perpustakaan",
+    "shelves": "Rak",
+    "featured": "Pilihan",
+    "purpose": "Tujuan kami",
+    "mainNavigation": "Navigasi utama",
+    "skipToContent": "Lompat ke konten",
+    "homeAria": "Beranda The Safety Shelf",
+    "language": "Bahasa"
+  },
+  "auth": {
+    "signIn": "Masuk"
+  },
+  "landing": {
+    "bannerLeft": "Pengetahuan yang melindungi nyawa",
+    "bannerRight": "Baca di mana saja, kapan saja",
+    "shopBooks": "Lihat buku",
+    "heroKicker": "Toko buku yang dibangun dengan kepedulian",
+    "heroTitleLine1": "Membaca dengan baik.",
+    "heroTitleLine2": "Hidup lebih aman.",
+    "heroBody": "Panduan yang indah dan praktis untuk momen-momen penting—dari napas pertama dan pertolongan pertama hingga rumah, keluarga, dan komunitas yang lebih aman.",
+    "exploreCollection": "Jelajahi koleksi",
+    "instantAccess": "Akses instan · Tanpa pengiriman",
+    "heroImageAlt": "Tumpukan buku keselamatan yang tertata artistik di perpustakaan melengkung yang dramatis",
+    "heroCaption": "Pengetahuan pilihan untuk keberanian sehari-hari",
+    "heroBadge": "Buka sebuah buku\nLindungi sebuah nyawa",
+    "promises": [
+      "Ditulis untuk kehidupan nyata",
+      "Akses digital instan",
+      "Panduan tenang dan praktis",
+      "Milik Anda selamanya"
+    ],
+    "promisesLabel": "Janji kami",
+    "shelvesKicker": "Temukan rak Anda",
+    "shelvesTitle": "Mulailah dari yang paling mendesak.",
+    "shelvesBody": "Tanpa lorong tak berujung. Hanya jalur yang jelas dan tepercaya menuju pengetahuan yang Anda butuhkan sekarang.",
+    "browseEveryShelf": "Lihat semua rak",
+    "shelfLabel": "Rak",
+    "featuredKicker": "Pilihan editor",
+    "featuredTitle": "Buku yang layak disimpan dekat.",
+    "seeFullCollection": "Lihat koleksi lengkap",
+    "missionKicker": "Mengapa kami ada",
+    "missionQuote": "“Halaman yang tepat, ditemukan pada saat yang tepat, dapat mengubah apa yang terjadi selanjutnya.”",
+    "missionBody": "Pengetahuan keselamatan tidak seharusnya terasa kaku, menakutkan, atau sulit ditemukan. Kami mengubah panduan penting menjadi buku indah yang benar-benar ingin dibuka—dan diingat—orang.",
+    "trustMarks": [
+      { "value": "100%", "label": "Digital lebih dulu" },
+      { "value": "24/7", "label": "Akses perpustakaan" },
+      { "value": "1 gagasan", "label": "Setiap kali" }
+    ],
+    "ctaKicker": "Rak yang lebih aman dimulai di sini",
+    "ctaTitle": "Satu buku yang baik bisa menemani seumur hidup.",
+    "buildLibrary": "Bangun perpustakaan Anda"
+  },
+  "storefront": {
+    "eyebrow": "Toko",
+    "title": "Jelajahi panduan keselamatan yang praktis.",
+    "body": "Untuk saat ini hanya edisi digital. Beli sekali, simpan di perpustakaan Anda, dan baca langsung di browser.",
+    "searchPlaceholder": "Cari panduan, topik, atau penulis",
+    "all": "Semua",
+    "loading": "Memuat panduan…",
+    "noResults": "Tidak ada panduan yang cocok dengan pencarian itu."
+  },
+  "product": {
+    "viewGuide": "Lihat panduan",
+    "by": "oleh {author}",
+    "guidePreview": "Pratinjau panduan",
+    "backToStore": "Kembali ke toko",
+    "buyFor": "Beli seharga {price}",
+    "signInToBuy": "Masuk untuk membeli seharga {price}",
+    "readGuide": "Baca panduan",
+    "processing": "Memproses…",
+    "priceUnavailable": "Harga tidak tersedia"
+  },
+  "library": {
+    "eyebrow": "Perpustakaan saya",
+    "signedOutTitle": "Masuk untuk melihat perpustakaan Anda.",
+    "signedOutBody": "Panduan yang dibeli terhubung dengan akun Anda.",
+    "title": "Panduan keselamatan yang Anda beli.",
+    "loading": "Memuat perpustakaan Anda…",
+    "countOne": "{count} panduan siap dibaca.",
+    "countOther": "{count} panduan siap dibaca.",
+    "emptyBody": "Beli panduan sekali dan tetap tersimpan di sini.",
+    "continueReading": "Lanjutkan membaca",
+    "emptyTitle": "Belum ada panduan di perpustakaan Anda.",
+    "emptyStateBody": "Judul yang Anda beli akan muncul di sini setelah pembayaran.",
+    "browseStore": "Jelajahi toko"
+  },
+  "reader": {
+    "signInTitle": "Masuk untuk membaca panduan ini.",
+    "signInBody": "Panduan yang Anda beli terhubung dengan akun Anda.",
+    "notOwnedTitle": "Anda belum memiliki panduan ini.",
+    "notOwnedBody": "Beli panduannya dulu untuk membuka pembaca lengkap.",
+    "viewGuide": "Lihat panduan",
+    "loading": "Memuat panduan…",
+    "backToLibrary": "Perpustakaan",
+    "downloadPdf": "Unduh PDF",
+    "endOfGuide": "— akhir panduan —"
+  },
+  "footer": {
+    "demoLine1": "Etalase demo The Safety Shelf.",
+    "demoLine2": "Untuk saat ini katalog uji coba dan pembelian lokal. Convex, Clerk, Stripe, dan perkakas agen menyusul.",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}

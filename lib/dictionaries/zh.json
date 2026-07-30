@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "name": "The Safety Shelf",
+    "tagline": "健康与安全意识",
+    "taglineShort": "健康与安全",
+    "strapline": "守护生命的知识。"
+  },
+  "nav": {
+    "home": "首页",
+    "store": "商店",
+    "admin": "管理",
+    "library": "我的书库",
+    "shelves": "书架",
+    "featured": "精选",
+    "purpose": "我们的初衷",
+    "mainNavigation": "主导航",
+    "skipToContent": "跳到主要内容",
+    "homeAria": "The Safety Shelf 首页",
+    "language": "语言"
+  },
+  "auth": {
+    "signIn": "登录"
+  },
+  "landing": {
+    "bannerLeft": "守护生命的知识",
+    "bannerRight": "随时随地阅读",
+    "shopBooks": "浏览图书",
+    "heroKicker": "一家以关怀为本的书店",
+    "heroTitleLine1": "好好阅读。",
+    "heroTitleLine2": "更安全地生活。",
+    "heroBody": "为重要时刻准备的精美实用指南——从第一次呼吸、急救处理，到更安全的家庭、亲人与社区。",
+    "exploreCollection": "浏览合集",
+    "instantAccess": "即刻可读 · 无需配送",
+    "heroImageAlt": "在弧形图书馆中层层叠放的安全类书籍",
+    "heroCaption": "为日常勇气精选的知识",
+    "heroBadge": "翻开一本书\n守护一条生命",
+    "promises": [
+      "为真实生活而写",
+      "即刻获得数字版",
+      "从容而实用的指引",
+      "永久属于你"
+    ],
+    "promisesLabel": "我们的承诺",
+    "shelvesKicker": "找到你的书架",
+    "shelvesTitle": "从最迫切的地方开始。",
+    "shelvesBody": "没有望不到头的货架，只有通往你此刻所需知识的清晰可靠路径。",
+    "browseEveryShelf": "浏览全部书架",
+    "shelfLabel": "书架",
+    "featuredKicker": "编辑推荐",
+    "featuredTitle": "值得放在手边的书。",
+    "seeFullCollection": "查看全部合集",
+    "missionKicker": "我们为何存在",
+    "missionQuote": "「在对的时刻读到对的一页，就可能改变接下来发生的事。」",
+    "missionBody": "关于安全的知识，不该冰冷、吓人或难以寻觅。我们把关键指引变成人们真正愿意翻开——并记住——的精美书籍。",
+    "trustMarks": [
+      { "value": "100%", "label": "数字优先" },
+      { "value": "24/7", "label": "书库随时可用" },
+      { "value": "一次一个", "label": "要点清晰" }
+    ],
+    "ctaKicker": "更安全的书架从这里开始",
+    "ctaTitle": "一本好书可以陪伴你一生。",
+    "buildLibrary": "建立你的书库"
+  },
+  "storefront": {
+    "eyebrow": "商店",
+    "title": "浏览实用的安全指南。",
+    "body": "目前仅提供电子版。一次购买，永久保存在书库中，可直接在浏览器阅读。",
+    "searchPlaceholder": "搜索指南、主题或作者",
+    "all": "全部",
+    "loading": "正在加载指南…",
+    "noResults": "没有符合该搜索的指南。"
+  },
+  "product": {
+    "viewGuide": "查看指南",
+    "by": "作者：{author}",
+    "guidePreview": "指南预览",
+    "backToStore": "返回商店",
+    "buyFor": "以 {price} 购买",
+    "signInToBuy": "登录后以 {price} 购买",
+    "readGuide": "阅读指南",
+    "processing": "处理中…",
+    "priceUnavailable": "价格不可用"
+  },
+  "library": {
+    "eyebrow": "我的书库",
+    "signedOutTitle": "登录以查看你的书库。",
+    "signedOutBody": "已购买的指南与你的账户绑定。",
+    "title": "你购买的安全指南。",
+    "loading": "正在加载你的书库…",
+    "countOne": "{count} 本指南可供阅读。",
+    "countOther": "{count} 本指南可供阅读。",
+    "emptyBody": "一次购买，永久保存在这里。",
+    "continueReading": "继续阅读",
+    "emptyTitle": "书库中还没有指南。",
+    "emptyStateBody": "购买的书籍将在付款后显示在这里。",
+    "browseStore": "浏览商店"
+  },
+  "reader": {
+    "signInTitle": "登录后阅读本指南。",
+    "signInBody": "你购买的指南与你的账户绑定。",
+    "notOwnedTitle": "你尚未拥有本指南。",
+    "notOwnedBody": "先购买本指南即可解锁完整内容。",
+    "viewGuide": "查看指南",
+    "loading": "正在加载指南…",
+    "backToLibrary": "书库",
+    "downloadPdf": "下载 PDF",
+    "endOfGuide": "— 指南结束 —"
+  },
+  "footer": {
+    "demoLine1": "The Safety Shelf 演示店面。",
+    "demoLine2": "目前为测试目录与本地购买。Convex、Clerk、Stripe 及代理工具将陆续接入。",
+    "copyright": "© {year} The Safety Shelf"
+  }
+}
