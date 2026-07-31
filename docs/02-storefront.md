@@ -23,9 +23,21 @@ personal library of purchases.
 2. `checkout.session.completed` webhook → Convex `httpAction` writes `orders` + `entitlements`.
 3. Reader lands on `/library` (reactive Convex query); book is now readable/downloadable.
 
-## Localization
-Reader locale (or a language switcher) selects the matching `book_variants`
-row; falls back to the original language. See [05-data-model](05-data-model.md).
+## Localization & pricing
+**Built 2026-07-30 — see [09-i18n-and-pricing](09-i18n-and-pricing.md) for the full design.**
+
+- **UI**: 21 languages. `proxy.ts` picks one per request — `locale` cookie →
+  `Accept-Language` → Vercel's `x-vercel-ip-country` → `en` — and pins it to a
+  cookie, so the first paint is already translated. No redirect, no `/[lang]/`
+  segment. A picker in the store header overrides it permanently. Arabic renders
+  RTL.
+- **Price**: the owner prices each book once in `storeSettings.baseCurrency`;
+  shoppers see their country's currency via owner-managed `fxRates`, rounded to
+  a whole unit with **no cents**. Orders are still recorded in base-currency
+  minor units.
+- **Book content**: reader-facing variant serving is **not wired yet** —
+  `bookVariants` remains admin-only, so translated chrome currently wraps
+  original-language book text. See [05-data-model](05-data-model.md).
 
 ## Demo build (storefront only — no admin)
 Purpose: a browsable, real-looking store to show the owner. **No DB, no Stripe,

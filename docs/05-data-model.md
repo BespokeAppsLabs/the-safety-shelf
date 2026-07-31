@@ -220,7 +220,7 @@ export default defineSchema({
 
 ## Why blocks
 - **Translate** = LLM over `bookBlocks` → write `variantBlocks` for `(bookId, lang)`. One-click "translate to Spanish" = one tool call; re-run if source changes.
-- **Serve** = pick the `bookVariants` row matching reader locale, else the original `books`/`bookBlocks`.
+- **Serve** = pick the `bookVariants` row matching reader locale, else the original `books`/`bookBlocks`. **Not wired yet (2026-07-30):** `bookVariants.list` is owner-only and `status` is never set to `"live"`, so no reader-facing query serves a variant. UI chrome is translated; book text is not.
 - **Read** = the reader renders blocks; no PDF viewer dependency.
 - **Write (AI)** = `writeBook` emits blocks directly.
 
@@ -236,6 +236,34 @@ Owner-manageable so the agent's `writeBook` flow can create a new shelf (e.g.
 "Workplace Safety") without a code change — matches the "agent that acts" thesis
 in [00-overview](00-overview.md). `lib/landing.ts`'s `LANDING_CATEGORIES` becomes
 a query over this table instead of a hardcoded array.
+
+## Currency amendment (2026-07-30)
+Two tables added so no currency is hardcoded anywhere in the app. Full design in
+[09-i18n-and-pricing](09-i18n-and-pricing.md).
+
+```ts
+// Singleton (one row). books.priceCents is minor units OF THIS currency —
+// never assumed to be USD. Missing row = prices are not rendered at all.
+storeSettings: defineTable({
+  baseCurrency: v.string(),
+}),
+
+// Owner-managed display rates: 1 unit of baseCurrency = `rate` units of
+// `currency`. Display only — orders stay in base-currency minor units, so a
+// rate edit never rewrites past revenue.
+fxRates: defineTable({
+  currency: v.string(),
+  rate: v.number(),
+  updatedAt: v.number(),
+}).index("by_currency", ["currency"]),
+```
+
+- The owner prices a book **once**, in the base currency. Every other market's
+  price is derived and rounded to a **whole unit — no cents**.
+- Currency decimals come from `Intl` ISO data, not a table, so JPY/KRW (0
+  decimals) are not priced 100× wrong.
+- Display currency follows the shopper's **country**, not their language:
+  Arabic spans EGP, LBP, SAR and AED.
 
 ## Money source-of-truth
 Stripe owns money truth; `orders`/`orderItems` mirror it via a Convex `httpAction`

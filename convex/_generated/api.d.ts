@@ -68,6 +68,7 @@ import type * as books_queries_salesSummary from "../books/queries/salesSummary.
 import type * as categories from "../categories.js";
 import type * as categories_mutations_create from "../categories/mutations/create.js";
 import type * as categories_queries_list from "../categories/queries/list.js";
+import type * as dashboard from "../dashboard.js";
 import type * as entitlements from "../entitlements.js";
 import type * as entitlements_lib from "../entitlements/lib.js";
 import type * as entitlements_mutations_demoPurchase from "../entitlements/mutations/demoPurchase.js";
@@ -85,6 +86,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
 import type * as lib_openrouter from "../lib/openrouter.js";
 import type * as lib_secrets from "../lib/secrets.js";
+import type * as openrouterUsage from "../openrouterUsage.js";
 import type * as promoteOwner from "../promoteOwner.js";
 import type * as seed from "../seed.js";
 import type * as social from "../social.js";
@@ -171,6 +173,7 @@ declare const fullApi: ApiFromModules<{
   categories: typeof categories;
   "categories/mutations/create": typeof categories_mutations_create;
   "categories/queries/list": typeof categories_queries_list;
+  dashboard: typeof dashboard;
   entitlements: typeof entitlements;
   "entitlements/lib": typeof entitlements_lib;
   "entitlements/mutations/demoPurchase": typeof entitlements_mutations_demoPurchase;
@@ -188,6 +191,7 @@ declare const fullApi: ApiFromModules<{
   "lib/firecrawl": typeof lib_firecrawl;
   "lib/openrouter": typeof lib_openrouter;
   "lib/secrets": typeof lib_secrets;
+  openrouterUsage: typeof openrouterUsage;
   promoteOwner: typeof promoteOwner;
   seed: typeof seed;
   social: typeof social;

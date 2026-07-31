@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Table } from "@/components/ui/Table";
 import { api } from "@/convex/_generated/api";
 import { languageLabel } from "@/lib/languages";
-import { Price } from "@/components/store/Price";
+import { BasePrice } from "@/components/store/Price";
 
 const STATUS_VARIANT = {
   live: "success",
@@ -71,7 +71,7 @@ export function AdminBooksScreen() {
                     <span className="text-sm text-muted">—</span>
                   )}
                 </td>
-                <td className="px-4 py-4 text-muted"><Price cents={book.priceCents} /></td>
+                <td className="px-4 py-4 text-muted"><BasePrice cents={book.priceCents} /></td>
                 <td className="px-4 py-4 text-muted">{salesCounts[book._id] ?? 0}</td>
                 <td className="px-4 py-4 text-right">
                   <Link href={`/admin/books/${book.slug}`} className="text-sm font-semibold text-primary">Edit →</Link>

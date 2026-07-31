@@ -36,6 +36,31 @@ export function usePriceFormatter(): (cents: number) => string | null {
 }
 
 /**
+ * Formatter that always reports the store's own currency, ignoring the viewer's.
+ *
+ * Admin surfaces use this, not the shopper-facing one: revenue is banked in base
+ * currency, and a price the owner typed in base should read back in base. A
+ * South African owner pricing in USD would otherwise see the catalog silently
+ * converted to rand while editing dollar amounts.
+ */
+export function useBasePriceFormatter(): (cents: number) => string | null {
+  const { price, locale } = useI18n();
+  const { baseCurrency } = price;
+
+  return (cents: number) => {
+    if (!baseCurrency) return null;
+    return quotePrice(cents, baseCurrency, locale).formatted;
+  };
+}
+
+/** Base-currency price display for admin. See useBasePriceFormatter. */
+export function BasePrice({ cents, className }: { cents: number; className?: string }) {
+  const { dict } = useI18n();
+  const text = useBasePriceFormatter()(cents);
+  return <span className={className}>{text ?? dict.product.priceUnavailable}</span>;
+}
+
+/**
  * The only place a bare price reaches the screen. A client component so it works
  * unchanged inside both the server-rendered landing page and the client
  * storefront, and so there is exactly one path from books.priceCents to text.

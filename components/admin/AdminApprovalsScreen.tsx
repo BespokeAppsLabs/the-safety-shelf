@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { Price, usePriceFormatter } from "@/components/store/Price";
+import { BasePrice, useBasePriceFormatter } from "@/components/store/Price";
 
 const DECISION_VARIANT = {
   executed: "success",
@@ -60,7 +60,7 @@ function PublishButton({ bookId }: { bookId: Id<"books"> }) {
 }
 
 export function AdminApprovalsScreen() {
-  const formatPrice = usePriceFormatter();
+  const formatPrice = useBasePriceFormatter();
   const { isAuthenticated } = useConvexAuth();
   const actions = useQuery(api.agentActions.list, isAuthenticated ? {} : "skip");
   const books = useQuery(api.books.listAll, isAuthenticated ? {} : "skip");
@@ -133,7 +133,7 @@ export function AdminApprovalsScreen() {
                     <p className="text-lg font-semibold text-ink">{book.title}</p>
                     <p className="mt-1 text-sm text-muted">{categoryTitle.get(book.categoryId) ?? "—"}</p>
                   </div>
-                  <Badge><Price cents={book.priceCents} /></Badge>
+                  <Badge><BasePrice cents={book.priceCents} /></Badge>
                 </div>
                 <p className="mt-3 text-sm text-muted">{book.blurb}</p>
                 <div className="mt-4 flex items-center gap-3">

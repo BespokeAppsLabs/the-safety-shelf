@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { agentImageUrl } from "@/lib/agentImage";
-import { Price } from "@/components/store/Price";
+import { BasePrice } from "@/components/store/Price";
 
 // Cover art: real cover image when one's been uploaded (coverUrl), otherwise
 // the gradient placeholder every book already has — same fallback ProductCard
@@ -78,7 +78,7 @@ export function BookStatsCard(props: BookStatsCardProps) {
       <dl className="mt-4 grid grid-cols-3 gap-3 text-center">
         <div>
           <dt className="text-xs uppercase tracking-wide text-muted">Price</dt>
-          <dd className="mt-1 text-sm font-semibold text-ink"><Price cents={props.priceCents ?? 0} /></dd>
+          <dd className="mt-1 text-sm font-semibold text-ink"><BasePrice cents={props.priceCents ?? 0} /></dd>
         </div>
         <div>
           <dt className="text-xs uppercase tracking-wide text-muted">Units</dt>
@@ -86,7 +86,7 @@ export function BookStatsCard(props: BookStatsCardProps) {
         </div>
         <div>
           <dt className="text-xs uppercase tracking-wide text-muted">Revenue</dt>
-          <dd className="mt-1 text-sm font-semibold text-ink"><Price cents={props.revenueCents ?? 0} /></dd>
+          <dd className="mt-1 text-sm font-semibold text-ink"><BasePrice cents={props.revenueCents ?? 0} /></dd>
         </div>
       </dl>
       {props.slug ? (
@@ -126,7 +126,7 @@ export function TopSellersTable({ rows }: { rows: TopSellersRow[] }) {
             <CoverThumb coverUrl={row.coverUrl} gradientFrom={row.gradientFrom} gradientTo={row.gradientTo} title={row.title} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-ink">{row.title}</p>
-              <p className="text-xs text-muted">{row.units} units · <Price cents={row.revenueCents} /></p>
+              <p className="text-xs text-muted">{row.units} units · <BasePrice cents={row.revenueCents} /></p>
             </div>
           </Link>
         ))}
@@ -146,7 +146,7 @@ export function RevenueStatsCard({ totalUnits, totalRevenueCents }: { totalUnits
         </div>
         <div>
           <dt className="text-xs uppercase tracking-wide text-muted">Revenue</dt>
-          <dd className="mt-1 text-lg font-semibold text-ink"><Price cents={totalRevenueCents} /></dd>
+          <dd className="mt-1 text-lg font-semibold text-ink"><BasePrice cents={totalRevenueCents} /></dd>
         </div>
       </div>
     </Card>
@@ -282,7 +282,7 @@ export function BookDraftCard({
       <div className="mt-3 flex flex-wrap gap-2">
         <Badge>{category}</Badge>
         <Badge variant="info">{chapterCount} chapter{chapterCount === 1 ? "" : "s"}</Badge>
-        <Badge variant="success"><Price cents={priceCents} /></Badge>
+        <Badge variant="success"><BasePrice cents={priceCents} /></Badge>
       </div>
       <ApprovalControls actionId={actionId} />
     </Card>
