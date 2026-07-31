@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { viewerMutation, requireOwner } from "../../lib/auth";
+import { assertUniqueTitle } from "../../lib/books";
 
 // Edit a book's metadata from the admin editor. Slug and originalLang are
 // immutable (slug is the public URL); content lives in bookBlocks.setBlocks and
@@ -22,6 +23,7 @@ export const update = viewerMutation({
     const book = await ctx.db.get(bookId);
     if (!book) throw new ConvexError("Book not found");
     if (fields.priceCents <= 0) throw new ConvexError("priceCents must be positive");
+    await assertUniqueTitle(ctx, fields.title, bookId);
 
     const category = await ctx.db.get(fields.categoryId);
     if (!category) throw new ConvexError("Unknown categoryId");

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { ApprovalControls } from "@/components/admin/AgentCards";
+import { ProposalActions } from "@/components/admin/ProposalActions";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -28,6 +28,19 @@ function summarize(
   const args = (action.args ?? {}) as Record<string, unknown>;
   if (action.tool === "publishBook") {
     return { label: `Publish “${String(args.title ?? "book")}”`, detail: "Make an existing draft live and purchasable." };
+  }
+  if (action.tool === "editBook") {
+    const chapters = Array.isArray(args.chapters) ? args.chapters.length : 0;
+    const changes = [
+      args.newTitle ? "title" : null,
+      args.blurb ? "blurb" : null,
+      typeof args.priceCents === "number" ? formatPrice(args.priceCents) : null,
+      chapters ? `${chapters} chapter${chapters === 1 ? "" : "s"}` : null,
+    ].filter(Boolean);
+    return {
+      label: `Update “${String(args.title ?? "book")}”`,
+      detail: `Changes ${changes.join(" · ") || "metadata"} on the existing book — no new book is created.`,
+    };
   }
   if (action.tool === "writeBook") {
     const chapters = Array.isArray(args.chapters) ? args.chapters.length : 0;
@@ -105,7 +118,7 @@ export function AdminApprovalsScreen() {
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">{action.tool}</p>
                   <p className="mt-2 text-lg font-semibold text-ink">{label}</p>
                   <p className="mt-1 text-sm text-muted">{detail}</p>
-                  <ApprovalControls actionId={action._id} />
+                  <ProposalActions actionId={action._id} />
                 </Card>
               );
             })}

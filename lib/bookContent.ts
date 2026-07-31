@@ -37,6 +37,22 @@ export function chaptersToBlocks(chapters: Chapter[]): Array<TextBlock | ImageBl
   return blocks;
 }
 
+// Proposed drafts (agentActions.args.chapters) keep paragraphs as an array;
+// the editor keeps them blank-line separated in one body. Same paragraph rule
+// as chaptersToBlocks above.
+export type ParagraphChapter = { heading: string; paragraphs: string[] };
+
+export function paragraphChaptersToEditor(chapters: ParagraphChapter[]): Chapter[] {
+  return chapters.map((c) => ({ heading: c.heading, body: (c.paragraphs ?? []).join("\n\n") }));
+}
+
+export function editorChaptersToParagraphs(chapters: Chapter[]): ParagraphChapter[] {
+  return chapters.map((c) => ({
+    heading: c.heading.trim(),
+    paragraphs: c.body.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean),
+  }));
+}
+
 // Total characters of narratable text — used to size an audiobook against the
 // ElevenLabs per-request limit.
 export function chapterCharacters(chapters: Chapter[]): number {

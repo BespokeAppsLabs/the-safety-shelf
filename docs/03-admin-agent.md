@@ -48,8 +48,22 @@ Owner: "Write a cozy mystery ~15k words, then a cover."
 | `getTopSellers` | read | TopSellersTable |
 | `getRevenue` | read | RevenueChart |
 | `researchWeb` | read | WebResearchCard |
+| `getBookContent` | read | — (chapters fed back to the model) |
 | `writeBook` | draft→confirm | BookDraftCard |
+| `editBook` | draft→confirm | ProposalCard |
 | `createCover` | draft→confirm | BookDraftCard (cover) |
+
+### One book, one title
+`writeBook` creates; `editBook` changes a book that already exists. "Update this
+book / add a chapter" must route to `editBook` — routing it to `writeBook` is how
+a second copy of a book gets created, since slugs auto-suffix on collision and
+nothing else objects. Enforced, not just prompted: `convex/lib/books.ts`'s
+`assertUniqueTitle` rejects a duplicate title (normalized, case- and
+punctuation-insensitive) on every path that can name a book — `books.create`,
+`books.update`, and both executors in `agentActions.approveAndExecute` — and the
+`writeBook` tool repeats the check when proposing so the model can correct itself
+in the same turn. `editBook`'s `chapters` field is a full replacement, so the
+agent must call `getBookContent` first and send back the complete list.
 
 ## Image generation
 - Covers and page art remain owner-triggered, and agent image tools still require owner approval before generation.

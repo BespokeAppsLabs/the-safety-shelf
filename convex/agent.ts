@@ -10,6 +10,7 @@ import { decryptSecret } from "./lib/secrets";
 import { searchWeb } from "./lib/firecrawl";
 import { openRouterClient } from "./lib/openrouter";
 import { DEFAULT_SYSTEM_PROMPT } from "../lib/agentPrompt";
+import { blocksToChapters, editorChaptersToParagraphs } from "../lib/bookContent";
 
 // The only pages the navigate tool may send the owner to. Kept here (server
 // side, enforced) rather than only in the prompt, so a hallucinated path is
@@ -30,6 +31,7 @@ const STATIC_ROUTES: Record<string, string> = {
 // to a free provider merely to generate redundant prose.
 const PROPOSAL_TOOL_NAMES = [
   "writeBook",
+  "editBook",
   "publishBook",
   "generateCoverImage",
   "generatePageImage",
@@ -281,6 +283,31 @@ function buildTools(ctx: ActionCtx) {
         return { data: props, component: "BookStatsCard", props };
       },
     }),
+    getBookContent: tool({
+      description:
+        "Read an existing book's current chapters and metadata, matched by title. Call this BEFORE editBook whenever you are changing a book you did not just write — editBook replaces content wholesale, so you must start from what is actually saved or you will delete chapters.",
+      inputSchema: z.object({ title: z.string().describe("Full or partial book title") }),
+      execute: async ({ title }) => {
+        const books = await ctx.runQuery(api.books.listAll, {});
+        const match = books.find((book) => book.title.toLowerCase().includes(title.trim().toLowerCase()));
+        if (!match) {
+          const error = `No book matches "${title}".`;
+          return { data: { error }, error };
+        }
+        const blocks = await ctx.runQuery(api.bookBlocks.listByBook, { bookId: match._id });
+        return {
+          data: {
+            title: match.title,
+            slug: match.slug,
+            status: match.status,
+            blurb: match.blurb,
+            priceCents: match.priceCents,
+            ageGroup: match.ageGroup,
+            chapters: editorChaptersToParagraphs(blocksToChapters(blocks)),
+          },
+        };
+      },
+    }),
     navigate: tool({
       description:
         "Send the owner to a page in the app. `href` MUST be one of the exact paths in the navigation map in your system prompt — invalid paths are rejected. Use this whenever the owner asks to go/open/see a page.",
@@ -337,6 +364,15 @@ function buildTools(ctx: ActionCtx) {
           const error = `Unknown category "${categorySlug}". Valid slugs: ${categories.map((c) => c.slug).join(", ")}.`;
           return { data: { error }, error };
         }
+        // Caught here as well as at approval, so the model can correct itself
+        // in this turn instead of handing the owner a proposal that will be
+        // rejected — this is the "update it" request that means editBook.
+        const books = await ctx.runQuery(api.books.listAll, {});
+        const clash = books.find((book) => compact(book.title) === compact(draft.title));
+        if (clash) {
+          const error = `A ${clash.status} book titled "${clash.title}" already exists. Use editBook to change it — do not create a second copy.`;
+          return { data: { error }, error };
+        }
         const actionId = await ctx.runMutation(api.agentActions.propose, {
           tool: "writeBook",
           args: { ...draft, categoryId: category._id },
@@ -351,6 +387,67 @@ function buildTools(ctx: ActionCtx) {
             chapterCount: draft.chapters.length,
             priceCents: draft.priceCents,
             category: category.title,
+          },
+        };
+      },
+    }),
+    editBook: tool({
+      description:
+        "Propose changing an EXISTING book in place, matched by title — new chapters, rewritten content, or corrected metadata. Use this, never writeBook, whenever the owner says update/edit/add to/fix a book that already exists. `chapters` REPLACES the book's whole content, so call getBookContent first and send the full chapter list including the existing ones you are keeping. This does NOT save anything — the owner must Approve.",
+      inputSchema: z.object({
+        title: z.string().describe("Full or partial title of the book to change"),
+        newTitle: z.string().optional().describe("Only when the owner asked to rename it"),
+        blurb: z.string().optional(),
+        author: z.string().optional(),
+        ageGroup: z.string().optional(),
+        priceCents: z.number().int().min(1).optional().describe("New price in cents"),
+        categorySlug: z.string().optional().describe("Must be one of the catalog category slugs"),
+        chapters: z
+          .array(z.object({ heading: z.string(), paragraphs: z.array(z.string()).min(1) }))
+          .min(1)
+          .optional()
+          .describe("The book's COMPLETE chapter list after the edit — existing chapters plus new ones"),
+      }),
+      execute: async ({ title, categorySlug, ...patch }) => {
+        const books = await ctx.runQuery(api.books.listAll, {});
+        const needle = title.trim().toLowerCase();
+        const match = books.find((book) => book.title.toLowerCase().includes(needle));
+        if (!match) {
+          const error = `No book matches "${title}".`;
+          return { data: { error }, error };
+        }
+
+        let categoryId: Id<"categories"> | undefined;
+        if (categorySlug) {
+          const categories = await ctx.runQuery(api.categories.list, {});
+          const category = categories.find((c) => c.slug === categorySlug);
+          if (!category) {
+            const error = `Unknown category "${categorySlug}". Valid slugs: ${categories.map((c) => c.slug).join(", ")}.`;
+            return { data: { error }, error };
+          }
+          categoryId = category._id;
+        }
+
+        const changes = Object.entries({ ...patch, categorySlug }).flatMap(([key, value]) =>
+          value === undefined ? [] : [key === "chapters" ? `${patch.chapters!.length} chapters` : key],
+        );
+        if (!changes.length) {
+          const error = "Nothing to change — pass at least one field to edit.";
+          return { data: { error }, error };
+        }
+
+        const actionId = await ctx.runMutation(api.agentActions.propose, {
+          tool: "editBook",
+          args: { bookId: match._id, title: match.title, ...patch, categoryId },
+          relatedBookId: match._id,
+        });
+        return {
+          data: { proposed: true, title: match.title, changes },
+          component: "ProposalCard",
+          props: {
+            actionId,
+            title: `Update "${match.title}"`,
+            summary: `Changes ${changes.join(", ")} on the existing ${match.status} book — no new book is created.`,
           },
         };
       },

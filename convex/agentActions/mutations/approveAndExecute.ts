@@ -1,5 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { viewerMutation, requireOwner } from "../../lib/auth";
+import { assertUniqueTitle, setChapters } from "../../lib/books";
+import type { Id } from "../../_generated/dataModel";
 import type { MutationCtx } from "../../_generated/server";
 
 // The owner's Approve click. Unlike decide (which only records the verdict for
@@ -66,6 +68,9 @@ async function runTool(ctx: MutationCtx, tool: string, args: any): Promise<unkno
     const category = await ctx.db.get(args.categoryId);
     if (!category) throw new ConvexError("Category no longer exists");
     if (!(args.priceCents > 0)) throw new ConvexError("priceCents must be positive");
+    // Re-checked at approval, not just when the tool proposed: a matching book
+    // may have been created in between.
+    await assertUniqueTitle(ctx, args.title);
 
     const slug = await uniqueSlug(ctx, args.title);
     const bookId = await ctx.db.insert("books", {
@@ -80,16 +85,43 @@ async function runTool(ctx: MutationCtx, tool: string, args: any): Promise<unkno
       blurb: args.blurb,
     });
 
-    const chapters: { heading: string; paragraphs: string[] }[] = args.chapters ?? [];
-    for (let ci = 0; ci < chapters.length; ci++) {
-      const chapter = ci + 1;
-      await ctx.db.insert("bookBlocks", { bookId, chapter, ord: 0, type: "h", text: chapters[ci].heading });
-      const paragraphs = chapters[ci].paragraphs ?? [];
-      for (let pi = 0; pi < paragraphs.length; pi++) {
-        await ctx.db.insert("bookBlocks", { bookId, chapter, ord: pi + 1, type: "p", text: paragraphs[pi] });
-      }
-    }
+    await setChapters(ctx, bookId, args.chapters ?? []);
     return { bookId, slug, status: "draft" };
+  }
+
+  // Edits an existing book in place — the same book, same slug, same buyers.
+  // Only the fields the agent proposed are touched; chapters, when present,
+  // replace the book's content wholesale.
+  if (tool === "editBook") {
+    const bookId = args.bookId as Id<"books">;
+    const book = await ctx.db.get(bookId);
+    if (!book) throw new ConvexError("Book to edit no longer exists");
+
+    const patch: Record<string, unknown> = {};
+    if (args.newTitle) {
+      await assertUniqueTitle(ctx, args.newTitle, bookId);
+      patch.title = args.newTitle;
+    }
+    if (args.blurb) patch.blurb = args.blurb;
+    if (args.author) patch.author = args.author;
+    if (args.ageGroup) patch.ageGroup = args.ageGroup;
+    if (args.priceCents !== undefined) {
+      if (!(args.priceCents > 0)) throw new ConvexError("priceCents must be positive");
+      patch.priceCents = args.priceCents;
+    }
+    if (args.categoryId) {
+      if (!(await ctx.db.get(args.categoryId))) throw new ConvexError("Category no longer exists");
+      patch.categoryId = args.categoryId;
+    }
+    if (Object.keys(patch).length) await ctx.db.patch(bookId, patch);
+    if (args.chapters) await setChapters(ctx, bookId, args.chapters);
+
+    return {
+      bookId,
+      slug: book.slug,
+      status: book.status,
+      chapters: args.chapters ? args.chapters.length : undefined,
+    };
   }
 
   throw new ConvexError(`No executor wired for tool "${tool}"`);

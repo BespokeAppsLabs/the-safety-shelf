@@ -14,6 +14,7 @@ import type * as agentActions_mutations_approveAndExecute from "../agentActions/
 import type * as agentActions_mutations_complete from "../agentActions/mutations/complete.js";
 import type * as agentActions_mutations_decide from "../agentActions/mutations/decide.js";
 import type * as agentActions_mutations_propose from "../agentActions/mutations/propose.js";
+import type * as agentActions_mutations_updateArgs from "../agentActions/mutations/updateArgs.js";
 import type * as agentActions_queries_get from "../agentActions/queries/get.js";
 import type * as agentActions_queries_list from "../agentActions/queries/list.js";
 import type * as agentActions_queries_recent from "../agentActions/queries/recent.js";
@@ -83,6 +84,7 @@ import type * as fxRates_queries_list from "../fxRates/queries/list.js";
 import type * as imageMutations from "../imageMutations.js";
 import type * as images from "../images.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_books from "../lib/books.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
 import type * as lib_openrouter from "../lib/openrouter.js";
 import type * as lib_secrets from "../lib/secrets.js";
@@ -119,6 +121,7 @@ declare const fullApi: ApiFromModules<{
   "agentActions/mutations/complete": typeof agentActions_mutations_complete;
   "agentActions/mutations/decide": typeof agentActions_mutations_decide;
   "agentActions/mutations/propose": typeof agentActions_mutations_propose;
+  "agentActions/mutations/updateArgs": typeof agentActions_mutations_updateArgs;
   "agentActions/queries/get": typeof agentActions_queries_get;
   "agentActions/queries/list": typeof agentActions_queries_list;
   "agentActions/queries/recent": typeof agentActions_queries_recent;
@@ -188,6 +191,7 @@ declare const fullApi: ApiFromModules<{
   imageMutations: typeof imageMutations;
   images: typeof images;
   "lib/auth": typeof lib_auth;
+  "lib/books": typeof lib_books;
   "lib/firecrawl": typeof lib_firecrawl;
   "lib/openrouter": typeof lib_openrouter;
   "lib/secrets": typeof lib_secrets;

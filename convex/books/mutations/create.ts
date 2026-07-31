@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { viewerMutation, requireOwner } from "../../lib/auth";
+import { assertUniqueTitle } from "../../lib/books";
 
 // Books are always created as drafts; publish is a separate, explicit step
 // (books.setStatus) — matches the propose-then-confirm rule that nothing
@@ -29,6 +30,7 @@ export const create = viewerMutation({
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
     if (existing) throw new ConvexError(`Book slug "${args.slug}" already exists`);
+    await assertUniqueTitle(ctx, args.title);
 
     return ctx.db.insert("books", { ...args, kind: args.kind ?? "guide", status: "draft" });
   },

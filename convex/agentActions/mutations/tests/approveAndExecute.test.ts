@@ -68,6 +68,105 @@ test("approving a writeBook proposal creates a draft book with its blocks", asyn
   expect(blocks.map((b) => b.type)).toEqual(["h", "p", "p"]);
 });
 
+test("refuses to approve a writeBook whose title already exists", async () => {
+  const t = setupTest();
+  const asOwner = await seedOwner(t);
+  const { categoryId } = await seedDraftBook(t, "Pregnancy Safety Basics");
+
+  const actionId = await asOwner.mutation(api.agentActions.propose, {
+    tool: "writeBook",
+    args: {
+      title: "Pregnancy Safety Basics",
+      blurb: "A second copy.",
+      categoryId,
+      priceCents: 999,
+      chapters: [{ heading: "Ch", paragraphs: ["Text."] }],
+    },
+  });
+
+  await expect(asOwner.mutation(api.agentActions.approveAndExecute, { actionId })).rejects.toThrow(/already exists/);
+  const books = await t.run((ctx) => ctx.db.query("books").collect());
+  expect(books).toHaveLength(1);
+});
+
+test("approving an editBook replaces content on the same book", async () => {
+  const t = setupTest();
+  const asOwner = await seedOwner(t);
+  const { bookId } = await seedDraftBook(t);
+  await t.run(async (ctx) => {
+    await ctx.db.insert("bookBlocks", { bookId, chapter: 1, ord: 0, type: "h", text: "Old" });
+    await ctx.db.insert("bookBlocks", { bookId, chapter: 1, ord: 1, type: "p", text: "Old text." });
+  });
+
+  const actionId = await asOwner.mutation(api.agentActions.propose, {
+    tool: "editBook",
+    args: {
+      bookId,
+      title: "Draft Guide",
+      priceCents: 1299,
+      chapters: [
+        { heading: "Old", paragraphs: ["Old text."] },
+        { heading: "New chapter", paragraphs: ["Added text."] },
+      ],
+    },
+    relatedBookId: bookId,
+  });
+  await asOwner.mutation(api.agentActions.approveAndExecute, { actionId });
+
+  const books = await t.run((ctx) => ctx.db.query("books").collect());
+  const blocks = await t.run((ctx) =>
+    ctx.db.query("bookBlocks").withIndex("by_book", (q) => q.eq("bookId", bookId)).collect(),
+  );
+  // The whole point: one book, edited — not a second one.
+  expect(books).toHaveLength(1);
+  expect(books[0].priceCents).toBe(1299);
+  expect(books[0].slug).toBe("draft-guide");
+  expect(blocks.map((b) => b.text)).toEqual(["Old", "Old text.", "New chapter", "Added text."]);
+});
+
+test("an editBook rename cannot collide with another book's title", async () => {
+  const t = setupTest();
+  const asOwner = await seedOwner(t);
+  const { bookId, categoryId } = await seedDraftBook(t, "Draft Guide");
+  await t.run((ctx) =>
+    ctx.db.insert("books", {
+      slug: "first-aid-quick-guide",
+      title: "First Aid Quick Guide",
+      author: "Author",
+      priceCents: 999,
+      status: "live" as const,
+      categoryId,
+      ageGroup: "All ages",
+      originalLang: "en",
+      blurb: "Taken.",
+    }),
+  );
+
+  const actionId = await asOwner.mutation(api.agentActions.propose, {
+    tool: "editBook",
+    args: { bookId, title: "Draft Guide", newTitle: "First Aid Quick Guide" },
+    relatedBookId: bookId,
+  });
+
+  await expect(asOwner.mutation(api.agentActions.approveAndExecute, { actionId })).rejects.toThrow(/already exists/);
+});
+
+test("an editBook can rename a book to its own title unchanged", async () => {
+  const t = setupTest();
+  const asOwner = await seedOwner(t);
+  const { bookId } = await seedDraftBook(t, "Draft Guide");
+
+  const actionId = await asOwner.mutation(api.agentActions.propose, {
+    tool: "editBook",
+    args: { bookId, title: "Draft Guide", newTitle: "Draft Guide", blurb: "Reworded." },
+    relatedBookId: bookId,
+  });
+  await asOwner.mutation(api.agentActions.approveAndExecute, { actionId });
+
+  const book = await t.run((ctx) => ctx.db.get(bookId));
+  expect(book?.blurb).toBe("Reworded.");
+});
+
 test("cannot approve the same proposal twice", async () => {
   const t = setupTest();
   const asOwner = await seedOwner(t);

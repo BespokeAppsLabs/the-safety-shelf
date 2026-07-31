@@ -1,5 +1,11 @@
 import { expect, test } from "vitest";
-import { blocksToChapters, chaptersToBlocks, chapterCharacters } from "../lib/bookContent";
+import {
+  blocksToChapters,
+  chaptersToBlocks,
+  chapterCharacters,
+  editorChaptersToParagraphs,
+  paragraphChaptersToEditor,
+} from "../lib/bookContent";
 
 test("blocks round-trip through chapters", () => {
   const blocks = [
@@ -23,6 +29,17 @@ test("chaptersToBlocks renumbers chapters and splits paragraphs on blank lines",
     { chapter: 1, ord: 0, type: "h", text: "H" },
     { chapter: 1, ord: 1, type: "p", text: "one" },
     { chapter: 1, ord: 2, type: "p", text: "two" },
+  ]);
+});
+
+test("proposed chapters round-trip through the editor shape", () => {
+  const proposed = [{ heading: "Stay calm", paragraphs: ["Assess the airway.", "Call for help."] }];
+  const chapters = paragraphChaptersToEditor(proposed);
+  expect(chapters).toEqual([{ heading: "Stay calm", body: "Assess the airway.\n\nCall for help." }]);
+  expect(editorChaptersToParagraphs(chapters)).toEqual(proposed);
+  // Trailing blank lines from typing must not become empty paragraphs.
+  expect(editorChaptersToParagraphs([{ heading: " H ", body: "one\n\n\n  two  \n\n" }])).toEqual([
+    { heading: "H", paragraphs: ["one", "two"] },
   ]);
 });
 

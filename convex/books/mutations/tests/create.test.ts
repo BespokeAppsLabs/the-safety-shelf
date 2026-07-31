@@ -43,6 +43,17 @@ test("rejects a duplicate slug", async () => {
   await expect(asOwner.mutation(api.books.create, args)).rejects.toThrow();
 });
 
+test("rejects a duplicate title even under a different slug", async () => {
+  const t = setupTest();
+  const asOwner = await seedOwner(t);
+  const args = await bookArgs(t);
+
+  await asOwner.mutation(api.books.create, args);
+  await expect(
+    asOwner.mutation(api.books.create, { ...args, slug: "first-aid-quick-guide-2", title: "first aid quick guide!" }),
+  ).rejects.toThrow(/already exists/);
+});
+
 test("rejects a non-positive price", async () => {
   const t = setupTest();
   const asOwner = await seedOwner(t);
