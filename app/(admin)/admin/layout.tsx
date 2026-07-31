@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
+import { UserButton } from "@clerk/nextjs";
 import { fetchQuery } from "convex/nextjs";
 import { AdminAccessDenied } from "@/components/auth/AdminAccessDenied";
 import { Logo } from "@/components/ui/Logo";
@@ -62,7 +63,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <Link href="/store" className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted transition hover:bg-background hover:text-ink">
               Open store
             </Link>
-            <div className="grid h-11 w-11 place-items-center rounded-full bg-primary text-white">LS</div>
+            {/* Sign out lives in this menu. Sized to the 44px avatar the topbar
+                used to fake with a hardcoded div. */}
+            <UserButton appearance={{ elements: { userButtonAvatarBox: "h-11 w-11" } }} />
           </div>
         </div>
         {children}
