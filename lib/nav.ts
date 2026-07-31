@@ -12,7 +12,9 @@ export const ADMIN_NAV = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/books", label: "Catalog" },
   { href: "/admin/agent", label: "Agent" },
-  { href: "/admin/social", label: "Social" },
+  // Social is hidden until the Postiz integration is wired — the page and its
+  // route still exist, so restoring it is putting this line back.
+  // { href: "/admin/social", label: "Social" },
   { href: "/admin/approvals", label: "Approvals" },
   { href: "/admin/settings", label: "Settings" },
 ];
