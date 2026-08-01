@@ -79,7 +79,8 @@
     "signInToBuy": "Meld aan om vir {price} te koop",
     "readGuide": "Lees die gids",
     "processing": "Verwerk tans…",
-    "priceUnavailable": "Prys nie beskikbaar nie"
+    "priceUnavailable": "Prys nie beskikbaar nie",
+    "billedAs": "Gehef as {amount}. Jou bank bepaal die finale omskakeling."
   },
   "library": {
     "eyebrow": "My biblioteek",

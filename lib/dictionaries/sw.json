@@ -79,7 +79,8 @@
     "signInToBuy": "Ingia ili ununue kwa {price}",
     "readGuide": "Soma mwongozo",
     "processing": "Inashughulikia…",
-    "priceUnavailable": "Bei haipatikani"
+    "priceUnavailable": "Bei haipatikani",
+    "billedAs": "Utatozwa {amount}. Benki yako huamua kiwango cha mwisho cha ubadilishaji."
   },
   "library": {
     "eyebrow": "Maktaba yangu",

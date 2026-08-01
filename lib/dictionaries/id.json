@@ -79,7 +79,8 @@
     "signInToBuy": "Masuk untuk membeli seharga {price}",
     "readGuide": "Baca panduan",
     "processing": "Memproses…",
-    "priceUnavailable": "Harga tidak tersedia"
+    "priceUnavailable": "Harga tidak tersedia",
+    "billedAs": "Ditagih {amount}. Bank Anda menentukan kurs konversi akhir."
   },
   "library": {
     "eyebrow": "Perpustakaan saya",

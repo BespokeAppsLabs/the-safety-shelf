@@ -51,6 +51,54 @@ re-denominate historical revenue.
 account takes ZAR. If it is not, `startCheckout` surfaces Paystack's own
 "currency not supported" message rather than failing silently.
 
+## Can an overseas customer pay?
+
+Yes — a US shopper pays with their US card and we settle ZAR. But not by being
+charged in dollars, and not without an account prerequisite.
+
+**The mechanic, in Paystack's own words:** *"if you prefer to receive payouts in
+your local currency, you can set prices in local currency, and when a customer
+with a card domiciled in USD makes a payment, their bank deducts the USD
+equivalent, which Paystack then receives and pays to you in local currency."*
+That is exactly this design: one ZAR price, one ZAR charge, ZAR settlement, and
+the customer's own issuer does the conversion at its rate.
+
+**Charging in USD is not an option for a South African business.** Accepting and
+being paid out in USD is available only to businesses in Nigeria and Kenya. This
+is why the store charges base currency and treats every other currency as
+display — it is the only mechanism a ZA account actually has.
+
+**Prerequisites, both on the Paystack account, not in this repo:**
+
+1. **International payments must be enabled.** Requested at business creation or
+   later from the dashboard, granted on compliance review. Without it, foreign
+   cards are declined — the storefront will happily show a US shopper a dollar
+   price they cannot pay.
+2. **This business is in an extra-scrutiny category.** Paystack lists
+   "E-books/digital products" as requiring additional documentation before
+   international payments are approved: compliance documents plus a website or
+   social presence evidencing product sales. Budget for that review.
+
+Accepted internationally: Visa, Mastercard, Verve, and Amex (Amex is on by
+default for South African businesses).
+
+**International cards cost more** — roughly 3.1% + R1 versus the local rate.
+Because the split group uses `bearer_type: "all-proportional"`, that higher fee
+is shared 55/45 like any other, so neither party silently absorbs the cost of
+selling abroad.
+
+## What the shopper sees
+
+Display currency follows the shopper's country, defaulting to **USD** when we
+cannot place them — not to ZAR, which an international visitor cannot judge.
+Conversion uses the owner's `fxRates`, rounded to whole units.
+
+Because the displayed currency is not the charged currency, checkout states the
+exact charge as well: *"Billed as R270.00. Your bank sets the final
+conversion."* The store price is a rounded approximation; the billed figure is
+the one that appears on their statement, and hiding the difference would leave
+them unable to reconcile it. Shown before they commit, never after.
+
 ## The flow
 
 ```

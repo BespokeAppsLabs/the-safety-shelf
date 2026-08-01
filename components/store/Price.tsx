@@ -1,7 +1,30 @@
 "use client";
 
 import { useI18n } from "@/app/I18nProvider";
-import { quotePrice } from "@/lib/pricing";
+import { formatExactAmount, quotePrice } from "@/lib/pricing";
+
+/**
+ * The exact charge, in the currency the card is actually billed in — or null
+ * when that is already what the shopper is looking at.
+ *
+ * Every price around the store is a converted approximation rounded to whole
+ * units, but the shopper is charged base currency. Showing only the converted
+ * figure at the moment of payment would mean the number on the button is not
+ * the number on their statement, and they would have no way to reconcile the
+ * difference. So checkout states both.
+ */
+export function useExactBillingText(cents: number): string | null {
+  const { price, locale } = useI18n();
+  const { baseCurrency, currency, rate } = price;
+
+  // Nothing to disclose if they are already seeing base currency — either
+  // because that is their currency, or because no rate exists so the store
+  // never converted in the first place.
+  if (!baseCurrency) return null;
+  if (!currency || currency === baseCurrency || !rate) return null;
+
+  return formatExactAmount(cents, baseCurrency, locale);
+}
 
 /**
  * Formatted price as a string, so it can be interpolated into a sentence

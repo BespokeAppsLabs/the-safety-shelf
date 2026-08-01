@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  convertToWholeUnits,
-  formatWholeUnits,
-  minorUnitsPerMajor,
-  quotePrice,
-} from "../lib/pricing";
+import { convertToWholeUnits, formatWholeUnits, minorUnitsPerMajor, quotePrice, formatExactAmount } from "../lib/pricing";
 
 describe("minorUnitsPerMajor", () => {
   it("reads decimals from ISO data, not a hand-kept table", () => {
@@ -54,5 +49,18 @@ describe("quotePrice", () => {
     expect(formatWholeUnits(14, "EUR", "de-DE")).not.toMatch(/[,.]\d\d$/);
     expect(quotePrice(1499, "USD", "ja-JP", { currency: "JPY", rate: 157 }).formatted)
       .not.toMatch(/[,.]\d\d$/);
+  });
+});
+
+describe("formatExactAmount", () => {
+  it("shows the real charge to the minor unit, unlike rounded shop-window prices", () => {
+    // The shopper can check this against a bank statement, so R149.99 must not
+    // render as "R150" the way a converted display price would.
+    expect(formatExactAmount(14999, "ZAR", "en-ZA")).toMatch(/149[.,]99/);
+    expect(formatWholeUnits(convertToWholeUnits(14999, "ZAR", 1), "ZAR", "en-ZA")).toMatch(/150/);
+  });
+
+  it("respects currencies with no minor unit", () => {
+    expect(formatExactAmount(1500, "JPY", "en")).toMatch(/1,500/);
   });
 });

@@ -79,7 +79,8 @@
     "signInToBuy": "Accedi per acquistare a {price}",
     "readGuide": "Leggi la guida",
     "processing": "Elaborazione…",
-    "priceUnavailable": "Prezzo non disponibile"
+    "priceUnavailable": "Prezzo non disponibile",
+    "billedAs": "Addebito di {amount}. La conversione finale è stabilita dalla tua banca."
   },
   "library": {
     "eyebrow": "La mia libreria",

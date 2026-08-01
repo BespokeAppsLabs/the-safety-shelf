@@ -79,7 +79,8 @@
     "signInToBuy": "سجّل الدخول للشراء بـ {price}",
     "readGuide": "اقرأ الدليل",
     "processing": "جارٍ المعالجة…",
-    "priceUnavailable": "السعر غير متاح"
+    "priceUnavailable": "السعر غير متاح",
+    "billedAs": "سيتم خصم {amount}. يحدد البنك سعر التحويل النهائي."
   },
   "library": {
     "eyebrow": "مكتبتي",

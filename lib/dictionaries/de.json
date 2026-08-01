@@ -79,7 +79,8 @@
     "signInToBuy": "Anmelden, um für {price} zu kaufen",
     "readGuide": "Ratgeber lesen",
     "processing": "Wird verarbeitet…",
-    "priceUnavailable": "Preis nicht verfügbar"
+    "priceUnavailable": "Preis nicht verfügbar",
+    "billedAs": "Abgerechnet mit {amount}. Den endgültigen Umrechnungskurs legt deine Bank fest."
   },
   "library": {
     "eyebrow": "Meine Bibliothek",

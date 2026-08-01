@@ -79,7 +79,8 @@
     "signInToBuy": "로그인하고 {price}에 구매",
     "readGuide": "가이드 읽기",
     "processing": "처리 중…",
-    "priceUnavailable": "가격을 표시할 수 없습니다"
+    "priceUnavailable": "가격을 표시할 수 없습니다",
+    "billedAs": "{amount}이(가) 청구됩니다. 최종 환율은 은행이 정합니다."
   },
   "library": {
     "eyebrow": "내 서재",

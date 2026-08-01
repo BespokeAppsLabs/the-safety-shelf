@@ -79,7 +79,8 @@
     "signInToBuy": "Tsena go reka ka {price}",
     "readGuide": "Bala kaelo",
     "processing": "E a bereka…",
-    "priceUnavailable": "Tlhwatlhwa ga e bonwe"
+    "priceUnavailable": "Tlhwatlhwa ga e bonwe",
+    "billedAs": "O tla duelisiwa {amount}. Banka ya gago e tlhomamisa sekao sa bofelo sa phetolo."
   },
   "library": {
     "eyebrow": "Laeborari ya me",

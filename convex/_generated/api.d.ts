@@ -92,6 +92,7 @@ import type * as lib_paystack_verify from "../lib/paystack/verify.js";
 import type * as lib_sales from "../lib/sales.js";
 import type * as lib_secrets from "../lib/secrets.js";
 import type * as migrations_backfillOrders from "../migrations/backfillOrders.js";
+import type * as migrations_switchBaseToZar from "../migrations/switchBaseToZar.js";
 import type * as openrouterUsage from "../openrouterUsage.js";
 import type * as payments from "../payments.js";
 import type * as payments_actions_startCheckout from "../payments/actions/startCheckout.js";
@@ -213,6 +214,7 @@ declare const fullApi: ApiFromModules<{
   "lib/sales": typeof lib_sales;
   "lib/secrets": typeof lib_secrets;
   "migrations/backfillOrders": typeof migrations_backfillOrders;
+  "migrations/switchBaseToZar": typeof migrations_switchBaseToZar;
   openrouterUsage: typeof openrouterUsage;
   payments: typeof payments;
   "payments/actions/startCheckout": typeof payments_actions_startCheckout;

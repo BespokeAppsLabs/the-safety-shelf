@@ -79,7 +79,8 @@
     "signInToBuy": "登录后以 {price} 购买",
     "readGuide": "阅读指南",
     "processing": "处理中…",
-    "priceUnavailable": "价格不可用"
+    "priceUnavailable": "价格不可用",
+    "billedAs": "将收取 {amount}。最终汇率由您的银行决定。"
   },
   "library": {
     "eyebrow": "我的书库",

@@ -79,7 +79,8 @@
     "signInToBuy": "Connectez-vous pour acheter à {price}",
     "readGuide": "Lire le guide",
     "processing": "Traitement…",
-    "priceUnavailable": "Prix indisponible"
+    "priceUnavailable": "Prix indisponible",
+    "billedAs": "Débité de {amount}. Votre banque fixe le taux de conversion final."
   },
   "library": {
     "eyebrow": "Ma bibliothèque",

@@ -79,7 +79,8 @@
     "signInToBuy": "Συνδεθείτε για αγορά με {price}",
     "readGuide": "Διαβάστε τον οδηγό",
     "processing": "Επεξεργασία…",
-    "priceUnavailable": "Μη διαθέσιμη τιμή"
+    "priceUnavailable": "Μη διαθέσιμη τιμή",
+    "billedAs": "Χρέωση {amount}. Η τελική μετατροπή καθορίζεται από την τράπεζά σου."
   },
   "library": {
     "eyebrow": "Η βιβλιοθήκη μου",

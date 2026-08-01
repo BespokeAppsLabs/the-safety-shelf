@@ -79,7 +79,8 @@
     "signInToBuy": "Kena ho reka ka {price}",
     "readGuide": "Bala tataiso",
     "processing": "E ntse e sebetsa…",
-    "priceUnavailable": "Theko ha e fumanehe"
+    "priceUnavailable": "Theko ha e fumanehe",
+    "billedAs": "O tla lefiswa {amount}. Banka ya hao e beha sekgahla sa ho fetola sa ho qetela."
   },
   "library": {
     "eyebrow": "Laebrari ya ka",

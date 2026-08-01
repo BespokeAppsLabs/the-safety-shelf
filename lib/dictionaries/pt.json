@@ -79,7 +79,8 @@
     "signInToBuy": "Entre para comprar por {price}",
     "readGuide": "Ler o guia",
     "processing": "A processar…",
-    "priceUnavailable": "Preço indisponível"
+    "priceUnavailable": "Preço indisponível",
+    "billedAs": "Cobrado como {amount}. O seu banco define a conversão final."
   },
   "library": {
     "eyebrow": "A minha biblioteca",

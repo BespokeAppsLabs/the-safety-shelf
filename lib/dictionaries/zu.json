@@ -79,7 +79,8 @@
     "signInToBuy": "Ngena ukuze uthenge nge-{price}",
     "readGuide": "Funda umhlahlandlela",
     "processing": "Iyacubungula…",
-    "priceUnavailable": "Intengo ayitholakali"
+    "priceUnavailable": "Intengo ayitholakali",
+    "billedAs": "Uzokhokhiswa {amount}. Ibhange lakho libeka izinga lokushintsha lokugcina."
   },
   "library": {
     "eyebrow": "Umtapo wami",

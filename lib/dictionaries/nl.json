@@ -79,7 +79,8 @@
     "signInToBuy": "Log in om te kopen voor {price}",
     "readGuide": "Lees de gids",
     "processing": "Bezig…",
-    "priceUnavailable": "Prijs niet beschikbaar"
+    "priceUnavailable": "Prijs niet beschikbaar",
+    "billedAs": "Afgeschreven als {amount}. Je bank bepaalt de uiteindelijke omrekening."
   },
   "library": {
     "eyebrow": "Mijn bibliotheek",

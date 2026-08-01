@@ -79,7 +79,8 @@
     "signInToBuy": "{price} में खरीदने के लिए साइन इन करें",
     "readGuide": "मार्गदर्शिका पढ़ें",
     "processing": "प्रक्रिया जारी…",
-    "priceUnavailable": "मूल्य उपलब्ध नहीं"
+    "priceUnavailable": "मूल्य उपलब्ध नहीं",
+    "billedAs": "{amount} का शुल्क लिया जाएगा। अंतिम रूपांतरण दर आपका बैंक तय करता है।"
   },
   "library": {
     "eyebrow": "मेरी लाइब्रेरी",

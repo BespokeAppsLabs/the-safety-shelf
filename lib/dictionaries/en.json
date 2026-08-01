@@ -79,7 +79,8 @@
     "signInToBuy": "Sign in to buy for {price}",
     "readGuide": "Read guide",
     "processing": "Processing…",
-    "priceUnavailable": "Price unavailable"
+    "priceUnavailable": "Price unavailable",
+    "billedAs": "Billed as {amount}. Your bank sets the final conversion."
   },
   "library": {
     "eyebrow": "My library",

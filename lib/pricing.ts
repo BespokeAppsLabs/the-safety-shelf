@@ -52,6 +52,21 @@ export function formatWholeUnits(amount: number, currency: string, locale: strin
   }).format(amount);
 }
 
+/**
+ * The exact amount that will hit the card, to the minor unit.
+ *
+ * Distinct from formatWholeUnits on purpose. Shop-window prices are rounded to
+ * whole units because a converted price is an approximation anyway, but the
+ * charge is a real number the shopper can check against their statement —
+ * rounding R149.99 to "R150" on a checkout screen would be a small lie about
+ * a figure they can verify.
+ */
+export function formatExactAmount(minor: number, currency: string, locale: string): string {
+  return new Intl.NumberFormat(locale, { style: "currency", currency }).format(
+    minor / minorUnitsPerMajor(currency),
+  );
+}
+
 export type PriceQuote = { amount: number; currency: string; formatted: string };
 
 /**

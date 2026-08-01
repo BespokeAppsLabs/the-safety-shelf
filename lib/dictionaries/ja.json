@@ -79,7 +79,8 @@
     "signInToBuy": "サインインして {price} で購入",
     "readGuide": "ガイドを読む",
     "processing": "処理中…",
-    "priceUnavailable": "価格は表示できません"
+    "priceUnavailable": "価格は表示できません",
+    "billedAs": "請求額は {amount} です。最終的な換算レートはご利用の銀行が決定します。"
   },
   "library": {
     "eyebrow": "マイライブラリ",

@@ -79,7 +79,8 @@
     "signInToBuy": "Log masuk untuk membeli dengan harga {price}",
     "readGuide": "Baca panduan",
     "processing": "Memproses…",
-    "priceUnavailable": "Harga tidak tersedia"
+    "priceUnavailable": "Harga tidak tersedia",
+    "billedAs": "Dicaj {amount}. Bank anda menetapkan kadar penukaran akhir."
   },
   "library": {
     "eyebrow": "Perpustakaan saya",

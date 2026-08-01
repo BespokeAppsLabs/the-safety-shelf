@@ -7,13 +7,14 @@ import { useConvexAuth, useAction, useQuery } from "convex/react";
 import { Button } from "@/components/ui/Button";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
-import { usePriceText } from "@/components/store/Price";
+import { usePriceText, useExactBillingText } from "@/components/store/Price";
 import { useDict } from "@/app/I18nProvider";
 import { fill } from "@/lib/i18n";
 
 export function BuyButton({ book }: { book: Doc<"books"> }) {
   const dict = useDict();
   const price = usePriceText(book.priceCents);
+  const billedAs = useExactBillingText(book.priceCents);
   const { isAuthenticated } = useConvexAuth();
   const isOwned = useQuery(api.entitlements.isOwned, isAuthenticated ? { bookId: book._id } : "skip");
   const startCheckout = useAction(api.payments.startCheckout);
@@ -75,6 +76,12 @@ export function BuyButton({ book }: { book: Doc<"books"> }) {
             ? fill(dict.product.buyFor, { price })
             : dict.product.priceUnavailable}
       </Button>
+      {/* The store price is a converted, rounded approximation; this is the
+          figure that will appear on their statement. Shown before they commit,
+          not after. */}
+      {billedAs ? (
+        <p className="text-xs text-muted">{fill(dict.product.billedAs, { amount: billedAs })}</p>
+      ) : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
     </div>
   );
