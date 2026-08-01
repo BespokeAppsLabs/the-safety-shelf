@@ -106,6 +106,15 @@
     "downloadPdf": "Unduh PDF",
     "endOfGuide": "— akhir panduan —"
   },
+  "checkout": {
+    "eyebrow": "Pembayaran",
+    "title": "Mengonfirmasi pembayaran Anda",
+    "pendingBody": "Kami menunggu konfirmasi pembayaran Anda. Biasanya hanya butuh beberapa detik — Anda boleh meninggalkan halaman ini, panduan Anda akan muncul di perpustakaan Anda.",
+    "paidBody": "Pembayaran dikonfirmasi. Membuka panduan Anda…",
+    "refundedBody": "Pesanan ini telah dikembalikan dananya, jadi panduannya tidak lagi ada di perpustakaan Anda.",
+    "notFound": "Kami tidak menemukan pesanan tersebut. Jika Anda sudah ditagih, pesanan akan muncul di perpustakaan Anda setelah dikonfirmasi.",
+    "goToLibrary": "Ke perpustakaan saya"
+  },
   "footer": {
     "demoLine1": "Etalase demo The Safety Shelf.",
     "demoLine2": "Untuk saat ini katalog uji coba dan pembelian lokal. Convex, Clerk, Stripe, dan perkakas agen menyusul.",

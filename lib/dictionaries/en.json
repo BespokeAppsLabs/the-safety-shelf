@@ -106,9 +106,18 @@
     "downloadPdf": "Download PDF",
     "endOfGuide": "— end of guide —"
   },
+  "checkout": {
+    "eyebrow": "Checkout",
+    "title": "Confirming your payment",
+    "pendingBody": "We're waiting for your payment to be confirmed. This usually takes a few seconds — you can leave this page, your guide will appear in your library.",
+    "paidBody": "Payment confirmed. Opening your guide…",
+    "refundedBody": "This order was refunded, so the guide is no longer in your library.",
+    "notFound": "We couldn't find that order. If you were charged, it will still appear in your library once confirmed.",
+    "goToLibrary": "Go to my library"
+  },
   "footer": {
     "demoLine1": "The Safety Shelf demo storefront.",
-    "demoLine2": "Mock catalog and local purchases now. Convex, Clerk, Stripe, and agent tools later.",
+    "demoLine2": "Mock catalog now. Payments run on Paystack; Convex, Clerk, and agent tools power the rest.",
     "copyright": "© {year} The Safety Shelf"
   }
 }

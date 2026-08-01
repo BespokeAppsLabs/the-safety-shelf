@@ -106,6 +106,15 @@
     "downloadPdf": "PDF 다운로드",
     "endOfGuide": "— 가이드 끝 —"
   },
+  "checkout": {
+    "eyebrow": "결제",
+    "title": "결제를 확인하는 중입니다",
+    "pendingBody": "결제 확인을 기다리고 있습니다. 보통 몇 초면 완료됩니다. 이 페이지를 벗어나도 가이드는 라이브러리에 표시됩니다.",
+    "paidBody": "결제가 확인되었습니다. 가이드를 여는 중…",
+    "refundedBody": "이 주문은 환불되어 가이드가 더 이상 라이브러리에 없습니다.",
+    "notFound": "해당 주문을 찾을 수 없습니다. 결제가 완료되었다면 확인되는 대로 라이브러리에 표시됩니다.",
+    "goToLibrary": "내 라이브러리로 가기"
+  },
   "footer": {
     "demoLine1": "The Safety Shelf 데모 스토어입니다.",
     "demoLine2": "현재는 테스트 카탈로그와 로컬 구매만 지원합니다. Convex, Clerk, Stripe, 에이전트 도구는 추후 지원됩니다.",

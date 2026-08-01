@@ -6,7 +6,7 @@
 | Frontend | Next.js App Router on Vercel |
 | Backend | Convex |
 | Auth | Clerk |
-| Payments | Stripe Checkout |
+| Payments | Paystack hosted checkout (55/45 split group) |
 | Text and image AI | One encrypted OpenRouter key |
 | Audiobooks | ElevenLabs |
 | Storage | Convex file storage |

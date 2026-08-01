@@ -33,3 +33,5 @@ not build.
 - [06-stack-and-phases](06-stack-and-phases.md) — stack choices + build order
 - [07-agent-models](07-agent-models.md) — which LLM powers each agent role
 - [08-ai-auth](08-ai-auth.md) — AI credentials: BYOK now + "sign in with ChatGPT" seam
+- [09-i18n-and-pricing](09-i18n-and-pricing.md) — 21 languages, base currency + display FX
+- [10-payments](10-payments.md) — Paystack checkout, the 55/45 split, webhook rules

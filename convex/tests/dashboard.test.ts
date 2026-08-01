@@ -1,15 +1,16 @@
 import { expect, test } from "vitest";
 import { api } from "../_generated/api";
-import { seedCategory, seedCustomer, seedLiveBook, seedOwner, setupTest } from "../../test/helpers";
+import { seedCategory, seedCustomer, seedLiveBook, seedOwner, seedPurchase, setupTest, userIdFor } from "../../test/helpers";
 
 test("overview uses paid orders only and exposes live workflow counts", async () => {
   const t = setupTest();
   const owner = await seedOwner(t);
-  const customer = await seedCustomer(t);
+  await seedCustomer(t);
   const bookId = await seedLiveBook(t, { priceCents: 500 });
   const categoryId = await seedCategory(t, "draft-category");
   await t.run((ctx) => ctx.db.insert("books", { slug: "draft", title: "Draft", author: "Owner", priceCents: 100, status: "draft", categoryId, ageGroup: "All", originalLang: "en", blurb: "Draft." }));
-  await customer.mutation(api.entitlements.demoPurchase, { bookId });
+  const buyer = await userIdFor(t, "clerk_customer");
+  await seedPurchase(t, { userId: buyer!._id, bookId, priceCents: 500 });
   await owner.mutation(api.agentActions.propose, { tool: "publishBook", args: {} });
 
   const overview = await owner.query(api.dashboard.overview, {});

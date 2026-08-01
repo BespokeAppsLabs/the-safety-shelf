@@ -52,6 +52,14 @@ export default defineSchema({
     .index("by_slug", ["slug"])
     .index("by_status", ["status"])
     .index("by_category", ["categoryId"]),
+  // One title, one book. Convex has no unique constraint, so the invariant is
+  // enforced in code by `assertUniqueTitle` (convex/lib/books.ts), normalized
+  // case- and punctuation-insensitively, on EVERY path that can name a book:
+  // books.create, books.update (excluding the row itself on rename), and the
+  // writeBook + editBook executors in agentActions.approveAndExecute. Slugs
+  // auto-suffix on collision (`-2`), so without this a duplicate title looks
+  // like a normal save — which is exactly how a second "Pregnancy Safety
+  // Basics" reached the live catalog.
 
   bookBlocks: defineTable({
     bookId: v.id("books"),
@@ -82,13 +90,15 @@ export default defineSchema({
 
   orders: defineTable({
     userId: v.id("users"),
-    stripeSessionId: v.string(),
-    stripePaymentIntentId: v.optional(v.string()),
+    reference: v.string(), // gateway transaction reference (Paystack)
+    providerTransactionId: v.optional(v.string()),
     totalCents: v.number(),
-    status: v.union(v.literal("paid"), v.literal("refunded")),
+    currency: v.string(), // baseCurrency snapshot — history never re-denominates
+    status: v.union(v.literal("pending"), v.literal("paid"), v.literal("refunded")),
+    failureReason: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
-    .index("by_stripeSession", ["stripeSessionId"]), // webhook idempotency
+    .index("by_reference", ["reference"]), // webhook idempotency
 
   orderItems: defineTable({
     orderId: v.id("orders"),
@@ -103,7 +113,7 @@ export default defineSchema({
     bookId: v.id("books"),
     orderId: v.id("orders"),
     grantedAt: v.number(),
-    revokedAt: v.optional(v.number()), // set on Stripe refund webhook
+    revokedAt: v.optional(v.number()), // set on the Paystack refund webhook
   })
     .index("by_user", ["userId"]) // My Library
     .index("by_user_book", ["userId", "bookId"]) // isOwned() access check
@@ -149,7 +159,10 @@ export default defineSchema({
   // Propose-then-confirm audit trail: one row per tool call that writes,
   // spends, or publishes. See docs/03-admin-agent.md.
   agentActions: defineTable({
-    tool: v.string(), // e.g. "writeBook", "publishBook", "publishSocial"
+    tool: v.string(), // e.g. "writeBook", "editBook", "publishBook", "publishSocial"
+    // For writeBook this is the ENTIRE unsaved draft (chapters included) — the
+    // book has no row until approval, which is why the approvals screen can
+    // edit these args in place via agentActions.updateArgs.
     args: v.any(),
     status: v.union(
       v.literal("proposed"), v.literal("approved"), v.literal("rejected"),
@@ -266,10 +279,16 @@ fxRates: defineTable({
   Arabic spans EGP, LBP, SAR and AED.
 
 ## Money source-of-truth
-Stripe owns money truth; `orders`/`orderItems` mirror it via a Convex `httpAction`
-on the `checkout.session.completed` webhook, which also writes `entitlements`.
+Paystack owns money truth; `orders`/`orderItems` mirror it via a Convex
+`httpAction` on the `charge.success` webhook, which also writes `entitlements`.
 `orderItems.priceCents` is a **snapshot** at purchase time — `books.priceCents`
-can change later without rewriting sales history.
+can change later without rewriting sales history. See [10-payments](10-payments.md).
+
+An order is written `pending` at checkout initiation and only the signed webhook
+promotes it to `paid`. Every sales figure therefore goes through
+`convex/lib/sales.ts` → `paidOrderItems`, which ignores lines belonging to
+pending or refunded orders; reading `orderItems` directly counts abandoned
+checkouts and refunds as revenue.
 
 On a `charge.refunded` webhook: mark `orders.status = "refunded"` and set
 `entitlements.revokedAt`. Access checks (`/read/[slug]`, downloads) must treat a
@@ -308,7 +327,7 @@ revoked one) → sample only.
 | `lib/catalog.ts` array | `books` + `bookBlocks` queries |
 | `lib/landing.ts` `LANDING_CATEGORIES` | `categories` table query |
 | `lib/library.ts` (`localStorage`) | `entitlements` query, scoped to Clerk-authed `userId` |
-| Mock "Buy" | Stripe Checkout → `orders`/`orderItems`/`entitlements` via webhook |
+| Mock "Buy" | Paystack checkout → `orders`/`orderItems`/`entitlements` via webhook |
 | `lib/admin.ts` mock stats/queue | `agentActions` + `orders`/`orderItems` aggregate queries |
 | No auth | Clerk, synced into `users` by `clerkId` |
 | No analytics | `eventLogs` / `purchaseBehaviourLogs` writes from storefront; `agentLogs` from agent runtime |

@@ -106,6 +106,15 @@
     "downloadPdf": "Descargar PDF",
     "endOfGuide": "— fin de la guía —"
   },
+  "checkout": {
+    "eyebrow": "Pago",
+    "title": "Confirmando tu pago",
+    "pendingBody": "Estamos esperando la confirmación de tu pago. Suele tardar unos segundos: puedes salir de esta página, tu guía aparecerá en tu biblioteca.",
+    "paidBody": "Pago confirmado. Abriendo tu guía…",
+    "refundedBody": "Este pedido fue reembolsado, por lo que la guía ya no está en tu biblioteca.",
+    "notFound": "No encontramos ese pedido. Si se te cobró, aparecerá en tu biblioteca en cuanto se confirme.",
+    "goToLibrary": "Ir a mi biblioteca"
+  },
   "footer": {
     "demoLine1": "Tienda de demostración de The Safety Shelf.",
     "demoLine2": "Por ahora, catálogo de prueba y compras locales. Convex, Clerk, Stripe y herramientas de agente más adelante.",

@@ -106,6 +106,15 @@
     "downloadPdf": "Muat turun PDF",
     "endOfGuide": "— tamat panduan —"
   },
+  "checkout": {
+    "eyebrow": "Pembayaran",
+    "title": "Mengesahkan pembayaran anda",
+    "pendingBody": "Kami sedang menunggu pengesahan pembayaran anda. Biasanya ia mengambil masa beberapa saat — anda boleh meninggalkan halaman ini, panduan anda akan muncul dalam pustaka anda.",
+    "paidBody": "Pembayaran disahkan. Membuka panduan anda…",
+    "refundedBody": "Pesanan ini telah dibayar balik, jadi panduan itu tiada lagi dalam pustaka anda.",
+    "notFound": "Kami tidak menemui pesanan itu. Jika anda telah dicaj, ia akan tetap muncul dalam pustaka anda setelah disahkan.",
+    "goToLibrary": "Pergi ke pustaka saya"
+  },
   "footer": {
     "demoLine1": "Etalase demo The Safety Shelf.",
     "demoLine2": "Buat masa ini katalog ujian dan pembelian setempat. Convex, Clerk, Stripe dan alat ejen kemudian.",

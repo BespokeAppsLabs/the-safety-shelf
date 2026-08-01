@@ -106,6 +106,15 @@
     "downloadPdf": "Download pdf",
     "endOfGuide": "— einde van de gids —"
   },
+  "checkout": {
+    "eyebrow": "Afrekenen",
+    "title": "We bevestigen je betaling",
+    "pendingBody": "We wachten op de bevestiging van je betaling. Dat duurt meestal een paar seconden — je kunt deze pagina verlaten, je gids verschijnt in je bibliotheek.",
+    "paidBody": "Betaling bevestigd. Je gids wordt geopend…",
+    "refundedBody": "Deze bestelling is terugbetaald, dus de gids staat niet meer in je bibliotheek.",
+    "notFound": "We konden die bestelling niet vinden. Als er is afgeschreven, verschijnt de bestelling in je bibliotheek zodra die is bevestigd.",
+    "goToLibrary": "Naar mijn bibliotheek"
+  },
   "footer": {
     "demoLine1": "Demowinkel van The Safety Shelf.",
     "demoLine2": "Voorlopig een testcatalogus en lokale aankopen. Convex, Clerk, Stripe en agenttools volgen later.",

@@ -106,6 +106,15 @@
     "downloadPdf": "Landa i-PDF",
     "endOfGuide": "— ukuphela komhlahlandlela —"
   },
+  "checkout": {
+    "eyebrow": "Ukukhokha",
+    "title": "Siqinisekisa inkokhelo yakho",
+    "pendingBody": "Silindele ukuthi inkokhelo yakho iqinisekiswe. Ngokuvamile kuthatha imizuzwana embalwa — ungaphuma kuleli khasi, umhlahlandlela wakho uzovela kumtapo wakho.",
+    "paidBody": "Inkokhelo iqinisekisiwe. Sivula umhlahlandlela wakho…",
+    "refundedBody": "Le oda ibuyiselwe imali, ngakho umhlahlandlela awusekho kumtapo wakho.",
+    "notFound": "Asikwazanga ukuthola leyo oda. Uma ukhokhisiwe, izovela kumtapo wakho uma isiqinisekisiwe.",
+    "goToLibrary": "Iya kumtapo wami"
+  },
   "footer": {
     "demoLine1": "Isitolo sesibonelo se-The Safety Shelf.",
     "demoLine2": "Okwamanje ikhathalogu yokuhlola nokuthenga kwasendaweni. I-Convex, i-Clerk, i-Stripe namathuluzi e-agent kamuva.",

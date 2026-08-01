@@ -106,6 +106,15 @@
     "downloadPdf": "Laolola PDF",
     "endOfGuide": "— bokhutlo jwa kaelo —"
   },
+  "checkout": {
+    "eyebrow": "Tuelo",
+    "title": "Re netefatsa tuelo ya gago",
+    "pendingBody": "Re letetse gore tuelo ya gago e netefadiwe. Gantsi go tsaya metsotswana e se mekae — o ka tswa mo tsebeng eno, kaelo ya gago e tla bonala mo laeboraring ya gago.",
+    "paidBody": "Tuelo e netefaditswe. Re bula kaelo ya gago…",
+    "refundedBody": "Odara eno e busheditswe madi, ka jalo kaelo ga e tlhole e le mo laeboraring ya gago.",
+    "notFound": "Ga re a kgona go bona odara eo. Fa o duetse, e tla bonala mo laeboraring ya gago fa e sena go netefadiwa.",
+    "goToLibrary": "Ya kwa laeboraring ya me"
+  },
   "footer": {
     "demoLine1": "Lebenkele la sekao la The Safety Shelf.",
     "demoLine2": "Ga jaana ke katalogo ya teko le direko tsa selegae. Convex, Clerk, Stripe le didirisiwa tsa agent moragonyana.",

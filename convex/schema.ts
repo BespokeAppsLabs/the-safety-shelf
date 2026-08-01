@@ -122,15 +122,30 @@ export default defineSchema({
     imgStorageId: v.optional(v.id("_storage")),
   }).index("by_variant", ["variantId", "chapter", "ord"]),
 
+  // Provider-neutral order ledger. `reference` is the payment gateway's
+  // transaction reference (Paystack) and doubles as the webhook idempotency
+  // key — Paystack retries, so reconcile must find the same row twice.
+  //
+  // `currency` snapshots storeSettings.baseCurrency at order time. Without it,
+  // an owner changing the base currency later would silently re-denominate
+  // every historical order. `totalCents` is minor units OF THIS currency.
+  //
+  // "pending" is written at checkout initiation; only the signed webhook
+  // promotes it to "paid". Abandoned checkouts leave pending rows behind:
+  // ponytail: harmless, they hold no orderItems so they contribute nothing to
+  // revenue, and ownership is checked against entitlements rather than orders
+  // so they never block a retry. Add a cleanup cron if the table gets noisy.
   orders: defineTable({
     userId: v.id("users"),
-    stripeSessionId: v.string(),
-    stripePaymentIntentId: v.optional(v.string()),
+    reference: v.string(),
+    providerTransactionId: v.optional(v.string()),
     totalCents: v.number(),
-    status: v.union(v.literal("paid"), v.literal("refunded")),
+    currency: v.string(),
+    status: v.union(v.literal("pending"), v.literal("paid"), v.literal("refunded")),
+    failureReason: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
-    .index("by_stripeSession", ["stripeSessionId"]),
+    .index("by_reference", ["reference"]),
 
   orderItems: defineTable({
     orderId: v.id("orders"),

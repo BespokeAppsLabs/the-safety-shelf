@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import { convexTest } from "convex-test";
 import schema from "../convex/schema";
+import type { Id } from "../convex/_generated/dataModel";
 
 const modules = import.meta.glob("../convex/**/*.*s");
 
@@ -34,6 +35,12 @@ export function seedCategory(t: Test, slug = "first-aid") {
 
 export async function seedLiveBook(t: Test, overrides: Partial<{ slug: string; priceCents: number }> = {}) {
   const categoryId = await seedCategory(t);
+  // A live, priced book implies a store that knows what it prices in — the app
+  // refuses to render or sell without a base currency, so a fixture without
+  // one is not a state production can reach. Tests that want the unset case
+  // clear the row explicitly.
+  const settings = await t.run((ctx) => ctx.db.query("storeSettings").first());
+  if (!settings) await seedStoreSettings(t);
   return t.run((ctx) =>
     ctx.db.insert("books", {
       slug: overrides.slug ?? "first-aid-quick-guide",
@@ -47,6 +54,41 @@ export async function seedLiveBook(t: Test, overrides: Partial<{ slug: string; p
       blurb: "A fast-reference primer.",
     }),
   );
+}
+
+export function seedStoreSettings(t: Test, baseCurrency = "ZAR") {
+  return t.run((ctx) => ctx.db.insert("storeSettings", { baseCurrency }));
+}
+
+/**
+ * A completed sale, written directly. Tests used to call entitlements
+ * .demoPurchase for this; that mutation is gone now that checkout goes through
+ * Paystack, and driving a real gateway round-trip just to arrange a fixture
+ * would test the network rather than the query under test.
+ */
+export async function seedPurchase(
+  t: Test,
+  { userId, bookId, priceCents, status = "paid" as const }: {
+    userId: Id<"users">;
+    bookId: Id<"books">;
+    priceCents: number;
+    status?: "pending" | "paid" | "refunded";
+  },
+) {
+  return t.run(async (ctx) => {
+    const orderId = await ctx.db.insert("orders", {
+      userId,
+      reference: `test:${bookId}:${Date.now()}:${Math.random()}`,
+      totalCents: priceCents,
+      currency: "ZAR",
+      status,
+    });
+    await ctx.db.insert("orderItems", { orderId, bookId, priceCents });
+    if (status === "paid") {
+      await ctx.db.insert("entitlements", { userId, bookId, orderId, grantedAt: Date.now() });
+    }
+    return orderId;
+  });
 }
 
 // Looks up the users._id for a clerkId seeded via seedOwner/seedCustomer —

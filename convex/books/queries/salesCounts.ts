@@ -1,4 +1,5 @@
 import { viewerQuery, requireOwner } from "../../lib/auth";
+import { paidOrderItems } from "../../lib/sales";
 
 // Units sold per book, for the admin catalog table. Real count from
 // orderItems — no mock numbers (see docs/05-data-model.md "Honest states").
@@ -7,7 +8,7 @@ export const salesCounts = viewerQuery({
   handler: async (ctx) => {
     requireOwner(ctx.viewer);
 
-    const items = await ctx.db.query("orderItems").collect();
+    const items = await paidOrderItems(ctx);
     const counts: Record<string, number> = {};
     for (const item of items) {
       counts[item.bookId] = (counts[item.bookId] ?? 0) + 1;

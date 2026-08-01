@@ -106,6 +106,15 @@
     "downloadPdf": "Pakua PDF",
     "endOfGuide": "— mwisho wa mwongozo —"
   },
+  "checkout": {
+    "eyebrow": "Malipo",
+    "title": "Tunathibitisha malipo yako",
+    "pendingBody": "Tunasubiri malipo yako yathibitishwe. Kwa kawaida huchukua sekunde chache — unaweza kuondoka kwenye ukurasa huu, mwongozo wako utaonekana kwenye maktaba yako.",
+    "paidBody": "Malipo yamethibitishwa. Tunafungua mwongozo wako…",
+    "refundedBody": "Agizo hili lilirejeshewa pesa, kwa hivyo mwongozo hauko tena kwenye maktaba yako.",
+    "notFound": "Hatukupata agizo hilo. Ikiwa ulitozwa, litaonekana kwenye maktaba yako mara litakapothibitishwa.",
+    "goToLibrary": "Nenda kwenye maktaba yangu"
+  },
   "footer": {
     "demoLine1": "Duka la mfano la The Safety Shelf.",
     "demoLine2": "Kwa sasa ni katalogi ya majaribio na manunuzi ya ndani. Convex, Clerk, Stripe na zana za wakala baadaye.",

@@ -106,6 +106,15 @@
     "downloadPdf": "PDF herunterladen",
     "endOfGuide": "— Ende des Ratgebers —"
   },
+  "checkout": {
+    "eyebrow": "Kasse",
+    "title": "Wir bestätigen deine Zahlung",
+    "pendingBody": "Wir warten auf die Bestätigung deiner Zahlung. Das dauert meist nur wenige Sekunden — du kannst diese Seite verlassen, dein Ratgeber erscheint in deiner Bibliothek.",
+    "paidBody": "Zahlung bestätigt. Dein Ratgeber wird geöffnet…",
+    "refundedBody": "Diese Bestellung wurde erstattet, daher ist der Ratgeber nicht mehr in deiner Bibliothek.",
+    "notFound": "Wir konnten diese Bestellung nicht finden. Falls dir der Betrag berechnet wurde, erscheint sie nach der Bestätigung in deiner Bibliothek.",
+    "goToLibrary": "Zu meiner Bibliothek"
+  },
   "footer": {
     "demoLine1": "Demo-Shop von The Safety Shelf.",
     "demoLine2": "Vorerst Testkatalog und lokale Käufe. Convex, Clerk, Stripe und Agent-Tools folgen.",
