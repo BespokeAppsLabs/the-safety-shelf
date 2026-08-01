@@ -39,13 +39,47 @@ export const reconcile = internalMutation({
 
     // Defence in depth. The webhook is signed, but never grant access off an
     // amount or currency that disagrees with what we recorded at initiation.
-    if (args.amount !== undefined && args.amount !== order.totalCents) {
+    //
+    // Absence is a failure, not a pass. Treating a missing amount as "nothing
+    // to check" meant a payload without those fields skipped verification
+    // entirely — the one shape an attacker would send.
+    if (args.amount === undefined || args.currency === undefined) {
+      await ctx.db.patch(order._id, { failureReason: "verification_missing" });
+      return { status: "verification_missing" as const };
+    }
+    if (args.amount !== order.totalCents) {
       await ctx.db.patch(order._id, { failureReason: "amount_mismatch" });
       return { status: "amount_mismatch" as const };
     }
-    if (args.currency !== undefined && args.currency !== order.currency) {
+    if (args.currency !== order.currency) {
       await ctx.db.patch(order._id, { failureReason: "currency_mismatch" });
       return { status: "currency_mismatch" as const };
+    }
+
+    const items = await ctx.db
+      .query("orderItems")
+      .withIndex("by_order", (q) => q.eq("orderId", order._id))
+      .collect();
+
+    // Last-line defence against a double charge. Prevention lives in
+    // createPendingOrder — only one live transaction per (customer, book) can
+    // exist — so reaching here means that gate was bypassed or bypassed itself.
+    // Record it as paid (the money DID move; pretending otherwise loses it) but
+    // flag it for a human to refund. This is detection, not remediation: the
+    // customer has been charged twice and only an operator refund fixes that.
+    for (const item of items) {
+      const held = await ctx.db
+        .query("entitlements")
+        .withIndex("by_user_book", (q) => q.eq("userId", order.userId).eq("bookId", item.bookId))
+        .unique();
+      if (held && !held.revokedAt && held.orderId !== order._id) {
+        await ctx.db.patch(order._id, {
+          status: "paid",
+          providerTransactionId: args.providerTransactionId,
+          failureReason: "duplicate_purchase",
+        });
+        return { status: "duplicate_purchase" as const };
+      }
     }
 
     await ctx.db.patch(order._id, {
@@ -54,10 +88,6 @@ export const reconcile = internalMutation({
       failureReason: undefined,
     });
 
-    const items = await ctx.db
-      .query("orderItems")
-      .withIndex("by_order", (q) => q.eq("orderId", order._id))
-      .collect();
     for (const item of items) {
       await grantEntitlement(ctx, { userId: order.userId, bookId: item.bookId, orderId: order._id });
     }

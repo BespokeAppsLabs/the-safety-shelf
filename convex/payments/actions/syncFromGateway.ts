@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { action } from "../../_generated/server";
 import { internal } from "../../_generated/api";
 import { verifyTransaction } from "../../lib/paystack/client";
@@ -11,16 +11,18 @@ import { verifyTransaction } from "../../lib/paystack/client";
  * Without this the customer would be left staring at a spinner holding a
  * receipt. Reconcile is idempotent, so whichever arrives second is a no-op.
  *
- * Callable by the shopper (the callback page runs it once on mount). That is
- * safe because it grants nothing on its own — it only relays Paystack's own
- * verdict, and only for a reference the caller already holds.
+ * Callable only by the signed-in owner of the order. It used to accept any
+ * reference from anyone, which turned the store into a free proxy onto
+ * Paystack's rate-limited verify endpoint: an anonymous caller could burn the
+ * integration's quota and take real checkouts down with it.
  */
 export const syncFromGateway = action({
   args: { reference: v.string() },
-  // Explicit return type: the handler calls a mutation reached through the
-  // generated `internal` API, and without it TypeScript chases its own tail
-  // inferring this module's type from the API it is part of.
   handler: async (ctx, { reference }): Promise<{ status: string }> => {
+    // Ownership is checked before we spend a gateway call, not after.
+    const owns = await ctx.runQuery(internal.payments.isOwnPendingOrder, { reference });
+    if (!owns) throw new ConvexError("Unknown order");
+
     let tx;
     try {
       tx = (await verifyTransaction(reference)).data;

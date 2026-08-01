@@ -92,10 +92,16 @@ export default defineSchema({
     userId: v.id("users"),
     reference: v.string(), // gateway transaction reference (Paystack)
     providerTransactionId: v.optional(v.string()),
+    authorizationUrl: v.optional(v.string()), // resume target; stops rival checkouts
     totalCents: v.number(),
     currency: v.string(), // baseCurrency snapshot — history never re-denominates
-    status: v.union(v.literal("pending"), v.literal("paid"), v.literal("refunded")),
-    failureReason: v.optional(v.string()),
+    // Only "paid" is revenue. "comp" is an owner freebie, "abandoned" a retired
+    // checkout — see docs/10-payments.md and convex/lib/sales.ts.
+    status: v.union(
+      v.literal("pending"), v.literal("paid"), v.literal("abandoned"),
+      v.literal("comp"), v.literal("refunded"),
+    ),
+    failureReason: v.optional(v.string()), // operator alert; see payments.needingAttention
   })
     .index("by_user", ["userId"])
     .index("by_reference", ["reference"]), // webhook idempotency

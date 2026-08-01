@@ -34,6 +34,10 @@ const paystackWebhook = httpAction(async (ctx, request) => {
     event?: string;
     data?: {
       reference?: string;
+      // Refund events key the ORIGINAL transaction differently from charge
+      // events — see the reference resolution below.
+      transaction_reference?: string;
+      transaction?: { reference?: string };
       id?: number | string;
       amount?: number;
       currency?: string;
@@ -47,7 +51,10 @@ const paystackWebhook = httpAction(async (ctx, request) => {
   }
 
   const data = event.data ?? {};
-  const reference = data.reference;
+  // charge.* carries `reference`; refund.* carries the original transaction as
+  // `transaction_reference` (older payloads nest it under `transaction`).
+  // Reading only `reference` silently dropped every refund on the floor.
+  const reference = data.reference ?? data.transaction_reference ?? data.transaction?.reference;
   if (!reference) return new Response("ok", { status: 200 });
 
   switch (event.event) {
@@ -60,6 +67,12 @@ const paystackWebhook = httpAction(async (ctx, request) => {
         providerTransactionId: data.id != null ? String(data.id) : undefined,
       });
       break;
+    // Defence only, and nothing depends on it: whether Paystack's current event
+    // table includes charge.failed is disputed, and an abandoned checkout emits
+    // no event at all. Failure is therefore established by verifying the
+    // transaction at the next Buy click (payments.startCheckout), never by
+    // waiting for a webhook that may not exist. If this one does arrive it
+    // records the reason early; if it never does, nothing is stranded.
     case "charge.failed":
       await ctx.runMutation(internal.payments.reconcile, {
         reference,
@@ -67,12 +80,14 @@ const paystackWebhook = httpAction(async (ctx, request) => {
         failureReason: data.gateway_response ?? event.event,
       });
       break;
-    case "charge.refunded":
+    // Paystack's refund lifecycle is refund.pending -> refund.processed, or
+    // refund.failed. There is no `charge.refunded` — that is Stripe's event
+    // name, and handling it meant refunds were never processed at all.
     case "refund.processed":
       await ctx.runMutation(internal.payments.refund, { reference });
       break;
     default:
-      break; // events we do not act on
+      break; // refund.pending / refund.failed and anything else: no state change
   }
 
   return new Response("ok", { status: 200 });

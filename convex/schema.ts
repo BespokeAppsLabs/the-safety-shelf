@@ -130,19 +130,38 @@ export default defineSchema({
   // an owner changing the base currency later would silently re-denominate
   // every historical order. `totalCents` is minor units OF THIS currency.
   //
-  // "pending" is written at checkout initiation; only the signed webhook
-  // promotes it to "paid". Abandoned checkouts leave pending rows behind:
-  // ponytail: harmless, they hold no orderItems so they contribute nothing to
-  // revenue, and ownership is checked against entitlements rather than orders
-  // so they never block a retry. Add a cleanup cron if the table gets noisy.
+  // Status is a lifecycle, and only "paid" is money the store kept:
+  //   pending   — checkout opened, gateway has not confirmed. Also the lock
+  //               that stops a second tab opening a second paid transaction
+  //               for the same book (see payments/createPendingOrder).
+  //   paid      — confirmed by the signed webhook. The only revenue state.
+  //   abandoned — terminal. Gateway init failed, or a stale pending checkout
+  //               was superseded. Exists so a dead checkout cannot wedge the
+  //               pending lock forever.
+  //   comp      — owner freebie. Carries the list price for the record but is
+  //               NOT revenue; see lib/sales.paidOrderItems.
+  //   refunded  — money returned; entitlement revoked.
   orders: defineTable({
     userId: v.id("users"),
     reference: v.string(),
     providerTransactionId: v.optional(v.string()),
+    // Paystack's hosted-checkout URL, stored so a second Buy click resumes this
+    // transaction rather than opening a rival one that could charge twice.
+    authorizationUrl: v.optional(v.string()),
     totalCents: v.number(),
     currency: v.string(),
-    status: v.union(v.literal("pending"), v.literal("paid"), v.literal("refunded")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("paid"),
+      v.literal("abandoned"),
+      v.literal("comp"),
+      v.literal("refunded"),
+    ),
+    // Why this order needs a human, kept permanently for audit. Resolution is
+    // recorded separately rather than by erasing it — clearing the reason would
+    // destroy the record of what went wrong.
     failureReason: v.optional(v.string()),
+    alertResolvedAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_reference", ["reference"]),

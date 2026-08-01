@@ -20,9 +20,12 @@ export const grant = viewerMutation({
     const orderId = await ctx.db.insert("orders", {
       userId,
       reference: `comp:${userId}:${bookId}:${Date.now()}`,
+      // The list price is recorded for the audit trail, but status "comp" keeps
+      // it out of revenue and units sold. Writing these as "paid" reported
+      // giveaways as income.
       totalCents: book.priceCents,
       currency,
-      status: "paid",
+      status: "comp",
     });
 
     await ctx.db.insert("orderItems", { orderId, bookId, priceCents: book.priceCents });

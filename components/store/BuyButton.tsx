@@ -50,10 +50,16 @@ export function BuyButton({ book }: { book: Doc<"books"> }) {
           setBusy(true);
           setError(null);
           try {
-            const { authorizationUrl } = await startCheckout({ bookId: book._id });
+            const result = await startCheckout({ bookId: book._id });
+            if ("alreadyPaid" in result) {
+              // Verification found this checkout had already settled — the
+              // webhook was late or lost. They own it; send them to the reader.
+              window.location.href = `/read/${book.slug}`;
+              return;
+            }
             // Leaving the app for Paystack's hosted page — stay in the busy
             // state through the redirect so the button cannot be double-fired.
-            window.location.href = authorizationUrl;
+            window.location.href = result.authorizationUrl;
           } catch (e) {
             // A failure here means checkout never opened, so there is nothing
             // to reconcile — just tell the shopper instead of silently

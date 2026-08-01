@@ -75,10 +75,24 @@ Rules the code enforces:
   recorded in `orders.failureReason` and grants nothing.
 - **Signature verified over the raw body** (HMAC-SHA512, constant-time compare)
   before the payload is parsed. Missing secret or header fails closed.
-- Abandoned checkouts leave `pending` orders. They are inert: every sales figure
-  routes through `convex/lib/sales.ts` → `paidOrderItems`, and ownership is
-  checked against `entitlements`, so a stale pending row neither counts as
-  revenue nor blocks a retry.
+- **Exactly one live transaction per (customer, book).** The `pending` order row
+  *is* the lock. A second Buy click never mints a rival transaction: it resumes
+  the stored `authorizationUrl`, so two payable references cannot coexist.
+- **Release is by verified outcome, never by a clock.** `startCheckout` verifies
+  the existing transaction before resuming. Only `failed` and `reversed` retire
+  it; `abandoned` **resumes**, because abandoned means the customer never began
+  paying — not that the URL died. With `payment_session_timeout` at its default
+  of `0` that URL never expires and stays payable, so replacing it would create
+  the second payable reference this design exists to prevent.
+- A crashed initializer (row inserted, URL never attached) is retired after a
+  60s lease. Safe only because no `authorization_url` was ever minted — there is
+  no payable transaction to duplicate.
+- Sales figures ignore everything except `paid`: see `convex/lib/sales.ts` →
+  `paidOrderItems`. Pending, abandoned, comped and refunded orders are not
+  revenue.
+- A double charge that slips the gate is recorded `paid` with
+  `failureReason: "duplicate_purchase"` and raised on the admin dashboard. That
+  is **detection, not remediation** — only an operator refund fixes it.
 
 ## Setup
 
@@ -92,6 +106,22 @@ One-time, in the Paystack dashboard (Bespoke's account):
    Copy the `SPL_...` code.
 3. **Webhook** — `https://<deployment>.convex.site/paystack/webhook`.
 4. **Base currency** — set it in Admin → Settings to match the account (`ZAR`).
+
+### Migrating a deployment that already has orders
+
+Convex validates every existing document against the schema on push, so the
+final `orders` shape cannot be pushed straight onto a deployment holding rows
+written before Paystack. Three steps, per deployment:
+
+1. Push a transitional schema — `stripeSessionId`, `stripePaymentIntentId`,
+   `reference` and `currency` all `v.optional()`, status union already widened.
+2. `npx convex run migrations/backfillOrders:run`
+3. Push the final schema (`reference` + `currency` required, `stripe*` removed).
+
+Already applied to dev (`curious-salamander-315`, 2 orders). Delete
+`convex/migrations/backfillOrders.ts` once every deployment has been migrated.
+
+### Environment
 
 Then, per deployment:
 

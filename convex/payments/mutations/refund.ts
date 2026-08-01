@@ -14,6 +14,9 @@ export const refund = internalMutation({
     if (!order) return { status: "unknown_reference" as const };
     if (order.status === "refunded") return { status: "already_refunded" as const };
 
+    // failureReason is deliberately preserved — it is the record of WHY this
+    // order was refunded, and erasing it would destroy that history. The
+    // "refunded" status is what drops it off the operator's alert list.
     await ctx.db.patch(order._id, { status: "refunded" });
 
     // Revoke only the entitlements this order granted. A customer who

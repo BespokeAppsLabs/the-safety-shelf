@@ -13,7 +13,7 @@ import type { Doc } from "../_generated/dataModel";
 // t.withIdentity({ subject }) simulates this, so this resolver is fully
 // testable today and needs zero changes once Clerk is connected.
 
-async function resolveViewer(ctx: QueryCtx): Promise<Doc<"users">> {
+export async function resolveViewer(ctx: QueryCtx): Promise<Doc<"users">> {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) throw new ConvexError("Not authenticated");
 

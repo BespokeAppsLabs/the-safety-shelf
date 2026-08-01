@@ -91,6 +91,7 @@ import type * as lib_paystack_client from "../lib/paystack/client.js";
 import type * as lib_paystack_verify from "../lib/paystack/verify.js";
 import type * as lib_sales from "../lib/sales.js";
 import type * as lib_secrets from "../lib/secrets.js";
+import type * as migrations_backfillOrders from "../migrations/backfillOrders.js";
 import type * as openrouterUsage from "../openrouterUsage.js";
 import type * as payments from "../payments.js";
 import type * as payments_actions_startCheckout from "../payments/actions/startCheckout.js";
@@ -98,6 +99,9 @@ import type * as payments_actions_syncFromGateway from "../payments/actions/sync
 import type * as payments_mutations_createPendingOrder from "../payments/mutations/createPendingOrder.js";
 import type * as payments_mutations_reconcile from "../payments/mutations/reconcile.js";
 import type * as payments_mutations_refund from "../payments/mutations/refund.js";
+import type * as payments_mutations_resolveAlert from "../payments/mutations/resolveAlert.js";
+import type * as payments_queries_isOwnPendingOrder from "../payments/queries/isOwnPendingOrder.js";
+import type * as payments_queries_needingAttention from "../payments/queries/needingAttention.js";
 import type * as payments_queries_orderStatus from "../payments/queries/orderStatus.js";
 import type * as promoteOwner from "../promoteOwner.js";
 import type * as seed from "../seed.js";
@@ -208,6 +212,7 @@ declare const fullApi: ApiFromModules<{
   "lib/paystack/verify": typeof lib_paystack_verify;
   "lib/sales": typeof lib_sales;
   "lib/secrets": typeof lib_secrets;
+  "migrations/backfillOrders": typeof migrations_backfillOrders;
   openrouterUsage: typeof openrouterUsage;
   payments: typeof payments;
   "payments/actions/startCheckout": typeof payments_actions_startCheckout;
@@ -215,6 +220,9 @@ declare const fullApi: ApiFromModules<{
   "payments/mutations/createPendingOrder": typeof payments_mutations_createPendingOrder;
   "payments/mutations/reconcile": typeof payments_mutations_reconcile;
   "payments/mutations/refund": typeof payments_mutations_refund;
+  "payments/mutations/resolveAlert": typeof payments_mutations_resolveAlert;
+  "payments/queries/isOwnPendingOrder": typeof payments_queries_isOwnPendingOrder;
+  "payments/queries/needingAttention": typeof payments_queries_needingAttention;
   "payments/queries/orderStatus": typeof payments_queries_orderStatus;
   promoteOwner: typeof promoteOwner;
   seed: typeof seed;
