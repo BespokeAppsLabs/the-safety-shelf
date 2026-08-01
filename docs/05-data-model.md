@@ -101,7 +101,10 @@ export default defineSchema({
       v.literal("pending"), v.literal("paid"), v.literal("abandoned"),
       v.literal("comp"), v.literal("refunded"),
     ),
-    failureReason: v.optional(v.string()), // operator alert; see payments.needingAttention
+    // Operator alert (see payments.needingAttention). Kept permanently for
+    // audit — resolution is stamped separately, never by erasing the reason.
+    failureReason: v.optional(v.string()),
+    alertResolvedAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_reference", ["reference"]), // webhook idempotency

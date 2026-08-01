@@ -84,9 +84,14 @@ Rules the code enforces:
   paying — not that the URL died. With `payment_session_timeout` at its default
   of `0` that URL never expires and stays payable, so replacing it would create
   the second payable reference this design exists to prevent.
-- A crashed initializer (row inserted, URL never attached) is retired after a
-  60s lease. Safe only because no `authorization_url` was ever minted — there is
-  no payable transaction to duplicate.
+- **A crashed initializer is taken over after a 60s grace period — and the timer
+  is not what makes that safe.** Paystack mints a real, payable
+  `authorization_url` whether or not we store it, and a Convex action can outlive
+  the grace period, so a taken-over creator may still be holding a live session.
+  Safety comes from the publication fence: `attachAuthorizationUrl` refuses to
+  publish for an order that is no longer pending, and `startCheckout` releases a
+  URL to the shopper only when publication succeeded. A fenced-out creator's
+  session is never handed to anyone.
 - Sales figures ignore everything except `paid`: see `convex/lib/sales.ts` →
   `paidOrderItems`. Pending, abandoned, comped and refunded orders are not
   revenue.

@@ -34,23 +34,40 @@ export const run = internalMutation({
 
     const orders = await ctx.db.query("orders").collect();
     let migrated = 0;
+    let reclassified = 0;
 
     for (const order of orders) {
       const legacy = order as typeof order & {
         stripeSessionId?: string;
         stripePaymentIntentId?: string;
       };
-      if (order.reference) continue;
-      await ctx.db.patch(order._id, {
-        reference: legacy.stripeSessionId ?? `legacy:${order._id}`,
-        providerTransactionId: legacy.stripePaymentIntentId,
-        currency: settings.baseCurrency,
-        stripeSessionId: undefined,
-        stripePaymentIntentId: undefined,
-      } as Partial<typeof order>);
-      migrated++;
+      if (!order.reference) {
+        await ctx.db.patch(order._id, {
+          reference: legacy.stripeSessionId ?? `legacy:${order._id}`,
+          providerTransactionId: legacy.stripePaymentIntentId,
+          currency: settings.baseCurrency,
+          stripeSessionId: undefined,
+          stripePaymentIntentId: undefined,
+        } as Partial<typeof order>);
+        migrated++;
+      }
+
+      // Second, independent pass: no money ever changed hands for the
+      // pre-Paystack orders. `demo:` was the self-serve stub that granted books
+      // free, `manual:`/`comp:` were owner giveaways — every one of them was
+      // written status "paid" because "comp" did not exist yet. Left alone they
+      // report giveaways as revenue forever.
+      //
+      // Deliberately separate from the field rename above so a deployment that
+      // already ran the earlier version of this migration still gets corrected.
+      const reference = (await ctx.db.get(order._id))!.reference;
+      const isFree = ["demo:", "manual:", "comp:"].some((p) => reference.startsWith(p));
+      if (isFree && order.status === "paid") {
+        await ctx.db.patch(order._id, { status: "comp" });
+        reclassified++;
+      }
     }
 
-    return { total: orders.length, migrated };
+    return { total: orders.length, migrated, reclassified };
   },
 });

@@ -69,7 +69,20 @@ detection (duplicate flagged to the owner, explicitly *not* remediation).
 | S2-F2 | P1 | Alerts merged into a date-sorted queue then `slice(0,6)`; admin UI never rendered the count | **accept** — payment rows now ordered ahead of content, plus an always-visible stat tile. |
 | S2-F3 | P1 | `failureReason` never cleared → alerts forever, no resolution path | **accept, then corrected by reviewer** — first fix *erased* `failureReason`, contradicting the agreed audit retention. Now `alertResolvedAt` stamps resolution and the reason is kept permanently. |
 | S2-F4 | P0 | Crashed initializer wedged `preparing` forever | **accept, reviewer's analysis superseded mine** — my "60s is beyond the action lifetime, so no URL was minted" was **false**: actions can run far longer and Paystack mints a payable URL regardless of whether we store it. A taken-over creator could still return a live URL. Fixed with a publication fence (`attachAuthorizationUrl` returns false unless it atomically patches a still-pending order; the URL is never released otherwise). Timer reframed in-code as a takeover grace, not proof of death. |
-| S2-F5 | P0 | Docs contradicted the implementation | **accept** — `10-payments.md` claimed stale pending never blocks retry (it now deliberately blocks) and omitted the migration; `05-data-model.md` omitted the new fields. Both corrected. |
+| S2-F5 | P0 | Docs contradicted the implementation | **accept — first fix incomplete.** `10-payments.md` claimed stale pending never blocks retry, and after the first correction *still* carried the false "no `authorization_url` was ever minted" claim; `05-data-model.md` omitted `alertResolvedAt`. Fully corrected in the final commit on this branch, after the reviewer's post-CI pass caught both. See R-2/R-3 below. |
+
+## Final reviewer pass (post-CI, round cap exhausted)
+
+The reviewer re-audited the pushed head independently and returned NO-GO with
+four further findings. All four verified and accepted; none reopened a settled
+design question, so they were completed rather than negotiated.
+
+| # | Sev | Finding | Disposition |
+|---|---|---|---|
+| R-1 | P1 | Legacy `demo:`/`manual:` orders kept `status: "paid"`, so free giveaways still counted as revenue after migration | **accept** — real: 2 dev orders reported ZAR 27.98 of income that never existed. `backfillOrders` gained an independent reclassification pass mapping free-order reference prefixes to `comp`. Re-run on dev: `reclassified: 2`, dashboard revenue now 0. |
+| R-2 | P1 | `10-payments.md` still asserted no rival URL is minted during takeover | **accept** — the code comment had been corrected, the doc had not. The doc now states the fence, not the timer, provides safety. |
+| R-3 | P2 | `05-data-model.md` omitted `alertResolvedAt` | **accept** — added. |
+| R-4 | — | Artifact untracked and recorded S2-F5 as complete | **partly accept** — the artifact *was* committed (`7e731f0`); the reviewer read the tree before that commit. But "S2-F5 complete" was genuinely wrong given R-2/R-3, and this table is the correction. |
 
 ## Premises corrected (conclusions unaffected)
 
@@ -81,7 +94,11 @@ detection (duplicate flagged to the owner, explicitly *not* remediation).
 - REV-01: `AGREEMENT: changes` ×4, each implemented; closed with both open items conceded by the implementer, making the reviewer's requested evidence moot.
 - SHEPHERD-02: `AGREEMENT: changes` ×2, each implemented; final evidence sent round 4.
 
-**Contribution counts** — parent (Claude) messages: 7 · reviewer (Codex) messages: 7.
+**Contribution counts** — parent (Claude) messages: 8 · reviewer (Codex) messages: 8.
+
+The 4-round cap was reached in both threads. The reviewer's final independent
+pass was not a fifth negotiation round: every item was a completion of an
+already-agreed disposition, verified against the code before being applied.
 
 ## Outstanding — for the Boss, not blockers on this diff
 
