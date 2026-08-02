@@ -26,6 +26,16 @@ function secretKey(): string {
   return key;
 }
 
+/**
+ * True when this deployment is transacting with real money.
+ *
+ * Used to scope guards that protect revenue rather than correctness: on a test
+ * key nothing settles, so a missing split cannot shortchange anyone.
+ */
+export function isLiveMode(): boolean {
+  return (process.env.PAYSTACK_SECRET_KEY ?? "").startsWith("sk_live_");
+}
+
 export type PaystackEnvelope<T> = {
   status: boolean;
   message: string;

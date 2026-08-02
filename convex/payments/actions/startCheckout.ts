@@ -3,7 +3,7 @@
 import { ConvexError, v } from "convex/values";
 import { action, type ActionCtx } from "../../_generated/server";
 import { internal } from "../../_generated/api";
-import { initializeTransaction, verifyTransaction, PaystackError } from "../../lib/paystack/client";
+import { initializeTransaction, verifyTransaction, isLiveMode, PaystackError } from "../../lib/paystack/client";
 import type { Id } from "../../_generated/dataModel";
 
 type CheckoutResult = { authorizationUrl: string; reference: string } | { alreadyPaid: true };
@@ -30,8 +30,13 @@ export const startCheckout = action({
     // in the main account and the 45% owed to the client silently never moves.
     // A payment that quietly breaks the revenue agreement is worse than a
     // checkout that fails loudly.
+    //
+    // Scoped to live keys because this guard protects revenue, not correctness:
+    // on a test key nothing settles, so an unsplit transaction shortchanges
+    // nobody, and requiring a split group would block all flow testing until
+    // the partner's bank details exist. Live remains hard-blocked.
     const splitCode = process.env.PAYSTACK_SPLIT_CODE;
-    if (!splitCode) {
+    if (!splitCode && isLiveMode()) {
       throw new ConvexError(
         "PAYSTACK_SPLIT_CODE is not set on the Convex deployment. Run: npx convex env set PAYSTACK_SPLIT_CODE <code>",
       );
@@ -56,7 +61,7 @@ async function open(
   ctx: ActionCtx,
   bookId: Id<"books">,
   appUrl: string,
-  splitCode: string,
+  splitCode: string | undefined,
 ): Promise<CheckoutResult | null> {
   // Opaque and unguessable. Generated here so the order row and the Paystack
   // transaction agree on it from the very first write.
@@ -142,7 +147,7 @@ async function open(
       // The 45/55 split group — a split group, not a bare subaccount, because
       // only bearer_type "all-proportional" shares the gateway fee between both
       // parties. See docs/10-payments.md.
-      split_code: splitCode,
+      split_code: splitCode || undefined,
       metadata: { orderId: order.orderId, bookId },
     });
     const authorizationUrl = res.data.authorization_url;

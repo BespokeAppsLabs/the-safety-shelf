@@ -21,13 +21,23 @@ export function BuyButton({ book }: { book: Doc<"books"> }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Shown wherever a price is, not only at the final click: someone deciding
+  // whether to create an account deserves to know the charge is in rand before
+  // they invest in signing up, not after.
+  const billingNote = billedAs ? (
+    <p className="text-xs text-muted">{fill(dict.product.billedAs, { amount: billedAs })}</p>
+  ) : null;
+
   if (!isAuthenticated) {
     return (
-      <SignInButton mode="modal">
-        <Button variant="secondary">
-          {price ? fill(dict.product.signInToBuy, { price }) : dict.auth.signIn}
-        </Button>
-      </SignInButton>
+      <div className="flex flex-col gap-2">
+        <SignInButton mode="modal">
+          <Button variant="secondary">
+            {price ? fill(dict.product.signInToBuy, { price }) : dict.auth.signIn}
+          </Button>
+        </SignInButton>
+        {billingNote}
+      </div>
     );
   }
 
@@ -76,12 +86,7 @@ export function BuyButton({ book }: { book: Doc<"books"> }) {
             ? fill(dict.product.buyFor, { price })
             : dict.product.priceUnavailable}
       </Button>
-      {/* The store price is a converted, rounded approximation; this is the
-          figure that will appear on their statement. Shown before they commit,
-          not after. */}
-      {billedAs ? (
-        <p className="text-xs text-muted">{fill(dict.product.billedAs, { amount: billedAs })}</p>
-      ) : null}
+      {billingNote}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
     </div>
   );
