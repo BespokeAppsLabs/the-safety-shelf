@@ -6,7 +6,7 @@ import { ConvexClientProvider } from "./ConvexClientProvider";
 import { I18nProvider } from "./I18nProvider";
 import { api } from "@/convex/_generated/api";
 import { getDictionary } from "@/lib/i18n";
-import { languageDir } from "@/lib/languages";
+import { DEFAULT_DISPLAY_CURRENCY, languageDir } from "@/lib/languages";
 import { LOCALE_COOKIE } from "@/lib/locale";
 import "./globals.css";
 
@@ -37,9 +37,27 @@ export default async function RootLayout({
     fetchQuery(api.fxRates.list, {}),
   ]);
 
-  // No rate for this currency is a normal state — the shopper simply sees
-  // base-currency prices instead of a made-up conversion.
-  const rate = currency ? rates.find((row) => row.currency === currency)?.rate : undefined;
+  // Pick the most useful currency we can actually convert into, stepping down
+  // rather than jumping straight to base.
+  //
+  // A shopper we CAN place but have no rate for — Japan today, since fxRates
+  // has USD only — would otherwise fall all the way back to rand, which is the
+  // one currency an overseas shopper cannot judge. USD is a real rate the owner
+  // set, not an invented one, so it is a better answer than ZAR. Base currency
+  // remains the final fallback: always truthful, never guessed.
+  const baseCurrency = settings?.baseCurrency ?? null;
+  const rateFor = (code: string | undefined) =>
+    code ? rates.find((row) => row.currency === code)?.rate : undefined;
+
+  let displayCurrency = currency;
+  let rate = rateFor(displayCurrency);
+  if (!rate && displayCurrency && displayCurrency !== baseCurrency) {
+    const fallbackRate = rateFor(DEFAULT_DISPLAY_CURRENCY);
+    if (fallbackRate) {
+      displayCurrency = DEFAULT_DISPLAY_CURRENCY;
+      rate = fallbackRate;
+    }
+  }
   const dir = languageDir(lang);
 
   return (
@@ -55,7 +73,7 @@ export default async function RootLayout({
             dir,
             locale: lang,
             dict,
-            price: { baseCurrency: settings?.baseCurrency ?? null, currency, rate },
+            price: { baseCurrency, currency: displayCurrency, rate },
           }}
         >
           <ConvexClientProvider>{children}</ConvexClientProvider>
