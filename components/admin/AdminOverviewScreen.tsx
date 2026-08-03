@@ -34,6 +34,15 @@ export function AdminOverviewScreen() {
     { label: "Revenue", value: money(overview.revenueCents) ?? "—", detail: overview.currency ? "Paid-order total." : "Set the store currency in Settings." },
     { label: "Library unlocks", value: String(overview.activeUnlocks), detail: "Active reader entitlements." },
     { label: "Pending approvals", value: String(overview.pendingApprovals), detail: "Agent proposals awaiting your decision." },
+    // Always rendered, including at zero: a payment alert tile that only
+    // appears when something is wrong is a tile nobody learns to look at.
+    {
+      label: "Payments to review",
+      value: String(overview.paymentsNeedingAttention),
+      detail: overview.paymentsNeedingAttention
+        ? "Double charges or mismatched settlements. Refund in Paystack."
+        : "No payments need a decision.",
+    },
   ] : [];
 
   return (

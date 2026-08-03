@@ -79,7 +79,8 @@
     "signInToBuy": "Masuk untuk membeli seharga {price}",
     "readGuide": "Baca panduan",
     "processing": "Memproses…",
-    "priceUnavailable": "Harga tidak tersedia"
+    "priceUnavailable": "Harga tidak tersedia",
+    "billedAs": "Ditagih {amount}. Bank Anda menentukan kurs konversi akhir."
   },
   "library": {
     "eyebrow": "Perpustakaan saya",
@@ -105,6 +106,15 @@
     "backToLibrary": "Perpustakaan",
     "downloadPdf": "Unduh PDF",
     "endOfGuide": "— akhir panduan —"
+  },
+  "checkout": {
+    "eyebrow": "Pembayaran",
+    "title": "Mengonfirmasi pembayaran Anda",
+    "pendingBody": "Kami menunggu konfirmasi pembayaran Anda. Biasanya hanya butuh beberapa detik — Anda boleh meninggalkan halaman ini, panduan Anda akan muncul di perpustakaan Anda.",
+    "paidBody": "Pembayaran dikonfirmasi. Membuka panduan Anda…",
+    "refundedBody": "Pesanan ini telah dikembalikan dananya, jadi panduannya tidak lagi ada di perpustakaan Anda.",
+    "notFound": "Kami tidak menemukan pesanan tersebut. Jika Anda sudah ditagih, pesanan akan muncul di perpustakaan Anda setelah dikonfirmasi.",
+    "goToLibrary": "Ke perpustakaan saya"
   },
   "footer": {
     "demoLine1": "Etalase demo The Safety Shelf.",

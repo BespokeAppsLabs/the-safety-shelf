@@ -4,7 +4,7 @@ import {
   customCtx,
 } from "convex-helpers/server/customFunctions";
 import { ConvexError } from "convex/values";
-import { query, mutation, type QueryCtx } from "../_generated/server";
+import { query, mutation, internalMutation, type QueryCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 
 // Auth seam: Clerk isn't wired yet, but ctx.auth.getUserIdentity() and the
@@ -13,7 +13,7 @@ import type { Doc } from "../_generated/dataModel";
 // t.withIdentity({ subject }) simulates this, so this resolver is fully
 // testable today and needs zero changes once Clerk is connected.
 
-async function resolveViewer(ctx: QueryCtx): Promise<Doc<"users">> {
+export async function resolveViewer(ctx: QueryCtx): Promise<Doc<"users">> {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) throw new ConvexError("Not authenticated");
 
@@ -35,6 +35,17 @@ export const viewerQuery = customQuery(
 /** Mutation for a signed-in viewer. ctx gains { viewer }. */
 export const viewerMutation = customMutation(
   mutation,
+  customCtx(async (ctx) => ({ viewer: await resolveViewer(ctx) })),
+);
+
+/**
+ * Internal mutation for a signed-in viewer. Convex propagates the caller's
+ * identity through ctx.runMutation, so an action can resolve the same viewer
+ * an ordinary mutation would — used by payments.startCheckout, which must run
+ * its guards inside a transaction before talking to Paystack.
+ */
+export const viewerInternalMutation = customMutation(
+  internalMutation,
   customCtx(async (ctx) => ({ viewer: await resolveViewer(ctx) })),
 );
 

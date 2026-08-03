@@ -79,7 +79,8 @@
     "signInToBuy": "Anmelden, um für {price} zu kaufen",
     "readGuide": "Ratgeber lesen",
     "processing": "Wird verarbeitet…",
-    "priceUnavailable": "Preis nicht verfügbar"
+    "priceUnavailable": "Preis nicht verfügbar",
+    "billedAs": "Abgerechnet mit {amount}. Den endgültigen Umrechnungskurs legt deine Bank fest."
   },
   "library": {
     "eyebrow": "Meine Bibliothek",
@@ -105,6 +106,15 @@
     "backToLibrary": "Bibliothek",
     "downloadPdf": "PDF herunterladen",
     "endOfGuide": "— Ende des Ratgebers —"
+  },
+  "checkout": {
+    "eyebrow": "Kasse",
+    "title": "Wir bestätigen deine Zahlung",
+    "pendingBody": "Wir warten auf die Bestätigung deiner Zahlung. Das dauert meist nur wenige Sekunden — du kannst diese Seite verlassen, dein Ratgeber erscheint in deiner Bibliothek.",
+    "paidBody": "Zahlung bestätigt. Dein Ratgeber wird geöffnet…",
+    "refundedBody": "Diese Bestellung wurde erstattet, daher ist der Ratgeber nicht mehr in deiner Bibliothek.",
+    "notFound": "Wir konnten diese Bestellung nicht finden. Falls dir der Betrag berechnet wurde, erscheint sie nach der Bestätigung in deiner Bibliothek.",
+    "goToLibrary": "Zu meiner Bibliothek"
   },
   "footer": {
     "demoLine1": "Demo-Shop von The Safety Shelf.",

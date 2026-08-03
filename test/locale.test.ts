@@ -57,8 +57,27 @@ describe("resolveCurrency", () => {
     expect(resolveCurrency("LB")).toBe("LBP");
   });
 
-  it("returns undefined for unmapped countries so callers use the base currency", () => {
-    expect(resolveCurrency("IS")).toBeUndefined();
-    expect(resolveCurrency(null)).toBeUndefined();
+  it("falls back to USD for unmapped countries rather than the base currency", () => {
+    // Prices settle in rand, but an unplaceable international shopper shown
+    // "R280" cannot judge it. USD is the unit most of the world prices against.
+    expect(resolveCurrency("IS")).toBe("USD");
+    expect(resolveCurrency(null)).toBe("USD");
+    expect(resolveCurrency(undefined)).toBe("USD");
+  });
+
+  it("still prefers the shopper's own currency when the country is known", () => {
+    expect(resolveCurrency("ZA")).toBe("ZAR");
+    expect(resolveCurrency("jp")).toBe("JPY");
+  });
+});
+
+describe("first-request currency", () => {
+  it("resolves a currency for every visitor, so nothing falls back to base", () => {
+    // proxy forwards this on the request headers; app/layout prefers it over
+    // the cookie, which only arrives on the *next* request. Before that, a
+    // first-time visitor rendered base-currency rand.
+    for (const country of ["JP", "IS", "ZA", null, undefined]) {
+      expect(resolveCurrency(country)).toBeTruthy();
+    }
   });
 });

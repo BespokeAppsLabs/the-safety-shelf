@@ -79,7 +79,8 @@
     "signInToBuy": "Meld aan om vir {price} te koop",
     "readGuide": "Lees die gids",
     "processing": "Verwerk tans…",
-    "priceUnavailable": "Prys nie beskikbaar nie"
+    "priceUnavailable": "Prys nie beskikbaar nie",
+    "billedAs": "Gehef as {amount}. Jou bank bepaal die finale omskakeling."
   },
   "library": {
     "eyebrow": "My biblioteek",
@@ -105,6 +106,15 @@
     "backToLibrary": "Biblioteek",
     "downloadPdf": "Laai PDF af",
     "endOfGuide": "— einde van die gids —"
+  },
+  "checkout": {
+    "eyebrow": "Betaling",
+    "title": "Ons bevestig jou betaling",
+    "pendingBody": "Ons wag dat jou betaling bevestig word. Dit neem gewoonlik 'n paar sekondes — jy kan hierdie bladsy verlaat, jou gids sal in jou biblioteek verskyn.",
+    "paidBody": "Betaling bevestig. Jou gids word oopgemaak…",
+    "refundedBody": "Hierdie bestelling is terugbetaal, dus is die gids nie meer in jou biblioteek nie.",
+    "notFound": "Ons kon nie daardie bestelling vind nie. As jy gehef is, sal dit steeds in jou biblioteek verskyn sodra dit bevestig is.",
+    "goToLibrary": "Gaan na my biblioteek"
   },
   "footer": {
     "demoLine1": "The Safety Shelf se demo-winkelfront.",

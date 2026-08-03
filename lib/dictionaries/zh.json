@@ -79,7 +79,8 @@
     "signInToBuy": "登录后以 {price} 购买",
     "readGuide": "阅读指南",
     "processing": "处理中…",
-    "priceUnavailable": "价格不可用"
+    "priceUnavailable": "价格不可用",
+    "billedAs": "将收取 {amount}。最终汇率由您的银行决定。"
   },
   "library": {
     "eyebrow": "我的书库",
@@ -105,6 +106,15 @@
     "backToLibrary": "书库",
     "downloadPdf": "下载 PDF",
     "endOfGuide": "— 指南结束 —"
+  },
+  "checkout": {
+    "eyebrow": "结账",
+    "title": "正在确认您的付款",
+    "pendingBody": "我们正在等待付款确认，通常只需几秒钟。您可以离开此页面，您的指南将出现在您的书库中。",
+    "paidBody": "付款已确认。正在打开您的指南……",
+    "refundedBody": "此订单已退款，因此该指南不再在您的书库中。",
+    "notFound": "我们找不到该订单。如果已扣款，确认后它仍会出现在您的书库中。",
+    "goToLibrary": "前往我的书库"
   },
   "footer": {
     "demoLine1": "The Safety Shelf 演示店面。",

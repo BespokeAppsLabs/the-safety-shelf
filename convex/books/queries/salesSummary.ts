@@ -1,4 +1,5 @@
 import { viewerQuery, requireOwner } from "../../lib/auth";
+import { paidOrderItems } from "../../lib/sales";
 
 // Units + revenue per book, from real orderItems (snapshot pricing) — not
 // derived from books.priceCents, which can change after a sale. Backs the
@@ -8,7 +9,7 @@ export const salesSummary = viewerQuery({
   handler: async (ctx) => {
     requireOwner(ctx.viewer);
 
-    const items = await ctx.db.query("orderItems").collect();
+    const items = await paidOrderItems(ctx);
     const summary: Record<string, { units: number; revenueCents: number }> = {};
     for (const item of items) {
       const entry = summary[item.bookId] ?? { units: 0, revenueCents: 0 };

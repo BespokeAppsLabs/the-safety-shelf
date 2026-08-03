@@ -79,7 +79,8 @@
     "signInToBuy": "Kena ho reka ka {price}",
     "readGuide": "Bala tataiso",
     "processing": "E ntse e sebetsa…",
-    "priceUnavailable": "Theko ha e fumanehe"
+    "priceUnavailable": "Theko ha e fumanehe",
+    "billedAs": "O tla lefiswa {amount}. Banka ya hao e beha sekgahla sa ho fetola sa ho qetela."
   },
   "library": {
     "eyebrow": "Laebrari ya ka",
@@ -105,6 +106,15 @@
     "backToLibrary": "Laebrari",
     "downloadPdf": "Jarolla PDF",
     "endOfGuide": "— pheletso ya tataiso —"
+  },
+  "checkout": {
+    "eyebrow": "Tefo",
+    "title": "Re netefatsa tefo ya hao",
+    "pendingBody": "Re emetse hore tefo ya hao e netefatswe. Hangata ho nka metsotswana e seng mekae — o ka tloha leqepheng lena, tataiso ya hao e tla hlaha laeboraring ya hao.",
+    "paidBody": "Tefo e netefalitswe. Re bula tataiso ya hao…",
+    "refundedBody": "Odara ena e busheditswe chelete, kahoo tataiso ha e sa le laeboraring ya hao.",
+    "notFound": "Ha re a kgona ho fumana odara eo. Haeba o ile wa lefiswa, e tla hlaha laeboraring ya hao ha e netefatswa.",
+    "goToLibrary": "Eya laeboraring ya ka"
   },
   "footer": {
     "demoLine1": "Lebenkele la mohlala la The Safety Shelf.",

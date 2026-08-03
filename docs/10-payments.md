@@ -1,0 +1,210 @@
+# 10 — Payments (Paystack)
+
+Checkout runs on Paystack hosted payment pages. Revenue is split **55/45**:
+Bespoke's main account keeps 55%, the client's subaccount receives 45%, and
+Paystack's gateway fee is shared between them in the same proportion.
+
+## Why a split group, not a subaccount
+
+Paystack offers two ways to split money, and only one expresses "45/55 after
+fees":
+
+| | `subaccount` + `percentage_charge` | **Split group (`split_code`)** |
+|---|---|---|
+| Fee handling | `bearer` picks ONE party to pay the whole fee | `bearer_type: "all-proportional"` shares it |
+| Result | main account absorbs 100% of the fee out of its 55 | both parties net down proportionally |
+
+We use a split group. Setting `bearer: 'account'` on a bare subaccount would
+quietly shift the entire gateway cost onto Bespoke, which is not the deal.
+
+```
+gross            ZAR 150.00
+- paystack fee   ZAR   4.50   ← shared proportionally
+= net            ZAR 145.50
+  → main (Bespoke)  55%   ZAR 80.03
+  → sub  (client)   45%   ZAR 65.47
+```
+
+The split lives entirely in the Paystack dashboard. The app knows one opaque
+string, `PAYSTACK_SPLIT_CODE`, and never computes a share — so changing the
+ratio is a dashboard edit, not a deploy.
+
+## Merchant of record
+
+Bespoke holds the main account, which makes **Bespoke the merchant of record**:
+Bespoke holds the Paystack contract, owns the customer relationship, and carries
+chargeback liability. Refunds are debited from Bespoke's account. The client's
+45% settles to their own bank on Paystack's normal schedule.
+
+## What gets charged
+
+The shopper is charged `books.priceCents` in `storeSettings.baseCurrency`,
+verbatim. The localised price shown around the store is **display only** — see
+`09-i18n-and-pricing.md`. Their card issuer performs any conversion.
+
+This keeps the rule that the ledger never moves: `orders.totalCents` and
+`orderItems.priceCents` are base-currency minor units, and `orders.currency`
+snapshots which currency that was, so a later change of base currency cannot
+re-denominate historical revenue.
+
+**The base currency must be one the Paystack account is enabled for.** A ZA
+account takes ZAR. If it is not, `startCheckout` surfaces Paystack's own
+"currency not supported" message rather than failing silently.
+
+## Can an overseas customer pay?
+
+Yes — a US shopper pays with their US card and we settle ZAR. But not by being
+charged in dollars, and not without an account prerequisite.
+
+**The mechanic, in Paystack's own words:** *"if you prefer to receive payouts in
+your local currency, you can set prices in local currency, and when a customer
+with a card domiciled in USD makes a payment, their bank deducts the USD
+equivalent, which Paystack then receives and pays to you in local currency."*
+That is exactly this design: one ZAR price, one ZAR charge, ZAR settlement, and
+the customer's own issuer does the conversion at its rate.
+
+**Charging in USD is not an option for a South African business.** Accepting and
+being paid out in USD is available only to businesses in Nigeria and Kenya. This
+is why the store charges base currency and treats every other currency as
+display — it is the only mechanism a ZA account actually has.
+
+**Prerequisites, both on the Paystack account, not in this repo:**
+
+1. **International payments must be enabled.** Requested at business creation or
+   later from the dashboard, granted on compliance review. Without it, foreign
+   cards are declined — the storefront will happily show a US shopper a dollar
+   price they cannot pay.
+2. **This business is in an extra-scrutiny category.** Paystack lists
+   "E-books/digital products" as requiring additional documentation before
+   international payments are approved: compliance documents plus a website or
+   social presence evidencing product sales. Budget for that review.
+
+Accepted internationally: Visa, Mastercard, Verve, and Amex (Amex is on by
+default for South African businesses).
+
+**International cards cost more** — roughly 3.1% + R1 versus the local rate.
+Because the split group uses `bearer_type: "all-proportional"`, that higher fee
+is shared 55/45 like any other, so neither party silently absorbs the cost of
+selling abroad.
+
+## What the shopper sees
+
+Display currency follows the shopper's country, defaulting to **USD** when we
+cannot place them — not to ZAR, which an international visitor cannot judge.
+Conversion uses the owner's `fxRates`, rounded to whole units.
+
+Because the displayed currency is not the charged currency, checkout states the
+exact charge as well: *"Billed as R270.00. Your bank sets the final
+conversion."* The store price is a rounded approximation; the billed figure is
+the one that appears on their statement, and hiding the difference would leave
+them unable to reconcile it. Shown before they commit, never after.
+
+## The flow
+
+```
+BuyButton
+  └─ payments.startCheckout (action)
+       ├─ payments.createPendingOrder   → orders(status:"pending") + orderItems
+       └─ Paystack /transaction/initialize (amount, currency, split_code)
+            → redirect to Paystack hosted page
+                 ├─ webhook  POST convex.site/paystack/webhook  → payments.reconcile   ← grants access
+                 └─ browser  APP_URL/payments/callback          → payments.syncFromGateway (verify + same reconcile)
+```
+
+Rules the code enforces:
+
+- **Only `payments.reconcile` grants a paid entitlement.** Nothing else may.
+- **The webhook is authoritative.** The callback page reports; it never grants.
+- **Idempotent.** Paystack retries webhooks, and the callback can race one.
+  Reconcile returns early once an order is `paid` or `refunded`, so a replay
+  cannot issue a second entitlement or double the revenue.
+- **Amount and currency are re-checked** against what we recorded at initiation
+  before access is granted, even though the webhook is signed. A mismatch is
+  recorded in `orders.failureReason` and grants nothing.
+- **Signature verified over the raw body** (HMAC-SHA512, constant-time compare)
+  before the payload is parsed. Missing secret or header fails closed.
+- **Exactly one live transaction per (customer, book).** The `pending` order row
+  *is* the lock. A second Buy click never mints a rival transaction: it resumes
+  the stored `authorizationUrl`, so two payable references cannot coexist.
+- **Release is by verified outcome, never by a clock.** `startCheckout` verifies
+  the existing transaction before resuming. Only `failed` and `reversed` retire
+  it; `abandoned` **resumes**, because abandoned means the customer never began
+  paying — not that the URL died. With `payment_session_timeout` at its default
+  of `0` that URL never expires and stays payable, so replacing it would create
+  the second payable reference this design exists to prevent.
+- **A crashed initializer is taken over after a 60s grace period — and the timer
+  is not what makes that safe.** Paystack mints a real, payable
+  `authorization_url` whether or not we store it, and a Convex action can outlive
+  the grace period, so a taken-over creator may still be holding a live session.
+  Safety comes from the publication fence: `attachAuthorizationUrl` refuses to
+  publish for an order that is no longer pending, and `startCheckout` releases a
+  URL to the shopper only when publication succeeded. A fenced-out creator's
+  session is never handed to anyone.
+- Sales figures ignore everything except `paid`: see `convex/lib/sales.ts` →
+  `paidOrderItems`. Pending, abandoned, comped and refunded orders are not
+  revenue.
+- A double charge that slips the gate is recorded `paid` with
+  `failureReason: "duplicate_purchase"` and raised on the admin dashboard. That
+  is **detection, not remediation** — only an operator refund fixes it.
+
+## Setup
+
+One-time, in the Paystack dashboard (Bespoke's account):
+
+1. **Subaccount** — the client's bank details. ZA validates via `/bank/validate`;
+   `/bank/resolve` is Nigeria/Ghana only. Note that `is_verified: false` on the
+   response is Paystack's own KYC state, not a failure — the subaccount works.
+2. **Split group** — type `percentage`, currency `ZAR`, one subaccount at share
+   `45` (the main account keeps the remaining 55), bearer `all-proportional`.
+   Copy the `SPL_...` code.
+3. **Webhook** — `https://<deployment>.convex.site/paystack/webhook`.
+4. **Base currency** — **do not** set this in Admin → Settings. `setBaseCurrency`
+   relabels `priceCents` without converting it, so switching a USD catalogue to
+   ZAR that way turns a $14.99 book into R14.99 — a ~95% price cut, applied
+   silently. Use the migration, which moves the price and the label together:
+
+   ```bash
+   npx convex run migrations/switchBaseToZar:run '{"usdToZar": 18.5}'                  # preview
+   npx convex run migrations/switchBaseToZar:run '{"usdToZar": 18.5, "apply": true}'    # apply
+   ```
+
+   It refuses to run unless the current base is USD, rebases every existing
+   `fxRates` row onto the new base, and seeds the ZAR→USD display rate. Verify
+   afterwards that `storeSettings.baseCurrency` is `ZAR`, book prices are the
+   expected rand figures, and a `USD` row exists in `fxRates`.
+
+### Migrating a deployment that already has orders
+
+Convex validates every existing document against the schema on push, so the
+final `orders` shape cannot be pushed straight onto a deployment holding rows
+written before Paystack. Three steps, per deployment:
+
+1. Push a transitional schema — `stripeSessionId`, `stripePaymentIntentId`,
+   `reference` and `currency` all `v.optional()`, status union already widened.
+2. `npx convex run migrations/backfillOrders:run`
+3. Push the final schema (`reference` + `currency` required, `stripe*` removed).
+
+Already applied to dev (`curious-salamander-315`, 2 orders). Delete
+`convex/migrations/backfillOrders.ts` once every deployment has been migrated.
+
+### Environment
+
+Then, per deployment:
+
+```bash
+npx convex env set PAYSTACK_SECRET_KEY sk_test_...   # sk_live_ in production
+npx convex env set PAYSTACK_SPLIT_CODE SPL_...
+npx convex env set APP_URL http://localhost:5050     # the real origin in production
+```
+
+## Testing
+
+Paystack test cards (full matrix in the wiki's Paystack page):
+
+| Card | CVV | Outcome |
+|---|---|---|
+| 4084 0840 8408 4081 | 408 | success, reusable |
+| 4084 0800 0000 5408 | 001 | declined |
+
+Replay a webhook from the Paystack dashboard to confirm no duplicate grant.
+`convex/payments/tests/reconcile.test.ts` covers the same rules offline.

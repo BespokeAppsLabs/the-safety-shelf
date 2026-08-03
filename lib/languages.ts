@@ -74,6 +74,19 @@ export const COUNTRY_LANGUAGE: Record<string, LanguageCode> = {
  * Country → ISO currency. Separate from language precisely because Arabic and
  * Spanish each span several currency zones.
  */
+/**
+ * What a shopper sees when we cannot place them.
+ *
+ * Deliberately NOT the store's base currency. Prices settle in ZAR, but the
+ * store sells worldwide and an unplaceable visitor reading rand has no idea
+ * what the book costs them. USD is the currency the most people can price a
+ * thing in without conversion.
+ *
+ * Only affects DISPLAY. The charge is always base currency — see
+ * docs/10-payments.md.
+ */
+export const DEFAULT_DISPLAY_CURRENCY = "USD";
+
 export const COUNTRY_CURRENCY: Record<string, string> = {
   IT: "EUR", ES: "EUR", GR: "EUR", CY: "EUR", FR: "EUR", BE: "EUR", NL: "EUR",
   DE: "EUR", AT: "EUR", PT: "EUR", IE: "EUR", FI: "EUR",

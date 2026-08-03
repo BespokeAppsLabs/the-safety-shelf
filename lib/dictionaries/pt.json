@@ -79,7 +79,8 @@
     "signInToBuy": "Entre para comprar por {price}",
     "readGuide": "Ler o guia",
     "processing": "A processar…",
-    "priceUnavailable": "Preço indisponível"
+    "priceUnavailable": "Preço indisponível",
+    "billedAs": "Cobrado como {amount}. O seu banco define a conversão final."
   },
   "library": {
     "eyebrow": "A minha biblioteca",
@@ -105,6 +106,15 @@
     "backToLibrary": "Biblioteca",
     "downloadPdf": "Transferir PDF",
     "endOfGuide": "— fim do guia —"
+  },
+  "checkout": {
+    "eyebrow": "Pagamento",
+    "title": "A confirmar o seu pagamento",
+    "pendingBody": "Estamos à espera da confirmação do seu pagamento. Normalmente demora alguns segundos — pode sair desta página, o seu guia aparecerá na sua biblioteca.",
+    "paidBody": "Pagamento confirmado. A abrir o seu guia…",
+    "refundedBody": "Este pedido foi reembolsado, por isso o guia já não está na sua biblioteca.",
+    "notFound": "Não encontrámos esse pedido. Se foi cobrado, ele aparecerá na sua biblioteca assim que for confirmado.",
+    "goToLibrary": "Ir para a minha biblioteca"
   },
   "footer": {
     "demoLine1": "Loja de demonstração The Safety Shelf.",

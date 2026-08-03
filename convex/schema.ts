@@ -122,15 +122,49 @@ export default defineSchema({
     imgStorageId: v.optional(v.id("_storage")),
   }).index("by_variant", ["variantId", "chapter", "ord"]),
 
+  // Provider-neutral order ledger. `reference` is the payment gateway's
+  // transaction reference (Paystack) and doubles as the webhook idempotency
+  // key — Paystack retries, so reconcile must find the same row twice.
+  //
+  // `currency` snapshots storeSettings.baseCurrency at order time. Without it,
+  // an owner changing the base currency later would silently re-denominate
+  // every historical order. `totalCents` is minor units OF THIS currency.
+  //
+  // Status is a lifecycle, and only "paid" is money the store kept:
+  //   pending   — checkout opened, gateway has not confirmed. Also the lock
+  //               that stops a second tab opening a second paid transaction
+  //               for the same book (see payments/createPendingOrder).
+  //   paid      — confirmed by the signed webhook. The only revenue state.
+  //   abandoned — terminal. Gateway init failed, or a stale pending checkout
+  //               was superseded. Exists so a dead checkout cannot wedge the
+  //               pending lock forever.
+  //   comp      — owner freebie. Carries the list price for the record but is
+  //               NOT revenue; see lib/sales.paidOrderItems.
+  //   refunded  — money returned; entitlement revoked.
   orders: defineTable({
     userId: v.id("users"),
-    stripeSessionId: v.string(),
-    stripePaymentIntentId: v.optional(v.string()),
+    reference: v.string(),
+    providerTransactionId: v.optional(v.string()),
+    // Paystack's hosted-checkout URL, stored so a second Buy click resumes this
+    // transaction rather than opening a rival one that could charge twice.
+    authorizationUrl: v.optional(v.string()),
     totalCents: v.number(),
-    status: v.union(v.literal("paid"), v.literal("refunded")),
+    currency: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("paid"),
+      v.literal("abandoned"),
+      v.literal("comp"),
+      v.literal("refunded"),
+    ),
+    // Why this order needs a human, kept permanently for audit. Resolution is
+    // recorded separately rather than by erasing it — clearing the reason would
+    // destroy the record of what went wrong.
+    failureReason: v.optional(v.string()),
+    alertResolvedAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
-    .index("by_stripeSession", ["stripeSessionId"]),
+    .index("by_reference", ["reference"]),
 
   orderItems: defineTable({
     orderId: v.id("orders"),

@@ -79,7 +79,8 @@
     "signInToBuy": "Connectez-vous pour acheter à {price}",
     "readGuide": "Lire le guide",
     "processing": "Traitement…",
-    "priceUnavailable": "Prix indisponible"
+    "priceUnavailable": "Prix indisponible",
+    "billedAs": "Débité de {amount}. Votre banque fixe le taux de conversion final."
   },
   "library": {
     "eyebrow": "Ma bibliothèque",
@@ -105,6 +106,15 @@
     "backToLibrary": "Bibliothèque",
     "downloadPdf": "Télécharger le PDF",
     "endOfGuide": "— fin du guide —"
+  },
+  "checkout": {
+    "eyebrow": "Paiement",
+    "title": "Confirmation de votre paiement",
+    "pendingBody": "Nous attendons la confirmation de votre paiement. Cela prend généralement quelques secondes — vous pouvez quitter cette page, votre guide apparaîtra dans votre bibliothèque.",
+    "paidBody": "Paiement confirmé. Ouverture de votre guide…",
+    "refundedBody": "Cette commande a été remboursée, le guide n'est donc plus dans votre bibliothèque.",
+    "notFound": "Nous n'avons pas trouvé cette commande. Si vous avez été débité, elle apparaîtra dans votre bibliothèque une fois confirmée.",
+    "goToLibrary": "Aller à ma bibliothèque"
   },
   "footer": {
     "demoLine1": "Vitrine de démonstration The Safety Shelf.",

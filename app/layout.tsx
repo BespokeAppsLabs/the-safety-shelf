@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import { fetchQuery } from "convex/nextjs";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { I18nProvider } from "./I18nProvider";
 import { api } from "@/convex/_generated/api";
 import { getDictionary } from "@/lib/i18n";
-import { languageDir } from "@/lib/languages";
+import { DEFAULT_DISPLAY_CURRENCY, languageDir } from "@/lib/languages";
 import { LOCALE_COOKIE } from "@/lib/locale";
+import { CURRENCY_COOKIE, CURRENCY_HEADER, LOCALE_HEADER } from "@/proxy";
 import "./globals.css";
 
 // Geist ships Latin and Latin-ext only. Greek, Arabic, Devanagari, Hangul and
@@ -27,9 +28,13 @@ export default async function RootLayout({
   // proxy.ts has already resolved these from Accept-Language / IP country and
   // pinned them to cookies, so the first paint is in the shopper's language —
   // no flash of English, no redirect.
-  const jar = await cookies();
-  const lang = jar.get(LOCALE_COOKIE)?.value ?? "en";
-  const currency = jar.get("currency")?.value;
+  // proxy.ts forwards its resolution on the request headers as well as pinning
+  // cookies. Headers are preferred because a cookie set by the proxy only
+  // reaches the server on the NEXT request — reading cookies alone left a
+  // first-time visitor with no currency and base-currency prices.
+  const [jar, head] = await Promise.all([cookies(), headers()]);
+  const lang = head.get(LOCALE_HEADER) ?? jar.get(LOCALE_COOKIE)?.value ?? "en";
+  const currency = head.get(CURRENCY_HEADER) ?? jar.get(CURRENCY_COOKIE)?.value;
 
   const [dict, settings, rates] = await Promise.all([
     getDictionary(lang),
@@ -37,9 +42,27 @@ export default async function RootLayout({
     fetchQuery(api.fxRates.list, {}),
   ]);
 
-  // No rate for this currency is a normal state — the shopper simply sees
-  // base-currency prices instead of a made-up conversion.
-  const rate = currency ? rates.find((row) => row.currency === currency)?.rate : undefined;
+  // Pick the most useful currency we can actually convert into, stepping down
+  // rather than jumping straight to base.
+  //
+  // A shopper we CAN place but have no rate for — Japan today, since fxRates
+  // has USD only — would otherwise fall all the way back to rand, which is the
+  // one currency an overseas shopper cannot judge. USD is a real rate the owner
+  // set, not an invented one, so it is a better answer than ZAR. Base currency
+  // remains the final fallback: always truthful, never guessed.
+  const baseCurrency = settings?.baseCurrency ?? null;
+  const rateFor = (code: string | undefined) =>
+    code ? rates.find((row) => row.currency === code)?.rate : undefined;
+
+  let displayCurrency = currency;
+  let rate = rateFor(displayCurrency);
+  if (!rate && displayCurrency && displayCurrency !== baseCurrency) {
+    const fallbackRate = rateFor(DEFAULT_DISPLAY_CURRENCY);
+    if (fallbackRate) {
+      displayCurrency = DEFAULT_DISPLAY_CURRENCY;
+      rate = fallbackRate;
+    }
+  }
   const dir = languageDir(lang);
 
   return (
@@ -55,7 +78,7 @@ export default async function RootLayout({
             dir,
             locale: lang,
             dict,
-            price: { baseCurrency: settings?.baseCurrency ?? null, currency, rate },
+            price: { baseCurrency, currency: displayCurrency, rate },
           }}
         >
           <ConvexClientProvider>{children}</ConvexClientProvider>

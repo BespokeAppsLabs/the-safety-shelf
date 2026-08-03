@@ -3,6 +3,7 @@
 import {
   COUNTRY_CURRENCY,
   COUNTRY_LANGUAGE,
+  DEFAULT_DISPLAY_CURRENCY,
   DEFAULT_LANGUAGE,
   isLanguageCode,
   type LanguageCode,
@@ -64,11 +65,19 @@ export function resolveLanguage(input: {
 }
 
 /**
- * Display currency for a shopper's country. Undefined means "we have no
- * mapping" — callers fall back to the store's base currency rather than
- * inventing one.
+ * Display currency for a shopper's country, defaulting to USD when we cannot
+ * place them.
+ *
+ * The default is not the store's base currency on purpose. Prices settle in
+ * rand, and an unplaceable international shopper shown "R280" cannot tell
+ * whether that is cheap or expensive; USD is the unit most of the world can
+ * price against. A shopper we *can* place still sees their own currency.
+ *
+ * This only chooses which currency to render. Converting into it still needs a
+ * rate the owner has set — without one the caller falls back to base currency
+ * rather than inventing a number.
  */
-export function resolveCurrency(country: string | null | undefined): string | undefined {
-  if (!country) return undefined;
-  return COUNTRY_CURRENCY[country.toUpperCase()];
+export function resolveCurrency(country: string | null | undefined): string {
+  if (!country) return DEFAULT_DISPLAY_CURRENCY;
+  return COUNTRY_CURRENCY[country.toUpperCase()] ?? DEFAULT_DISPLAY_CURRENCY;
 }

@@ -6,11 +6,29 @@ personal library of purchases.
 ## Pages
 | Route | Purpose |
 |---|---|
-| `/` | Catalog grid — cover, title, author, price, language badges |
+| `/` | Marketing landing — hero, shelves, featured books (its own header) |
+| `/store` | Catalog grid — cover, title, author, price, language badges |
 | `/book/[slug]` | Detail — blurb, sample, price, available languages, Buy button |
 | `/read/[slug]` | In-browser reader (block-based content, honors purchase) |
 | `/library` | **My Library** — the signed-in reader's purchased books |
-| `/account` | Basic profile (name, email, sign out) |
+
+There is no `/account` route. Profile and **sign out** live in Clerk's
+`<UserButton />` in the header — the same component the admin topbar uses.
+Sign-out lands on `/` via `afterSignOutUrl` on `ClerkProvider`; without it,
+signing out from a protected page leaves the user on it and gets bounced to
+sign-in, which reads as a failed logout. In Clerk 7 that is a provider option,
+not a `UserButton` prop.
+
+## Header navigation
+`StoreHeader` marks the current page with the same filled-primary pill the
+storefront's category chips use for the active chip, plus `aria-current="page"`.
+Before that, every nav item rendered identically and only Library carried a
+background and shadow — so Library read as "selected" on every page and the
+actual page was unmarked.
+
+`/` matches only itself. `/book/*` counts as **Store** (browsing) and `/read/*`
+counts as **Library** (reading what you own), so neither of those pages
+highlights nothing.
 
 ## Customer accounts (simple)
 - Auth via **Clerk** (email + social login). One role: `customer`.
@@ -19,9 +37,18 @@ personal library of purchases.
 - Access control: `/read/[slug]` and downloads check the entitlement. No entitlement → sample only.
 
 ## Purchase flow (production)
-1. Buy → **Stripe Checkout** (hosted; no PCI burden).
-2. `checkout.session.completed` webhook → Convex `httpAction` writes `orders` + `entitlements`.
-3. Reader lands on `/library` (reactive Convex query); book is now readable/downloadable.
+**Built — see [10-payments](10-payments.md) for the split and the setup.**
+
+1. Buy → `payments.startCheckout` reserves a `pending` order, then redirects to
+   **Paystack hosted checkout** (no PCI burden). Charged in the store's base
+   currency; the localised price is display only.
+2. `charge.success` webhook → Convex `httpAction` at `/paystack/webhook` →
+   `payments.reconcile` flips the order to `paid` and writes `entitlements`.
+   This is the only path that grants access; it is idempotent and re-checks the
+   amount and currency before granting.
+3. Paystack returns the shopper to `/payments/callback`, which reports status
+   from a live query (and verifies against Paystack once, in case the browser
+   beat the webhook home) then sends them into the reader.
 
 ## Localization & pricing
 **Built 2026-07-30 — see [09-i18n-and-pricing](09-i18n-and-pricing.md) for the full design.**
@@ -40,11 +67,11 @@ personal library of purchases.
   original-language book text. See [05-data-model](05-data-model.md).
 
 ## Demo build (storefront only — no admin)
-Purpose: a browsable, real-looking store to show the owner. **No DB, no Stripe,
+Purpose: a browsable, real-looking store to show the owner. **No DB, no payments,
 no real auth.**
 - Seed ~6 books as a local TS array; covers as CSS gradients (no external assets).
 - "Buy" simulates checkout and writes the purchase to `localStorage`.
 - **My Library** reads from `localStorage` — demonstrates the owned-books flow end to end.
 - `/read/[slug]` renders seed chapter text for owned books.
 
-> Swap points for production: `localStorage` → `entitlements` table; mock buy → Stripe Checkout; local seed → DB. Nothing else changes in the UI.
+> Swap points for production: `localStorage` → `entitlements` table; mock buy → Paystack checkout; local seed → DB. Nothing else changes in the UI.
