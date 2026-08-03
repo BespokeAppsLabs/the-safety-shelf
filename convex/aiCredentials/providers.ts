@@ -1,6 +1,7 @@
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
-// Agentic work — the admin agent and social copy. A paid model on purpose.
+// Agentic work — the admin agent and social copy. A paid REASONING model on
+// purpose.
 //
 // This was `google/gemma-4-26b-a4b-it:free`, and the free tier was the single
 // cause of three separate faults: 429s surfacing as "Invalid JSON response"
@@ -9,25 +10,31 @@ export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 // call, and no way to fail over. A free model behind a 50-request/day cap
 // cannot run an agent that has to reliably call tools under a large schema.
 //
-// TESTING: Ling 2.6 Flash is primary while the new agent loop is exercised.
-// It is agent-tuned (vendor-published SOTA-for-size on BFCL-V4 and TAU2-bench)
-// and ~13x cheaper than DeepSeek — $0.08 per thousand agent turns — so a heavy
-// test session costs pennies. It scores lower on independent indexes (AA 26 vs
-// 50) and is a non-reasoning model, so if tool calling proves unreliable in
-// practice, swap this line to the DeepSeek id below; the fallback chain and
-// everything else stays as-is.
-export const OPENROUTER_TEXT_MODEL = "inclusionai/ling-2.6-flash";
+// Reasoning is a hard requirement, not a preference: a turn may call a tool,
+// read a rejection, work out which argument was wrong, and call again — see the
+// retry loop in agent.ts. Ling 2.6 Flash was evaluated and rejected for exactly
+// this; it is cheap and agent-tuned but exposes no reasoning parameters at all
+// (OpenRouter reports none), so the correction step it needs has nowhere to
+// happen.
+//
+// DeepSeek v4 Flash: $0.14/M in, $0.28/M out, 1M context, reasoning_effort,
+// native tool calling. ~$1 per thousand agent turns, and half the output price
+// of Luna — which matters because writeBook emits whole drafts, so output
+// tokens dominate the bill.
+export const OPENROUTER_TEXT_MODEL = "deepseek/deepseek-v4-flash";
 
 // Routing list sent to OpenRouter as `models`, tried in order, so a throttle or
 // outage on the primary is retried on the next rather than failing the turn.
 // The primary must be first — this list replaces the single-model route.
 //
-// DeepSeek v4 Flash is the backstop: 1M context, AA index 50, and half the
-// output price of the nearest-scoring alternative. It catches anything Ling
-// cannot complete, so a weaker primary never costs the owner a failed turn.
+// GPT-5.6 Luna is the fallback: also a reasoning model with tool calling, and
+// the closest match on independent scoring (AA 51 vs DeepSeek's 50), so a
+// failover does not quietly downgrade the agent mid-conversation. It costs more
+// per output token, which is the right way round for a path that should rarely
+// be taken.
 export const OPENROUTER_TEXT_FALLBACKS = [
-  "inclusionai/ling-2.6-flash",
   "deepseek/deepseek-v4-flash",
+  "openai/gpt-5.6-luna",
 ] as const;
 
 // Translation only. Gemma 4 stays here deliberately: translation is a

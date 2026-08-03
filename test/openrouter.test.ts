@@ -72,3 +72,14 @@ test("stores OpenRouter image bytes and returns the provider's actual cost", asy
   expect(result.costUsd).toBe(0.0123);
   expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ model: OPENROUTER_IMAGE_MODEL, prompt: "a calm illustration" });
 });
+
+test("every agentic model in the chain supports reasoning and tool calling", () => {
+  // The agent loop depends on both: it calls a tool, reads a rejection, works
+  // out which argument was wrong, and calls again. Ling 2.6 Flash was dropped
+  // here for exposing no reasoning parameters — cheap and agent-tuned is not
+  // enough if the correction step has nowhere to happen.
+  const REASONING_TOOL_MODELS = ["deepseek/deepseek-v4-flash", "openai/gpt-5.6-luna"];
+  expect([...OPENROUTER_TEXT_FALLBACKS]).toEqual(REASONING_TOOL_MODELS);
+  expect(OPENROUTER_TEXT_MODEL).toBe(REASONING_TOOL_MODELS[0]);
+  expect(OPENROUTER_TEXT_FALLBACKS).not.toContain("inclusionai/ling-2.6-flash");
+});
