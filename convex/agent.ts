@@ -111,6 +111,120 @@ export function proposalReply(toolNames: string[], text: string, cardCount: numb
   return text || (cardCount ? "I prepared the requested proposal below for your review." : "The request was processed.");
 }
 
+/**
+ * Rebuild the full multi-step transcript from the generation's steps.
+ *
+ * `result.response.messages` only carries the FINAL step, so persisting it kept
+ * the closing prose and silently dropped every tool call and result that led to
+ * it — the exact opposite of the point. Steps hold each round's content parts,
+ * so the assistant/tool message pairs are reconstructed here instead.
+ *
+ * Reasoning parts are deliberately excluded: they are not needed to understand
+ * what was attempted, and replaying another model's reasoning tokens is
+ * rejected by some providers.
+ */
+export function transcriptFromSteps(
+  steps: ReadonlyArray<{ content: ReadonlyArray<unknown> }>,
+): ModelMessage[] {
+  return steps.flatMap((step) => {
+    const assistant = step.content.filter((part) => kindOf(part) === "text" || kindOf(part) === "tool-call");
+    const results = step.content.filter((part) => kindOf(part) === "tool-result");
+    const messages: ModelMessage[] = [];
+    if (assistant.length) messages.push({ role: "assistant", content: assistant.map(toModelPart) } as ModelMessage);
+    if (results.length) messages.push({ role: "tool", content: results.map(toModelPart) } as ModelMessage);
+    return messages;
+  });
+}
+
+function kindOf(part: unknown) {
+  return (part as { type?: string } | null)?.type;
+}
+
+/** Output shapes the provider protocol accepts verbatim; anything else is data. */
+const TOOL_OUTPUT_KINDS = new Set(["text", "json", "error-text", "error-json", "content", "execution-denied"]);
+
+/**
+ * Convert a generation content part into the message part shape the provider
+ * protocol accepts.
+ *
+ * These are NOT the same type, which is what broke replay: a step's
+ * tool-result carries the tool's RAW return value in `output`, while a
+ * ToolResultPart requires a tagged ToolResultOutput — `{ type: "json", value }`.
+ * Passing step parts through unchanged produced "The messages do not match the
+ * ModelMessage[] schema" on the next turn, so a chat died as soon as it had any
+ * history worth replaying.
+ *
+ * Also drops the extra bookkeeping fields steps carry (`input` on results,
+ * `dynamic`, `providerMetadata`), which the schema does not accept.
+ */
+function toModelPart(part: unknown) {
+  const p = part as Record<string, unknown>;
+  if (p.type === "text") return { type: "text", text: String(p.text ?? "") };
+  if (p.type === "tool-call") {
+    return { type: "tool-call", toolCallId: p.toolCallId, toolName: p.toolName, input: p.input ?? {} };
+  }
+  // tool-result
+  const raw = p.output;
+  const alreadyTagged =
+    raw && typeof raw === "object" && TOOL_OUTPUT_KINDS.has(String((raw as { type?: unknown }).type));
+  return {
+    type: "tool-result",
+    toolCallId: p.toolCallId,
+    toolName: p.toolName,
+    output: alreadyTagged ? raw : { type: "json", value: (raw ?? null) as never },
+  };
+}
+
+/**
+ * Repair a transcript read back from the database.
+ *
+ * Turns written before the shape was fixed stored raw tool outputs, and those
+ * rows would fail validation forever — every later turn in an affected chat
+ * would throw rather than degrade. Normalising on read keeps those chats usable
+ * instead of stranding them.
+ */
+function normaliseStored(messages: unknown[]): ModelMessage[] {
+  return messages.map((message) => {
+    const m = message as { role?: string; content?: unknown };
+    if (!Array.isArray(m.content)) return message as ModelMessage;
+    return { ...m, content: m.content.map(toModelPart) } as ModelMessage;
+  });
+}
+
+/** How many recent turns replay their full tool transcript. */
+export const TRANSCRIPT_TURNS = 4;
+
+export type StoredMessage = {
+  role: "user" | "assistant";
+  content: string;
+  modelMessages?: unknown[];
+};
+
+/**
+ * The message list the model actually sees.
+ *
+ * Replays the real transcript — assistant tool calls and their results — rather
+ * than a text summary of it. Flattening every turn to { role, content } meant
+ * tool calls vanished the moment a turn ended, so the agent restarted each turn
+ * blind: it could not see that writeBook had already failed validation, nor
+ * distinguish a tool it had run from one it had only talked about.
+ *
+ * Only the most recent turns replay in full. A writeBook result carries a whole
+ * draft, and replaying every one would exhaust the context window on history
+ * alone; older turns keep their prose, which is enough to recall what was
+ * discussed.
+ */
+export function buildHistory(stored: StoredMessage[]): ModelMessage[] {
+  const firstFullIndex = Math.max(0, stored.length - TRANSCRIPT_TURNS * 2);
+  return stored.flatMap((item, index) => {
+    const transcript = item.modelMessages;
+    if (item.role === "assistant" && transcript?.length && index >= firstFullIndex) {
+      return normaliseStored(transcript);
+    }
+    return [{ role: item.role, content: item.content } as ModelMessage];
+  });
+}
+
 function compact(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
@@ -680,14 +794,8 @@ export const sendMessage = action({
     // whole draft, and replaying every one of those would exhaust the context
     // window on history alone. Older turns keep their prose, which is enough to
     // remember what was discussed.
-    const TRANSCRIPT_TURNS = 4;
     const history = stored ?? [];
-    const firstFullIndex = Math.max(0, history.length - TRANSCRIPT_TURNS * 2);
-    const priorMessages = history.flatMap((item, index) => {
-      const transcript = (item as { modelMessages?: ModelMessage[] }).modelMessages;
-      if (item.role === "assistant" && transcript?.length && index >= firstFullIndex) return transcript;
-      return [{ role: item.role, content: item.content }];
-    }) as ModelMessage[];
+    const priorMessages = buildHistory(history);
 
     // Recover the dangling prose-first question already present in the chat:
     // "yes" creates the missing card, never a second unreliable tool request.
@@ -768,7 +876,7 @@ export const sendMessage = action({
         tools: [...new Set(toolNames)],
         // The turn's full model transcript, persisted by the client and
         // replayed next turn so tool attempts and their errors survive.
-        modelMessages: result.response.messages as ModelMessage[],
+        modelMessages: transcriptFromSteps(result.steps),
       };
     } catch (error) {
       // Owner aborted mid-generation — expected, not an error. Log it as a

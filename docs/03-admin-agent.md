@@ -97,3 +97,63 @@ a real book that already has `/admin/books/[slug]`, so their review is read-only
 - `researchWeb` runs only when the owner asks for current or external research.
 - It calls Firecrawl Search from the Convex action with `FIRECRAWL_API_KEY`, returns a maximum of three bounded sources, and renders their links as `WebResearchCard`.
 - Results are untrusted reference material. They cannot authorize a write, spend, or publish action.
+
+## The turn loop
+
+A turn runs up to **6 steps** (`stopWhen: [stepCountIs(6), proposalSucceeded]`),
+so the model can call a tool, read the result, and act on it within one turn.
+
+**A failed tool call no longer ends the turn.** The stop condition was
+`hasToolCall(...PROPOSAL_TOOL_NAMES)`, which fired the moment a proposal tool
+was *called* — so a call rejected by its own validation ("Unknown category …")
+ended the turn with no card and no correction, and the model never learned it
+had failed. `proposalSucceeded` now stops only on a proposal that produced a
+real card, leaving budget to read the error and retry.
+
+**Convex rejections reach the model.** A validator error thrown inside a tool
+used to escape `generateText` and kill the whole turn — the owner saw "Chat
+failed" and the agent could not see which argument was wrong. `reportingTools`
+catches it and returns it as a tool *result*:
+
+> `writeBook was rejected: <Convex's message>. Correct the arguments and call
+> writeBook again — do not tell the owner it succeeded.`
+
+## What the model remembers
+
+History used to be flattened to `{ role, content }`, so tool calls and results
+vanished when a turn ended. The agent restarted every turn blind — unable to
+tell a tool it had *run* from one it had only *talked about*, which are the same
+thing once the trace is gone.
+
+Each turn now persists its real transcript (`modelMessages`) and replays it:
+
+- `transcriptFromSteps` rebuilds it from **every** step. `result.response
+  .messages` carries only the final step, so persisting that kept the closing
+  prose and dropped the tool calls that produced it.
+- Tool outputs are tagged as `{ type: "json", value }`. A step's tool-result
+  holds the tool's **raw** return, while the protocol requires a tagged
+  `ToolResultOutput`; passing steps through unchanged produced *"The messages do
+  not match the ModelMessage[] schema"* on the **next** turn — so a chat broke
+  as soon as it had history worth replaying. `normaliseStored` repairs rows
+  written before that fix, rather than leaving those chats permanently dead.
+- Reasoning parts are excluded: not needed to understand what was attempted, and
+  some providers reject replayed reasoning tokens.
+- Only the last **4 turns** replay in full (`TRANSCRIPT_TURNS`). A `writeBook`
+  result carries an entire draft; replaying every one would exhaust the context
+  window on history alone. Older turns keep their prose.
+
+Approval outcomes reach the model separately: `buildSystemPrompt` injects
+`agentActions.recent` with `proposed | approved | rejected | executed | failed`,
+plus the invariant that only `[executed]` proves a write happened.
+
+## Tool visibility in the thread
+
+Every assistant turn states which tools it ran, and says so when it ran none —
+*"No tools used — nothing was created or changed."* That is the tell for the
+narration failure above, which was otherwise indistinguishable from real work.
+
+A turn with **no record** (`tools: undefined`) renders nothing. Everything
+written before tracking existed has no record, and many of those did call tools;
+reporting them as "no tools used" would assert something false about the
+thread's own history. `[]` means "genuinely ran nothing" and is preserved
+end-to-end.

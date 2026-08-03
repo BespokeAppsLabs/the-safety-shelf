@@ -72,7 +72,11 @@ function TrashIcon() {
 // be distinguished from real work, so every assistant turn now states its
 // tools, including when there were none.
 function ToolTrace({ tools }: { tools?: string[] }) {
-  if (!tools?.length) {
+  // Undefined means "not recorded" — every turn from before this was tracked.
+  // Rendering those as "no tools used" would assert something false about
+  // history, since plenty of them did call tools. Absent data stays silent.
+  if (!tools) return null;
+  if (!tools.length) {
     return <p className="mt-1 text-[11px] text-muted">No tools used — nothing was created or changed.</p>;
   }
   return (
@@ -185,7 +189,9 @@ function ChatPanel({
         userContent: text,
         assistantContent: reply,
         cards: (cards.length ? cards : undefined) as AgentCard[] | undefined,
-        tools: tools?.length ? tools : undefined,
+        // Sent even when empty: [] means "ran nothing", which is precisely the
+        // narration failure worth showing. Only undefined means "unrecorded".
+        tools,
         modelMessages: modelMessages?.length ? modelMessages : undefined,
       });
       if (chatId !== activeChatId) onChatStarted(chatId as Id<"agentChats">);
