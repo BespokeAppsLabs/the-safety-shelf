@@ -65,6 +65,28 @@ function TrashIcon() {
   );
 }
 
+// What the turn actually DID, not what it said it would do.
+//
+// The agent's characteristic failure is narrating an action instead of calling
+// the tool — "let me create a draft…" followed by nothing. Prose alone cannot
+// be distinguished from real work, so every assistant turn now states its
+// tools, including when there were none.
+function ToolTrace({ tools }: { tools?: string[] }) {
+  if (!tools?.length) {
+    return <p className="mt-1 text-[11px] text-muted">No tools used — nothing was created or changed.</p>;
+  }
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-1">
+      <span className="text-[11px] text-muted">Used</span>
+      {tools.map((name) => (
+        <span key={name} className="rounded-full bg-background px-2 py-0.5 font-mono text-[11px] text-ink">
+          {name}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function CardList({ cards }: { cards: AgentCard[] }) {
   return (
     <div className="mt-3 flex flex-wrap justify-start gap-3">
@@ -129,6 +151,7 @@ function ChatPanel({
     role: "user" | "assistant";
     content: string;
     cards?: AgentCard[];
+    tools?: string[];
     stopped?: boolean;
   }[];
 
@@ -156,12 +179,14 @@ function ChatPanel({
     request.catch(() => {}); // server aborts on cancel; swallow its late rejection since we raced past it
 
     try {
-      const { reply, cards } = await Promise.race([request, rejectOnAbort(controller.signal)]);
+      const { reply, cards, tools, modelMessages } = await Promise.race([request, rejectOnAbort(controller.signal)]);
       const chatId = await appendTurn({
         chatId: activeChatId ?? undefined,
         userContent: text,
         assistantContent: reply,
         cards: (cards.length ? cards : undefined) as AgentCard[] | undefined,
+        tools: tools?.length ? tools : undefined,
+        modelMessages: modelMessages?.length ? modelMessages : undefined,
       });
       if (chatId !== activeChatId) onChatStarted(chatId as Id<"agentChats">);
     } catch (err) {
@@ -218,6 +243,7 @@ function ChatPanel({
               >
                 {msg.content}
               </span>
+              {msg.role === "assistant" && !msg.stopped ? <ToolTrace tools={msg.tools} /> : null}
               {msg.cards?.length ? <CardList cards={msg.cards} /> : null}
             </div>
           ))

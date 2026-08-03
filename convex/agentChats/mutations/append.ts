@@ -15,16 +15,18 @@ export const appendTurn = viewerMutation({
     userContent: v.string(),
     assistantContent: v.string(),
     cards,
+    tools: v.optional(v.array(v.string())),
+    modelMessages: v.optional(v.array(v.any())),
     // Set when the owner stopped this turn — tags both messages so the model's
     // history load (getForOwner) drops them while the thread still shows them.
     stopped: v.optional(v.boolean()),
   },
-  handler: async (ctx, { chatId, userContent, assistantContent, cards, stopped }) => {
+  handler: async (ctx, { chatId, userContent, assistantContent, cards, tools, modelMessages, stopped }) => {
     requireOwner(ctx.viewer);
 
     const turn = [
       { role: "user" as const, content: userContent, stopped },
-      { role: "assistant" as const, content: assistantContent, cards, stopped },
+      { role: "assistant" as const, content: assistantContent, cards, tools, modelMessages, stopped },
     ];
 
     if (chatId) {

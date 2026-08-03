@@ -1,7 +1,7 @@
 "use node";
 import { z } from "zod";
 import { ConvexError, v } from "convex/values";
-import { generateText, hasToolCall, stepCountIs, tool } from "ai";
+import { generateText, stepCountIs, tool, type ModelMessage, type StopCondition, type ToolSet } from "ai";
 import { action, type ActionCtx } from "./_generated/server";
 import { internal, api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
@@ -37,6 +37,26 @@ const PROPOSAL_TOOL_NAMES = [
   "generatePageImage",
   "generateAllPageImages",
 ] as const;
+
+// A proposal tool ending the turn is correct — but only when it WORKED.
+//
+// This was `hasToolCall(...PROPOSAL_TOOL_NAMES)`, which stopped the loop the
+// moment such a tool was *called*. A call that failed its own validation
+// ("Unknown category X", "No book matches Y") therefore ended the turn with no
+// card and no correction: the owner saw a sentence and nothing happened. The
+// model never even learned it had failed.
+//
+// Letting a failed call fall through hands the error text back as the tool
+// result, so the model can fix the arguments and try again inside the step
+// budget. Only a proposal that produced a real card stops the loop.
+const proposalSucceeded: StopCondition<ToolSet> = ({ steps }) =>
+  steps.some((step) =>
+    step.toolResults.some(
+      (result) =>
+        (PROPOSAL_TOOL_NAMES as readonly string[]).includes(result.toolName) &&
+        !(result.output as { error?: unknown } | undefined)?.error,
+    ),
+  );
 
 type ActionContextRecord = {
   tool: string;
@@ -191,7 +211,7 @@ async function coverUrl(ctx: ActionCtx, book: { coverStorageId?: string | null }
   return book.coverStorageId ? ctx.storage.getUrl(book.coverStorageId as never) : null;
 }
 
-async function directCoverProposal(ctx: ActionCtx, message: string): Promise<{ reply: string; cards: AgentCard[] } | null> {
+async function directCoverProposal(ctx: ActionCtx, message: string): Promise<{ reply: string; cards: AgentCard[]; tools?: string[]; modelMessages?: ModelMessage[] } | null> {
   const books = await ctx.runQuery(api.books.listAll, {});
   const title = requestedCoverTitle(message, books.map((book) => book.title));
   if (!title) return null;
@@ -206,7 +226,56 @@ async function directCoverProposal(ctx: ActionCtx, message: string): Promise<{ r
   return {
     reply: "Review the proposal card below and use its approval control to continue.",
     cards: [{ component: "ImageGenerationProposalCard", props: { actionId, target: "cover", bookId: book._id, title: book.title, prompt } }],
+    // Built without the model, but it is still a generateCoverImage proposal —
+    // the thread should attribute it the same way as a model-driven one.
+    tools: ["generateCoverImage"],
   };
+}
+
+/**
+ * Turn a thrown tool failure into a tool RESULT the model can read.
+ *
+ * Convex rejects a bad mutation argument by throwing — an
+ * ArgumentValidationError naming the offending field, or a ConvexError from our
+ * own guards. Uncaught, that escapes generateText and kills the entire turn:
+ * the owner sees "Chat failed: ..." and the agent never learns which argument
+ * was wrong, so it cannot correct it.
+ *
+ * Handing the message back as a result puts the rejection in front of the
+ * model, which can fix the field and call again within the step budget — the
+ * same path the tools' own validation errors already take. Schema rejections
+ * become correctable instead of fatal.
+ */
+function reportingTools<T extends ToolSet>(tools: T): T {
+  const wrapped = Object.entries(tools).map(([name, definition]) => {
+    const run = (definition as { execute?: (...args: never[]) => unknown }).execute;
+    if (typeof run !== "function") return [name, definition] as const;
+    return [
+      name,
+      {
+        ...definition,
+        execute: async (...args: never[]) => {
+          try {
+            return await run(...args);
+          } catch (thrown) {
+            // ConvexError carries its payload on `data`; validator and runtime
+            // errors are plain Errors whose message already names the field.
+            const detail =
+              thrown instanceof ConvexError
+                ? typeof thrown.data === "string"
+                  ? thrown.data
+                  : JSON.stringify(thrown.data)
+                : thrown instanceof Error
+                  ? thrown.message
+                  : String(thrown);
+            const error = `${name} was rejected: ${detail}. Correct the arguments and call ${name} again — do not tell the owner it succeeded.`;
+            return { data: { error }, error };
+          }
+        },
+      },
+    ] as const;
+  });
+  return Object.fromEntries(wrapped) as T;
 }
 
 // Read-only stats tools — safe to execute directly, no propose-then-confirm
@@ -575,7 +644,7 @@ export const sendMessage = action({
   handler: async (
     ctx,
     { message, chatId, runId },
-  ): Promise<{ reply: string; cards: AgentCard[] }> => {
+  ): Promise<{ reply: string; cards: AgentCard[]; tools?: string[]; modelMessages?: ModelMessage[] }> => {
     const viewer = await ctx.runQuery(api.users.getViewer, {});
     if (!viewer || viewer.role !== "owner") throw new ConvexError("Owner only");
 
@@ -599,12 +668,34 @@ export const sendMessage = action({
     const stored = chatId
       ? await ctx.runQuery(internal.agentChats.getForOwner, { ownerId: viewer._id, chatId })
       : null;
-    const priorMessages = (stored ?? []).map(({ role, content }) => ({ role, content }));
+    // Replay the real transcript, not a text summary of it.
+    //
+    // This used to flatten every turn to { role, content }, so tool calls and
+    // their results vanished the moment a turn ended. The agent restarted each
+    // turn blind: it could not see that writeBook had already failed
+    // validation, nor that it had merely *talked* about calling a tool. Both
+    // are the same shape once the tool trace is gone.
+    //
+    // Only the most recent turns replay in full: a writeBook result carries a
+    // whole draft, and replaying every one of those would exhaust the context
+    // window on history alone. Older turns keep their prose, which is enough to
+    // remember what was discussed.
+    const TRANSCRIPT_TURNS = 4;
+    const history = stored ?? [];
+    const firstFullIndex = Math.max(0, history.length - TRANSCRIPT_TURNS * 2);
+    const priorMessages = history.flatMap((item, index) => {
+      const transcript = (item as { modelMessages?: ModelMessage[] }).modelMessages;
+      if (item.role === "assistant" && transcript?.length && index >= firstFullIndex) return transcript;
+      return [{ role: item.role, content: item.content }];
+    }) as ModelMessage[];
 
     // Recover the dangling prose-first question already present in the chat:
     // "yes" creates the missing card, never a second unreliable tool request.
     if (APPROVAL_MESSAGE.test(message.trim())) {
-      const lastAssistantMessage = [...priorMessages].reverse().find((item) => item.role === "assistant");
+      // Read from the stored thread, not the replayed transcript: stored rows
+      // always carry plain prose, whereas a ModelMessage's content may be an
+      // array of tool-call parts.
+      const lastAssistantMessage = [...history].reverse().find((item) => item.role === "assistant");
       const recoveredCover = lastAssistantMessage ? await directCoverProposal(ctx, lastAssistantMessage.content) : null;
       if (recoveredCover) return recoveredCover;
     }
@@ -639,8 +730,10 @@ export const sendMessage = action({
         model: client.chat(OPENROUTER_TEXT_MODEL),
         system,
         messages,
-        tools: buildTools(ctx),
-        stopWhen: [stepCountIs(4), hasToolCall(...PROPOSAL_TOOL_NAMES)],
+        tools: reportingTools(buildTools(ctx)),
+        // 6 not 4: a failed tool call now costs a step and the model needs
+        // room to read the error, correct the arguments, and call again.
+        stopWhen: [stepCountIs(6), proposalSucceeded],
         abortSignal: controller.signal,
       });
       const toolNames = result.toolCalls.map((call) => call.toolName);
@@ -668,6 +761,14 @@ export const sendMessage = action({
       return {
         reply: proposalReply(toolNames, result.text, cards.length),
         cards,
+        // Surfaced in the thread so the owner can see WHICH tools ran. A turn
+        // that silently used no tools is the signature of the model narrating
+        // instead of acting, and that was previously indistinguishable from a
+        // turn that did real work.
+        tools: [...new Set(toolNames)],
+        // The turn's full model transcript, persisted by the client and
+        // replayed next turn so tool attempts and their errors survive.
+        modelMessages: result.response.messages as ModelMessage[],
       };
     } catch (error) {
       // Owner aborted mid-generation — expected, not an error. Log it as a

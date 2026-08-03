@@ -276,6 +276,16 @@ export default defineSchema({
         role: v.union(v.literal("user"), v.literal("assistant")),
         content: v.string(),
         cards: v.optional(v.array(v.object({ component: v.string(), props: v.any() }))),
+        // Tools this turn actually ran. Shown in the thread so the owner can
+        // tell real work from the model narrating that it will do something —
+        // previously indistinguishable, and the usual failure mode.
+        tools: v.optional(v.array(v.string())),
+        // The exact ModelMessage transcript for this turn — assistant tool
+        // calls and their results, not just the final prose. Replayed into the
+        // next turn so the agent can see what it tried, what came back, and
+        // what failed. Without it every turn started blind: it could not tell a
+        // tool it had already run from one it only talked about.
+        modelMessages: v.optional(v.array(v.any())),
         // Links an automatic action outcome to its proposal card and prevents
         // duplicate failure notices when a client retries a request.
         actionId: v.optional(v.id("agentActions")),

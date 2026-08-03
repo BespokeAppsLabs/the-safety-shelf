@@ -4,7 +4,7 @@ import { generateObject, NoObjectGeneratedError } from "ai";
 import { z } from "zod";
 import { action, type ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
-import { OPENROUTER_TEXT_MODEL } from "./aiCredentials/providers";
+import { OPENROUTER_TRANSLATION_MODEL } from "./aiCredentials/providers";
 import { decryptSecret } from "./lib/secrets";
 import { openRouterClient } from "./lib/openrouter";
 import { blocksToChapters, chaptersToBlocks, type Chapter } from "../lib/bookContent";
@@ -59,7 +59,7 @@ export const translate = action({
     let translatedChapters: z.infer<typeof translatedChapterSchema>[] = [];
     try {
       ({ object: translated } = await generateObject({
-        model: client.chat(OPENROUTER_TEXT_MODEL),
+        model: client.chat(OPENROUTER_TRANSLATION_MODEL),
         schema: translationMetaSchema,
         maxOutputTokens: 500,
         prompt:
@@ -73,7 +73,7 @@ export const translate = action({
           continue;
         }
         const { object } = await generateObject({
-          model: client.chat(OPENROUTER_TEXT_MODEL),
+          model: client.chat(OPENROUTER_TRANSLATION_MODEL),
           schema: translatedChapterSchema,
           maxOutputTokens: 4000,
           prompt:

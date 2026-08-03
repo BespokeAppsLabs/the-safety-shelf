@@ -3,7 +3,7 @@ import { generateText } from "ai";
 import { decryptSecret, encryptSecret } from "../convex/lib/secrets";
 import { generateOpenRouterImage } from "../convex/images";
 import { openRouterClient, openRouterTextRequest, validateOpenRouterKey } from "../convex/lib/openrouter";
-import { OPENROUTER_IMAGE_MODEL, OPENROUTER_TEXT_FALLBACKS, OPENROUTER_TEXT_MODEL } from "../convex/aiCredentials/providers";
+import { OPENROUTER_IMAGE_MODEL, OPENROUTER_TEXT_FALLBACKS, OPENROUTER_TEXT_MODEL, OPENROUTER_TRANSLATION_MODEL } from "../convex/aiCredentials/providers";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -16,7 +16,7 @@ test("encrypts the one stored OpenRouter key", () => {
   process.env.AI_CREDENTIALS_ENCRYPTION_KEY = previous;
 });
 
-test("uses the fixed free model without a paid fallback", async () => {
+test("routes agentic work to the paid model and sends the fallback chain", async () => {
   const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
     id: "chatcmpl-1",
     object: "chat.completion",
@@ -30,9 +30,17 @@ test("uses the fixed free model without a paid fallback", async () => {
   await generateText({ model: openRouterClient("sk-or-test").chat(OPENROUTER_TEXT_MODEL), prompt: "ping" });
   const body = JSON.parse(fetchMock.mock.calls[0][1].body);
   expect(body.model).toBe(OPENROUTER_TEXT_MODEL);
-  expect(body.models).toBeUndefined();
-  expect(OPENROUTER_TEXT_FALLBACKS).toEqual([]);
-  expect(openRouterTextRequest({ model: OPENROUTER_TEXT_MODEL })).toEqual({ model: OPENROUTER_TEXT_MODEL });
+  // The agent must not run on a free model: a 50-request/day cap surfaced as
+  // unparseable throttle responses and stalled tool calls.
+  expect(OPENROUTER_TEXT_MODEL).not.toMatch(/:free$/);
+  // A fallback chain is sent, primary first, so a throttle retries instead of
+  // failing the turn.
+  expect(body.models[0]).toBe(OPENROUTER_TEXT_MODEL);
+  expect(OPENROUTER_TEXT_FALLBACKS[0]).toBe(OPENROUTER_TEXT_MODEL);
+  expect(OPENROUTER_TEXT_FALLBACKS.length).toBeGreaterThan(1);
+  // Translation stays on the free model — schema-bound, no tool calling, and
+  // by far the highest-volume text job in the app.
+  expect(OPENROUTER_TRANSLATION_MODEL).toMatch(/:free$/);
   expect(openRouterTextRequest({ model: OPENROUTER_TEXT_MODEL, tools: [{ type: "function" }] })).toMatchObject({
     provider: { require_parameters: true },
   });
