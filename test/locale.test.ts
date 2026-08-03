@@ -70,3 +70,14 @@ describe("resolveCurrency", () => {
     expect(resolveCurrency("jp")).toBe("JPY");
   });
 });
+
+describe("first-request currency", () => {
+  it("resolves a currency for every visitor, so nothing falls back to base", () => {
+    // proxy forwards this on the request headers; app/layout prefers it over
+    // the cookie, which only arrives on the *next* request. Before that, a
+    // first-time visitor rendered base-currency rand.
+    for (const country of ["JP", "IS", "ZA", null, undefined]) {
+      expect(resolveCurrency(country)).toBeTruthy();
+    }
+  });
+});

@@ -104,6 +104,7 @@ import type * as payments_mutations_resolveAlert from "../payments/mutations/res
 import type * as payments_queries_isOwnPendingOrder from "../payments/queries/isOwnPendingOrder.js";
 import type * as payments_queries_needingAttention from "../payments/queries/needingAttention.js";
 import type * as payments_queries_orderStatus from "../payments/queries/orderStatus.js";
+import type * as payments_queries_pendingCheckout from "../payments/queries/pendingCheckout.js";
 import type * as promoteOwner from "../promoteOwner.js";
 import type * as seed from "../seed.js";
 import type * as social from "../social.js";
@@ -226,6 +227,7 @@ declare const fullApi: ApiFromModules<{
   "payments/queries/isOwnPendingOrder": typeof payments_queries_isOwnPendingOrder;
   "payments/queries/needingAttention": typeof payments_queries_needingAttention;
   "payments/queries/orderStatus": typeof payments_queries_orderStatus;
+  "payments/queries/pendingCheckout": typeof payments_queries_pendingCheckout;
   promoteOwner: typeof promoteOwner;
   seed: typeof seed;
   social: typeof social;

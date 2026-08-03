@@ -158,7 +158,20 @@ One-time, in the Paystack dashboard (Bespoke's account):
    `45` (the main account keeps the remaining 55), bearer `all-proportional`.
    Copy the `SPL_...` code.
 3. **Webhook** — `https://<deployment>.convex.site/paystack/webhook`.
-4. **Base currency** — set it in Admin → Settings to match the account (`ZAR`).
+4. **Base currency** — **do not** set this in Admin → Settings. `setBaseCurrency`
+   relabels `priceCents` without converting it, so switching a USD catalogue to
+   ZAR that way turns a $14.99 book into R14.99 — a ~95% price cut, applied
+   silently. Use the migration, which moves the price and the label together:
+
+   ```bash
+   npx convex run migrations/switchBaseToZar:run '{"usdToZar": 18.5}'                  # preview
+   npx convex run migrations/switchBaseToZar:run '{"usdToZar": 18.5, "apply": true}'    # apply
+   ```
+
+   It refuses to run unless the current base is USD, rebases every existing
+   `fxRates` row onto the new base, and seeds the ZAR→USD display rate. Verify
+   afterwards that `storeSettings.baseCurrency` is `ZAR`, book prices are the
+   expected rand figures, and a `USD` row exists in `fxRates`.
 
 ### Migrating a deployment that already has orders
 

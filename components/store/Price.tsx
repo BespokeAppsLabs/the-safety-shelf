@@ -13,17 +13,25 @@ import { formatExactAmount, quotePrice } from "@/lib/pricing";
  * the number on their statement, and they would have no way to reconcile the
  * difference. So checkout states both.
  */
-export function useExactBillingText(cents: number): string | null {
+export function useExactBillingText(
+  cents: number,
+  chargeCurrency?: string | null,
+): string | null {
   const { price, locale } = useI18n();
   const { baseCurrency, currency, rate } = price;
 
-  // Nothing to disclose if they are already seeing base currency — either
+  // `chargeCurrency` overrides the store's current base when an already-open
+  // checkout is being resumed: that session was minted against a snapshot and
+  // will collect it regardless of what the book costs today.
+  const billed = chargeCurrency ?? baseCurrency;
+
+  // Nothing to disclose if they are already seeing the billed currency — either
   // because that is their currency, or because no rate exists so the store
   // never converted in the first place.
-  if (!baseCurrency) return null;
-  if (!currency || currency === baseCurrency || !rate) return null;
+  if (!billed) return null;
+  if (!currency || currency === billed || !rate) return null;
 
-  return formatExactAmount(cents, baseCurrency, locale);
+  return formatExactAmount(cents, billed, locale);
 }
 
 /**

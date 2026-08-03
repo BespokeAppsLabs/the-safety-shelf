@@ -13,10 +13,18 @@ import { fill } from "@/lib/i18n";
 
 export function BuyButton({ book }: { book: Doc<"books"> }) {
   const dict = useDict();
-  const price = usePriceText(book.priceCents);
-  const billedAs = useExactBillingText(book.priceCents);
   const { isAuthenticated } = useConvexAuth();
   const isOwned = useQuery(api.entitlements.isOwned, isAuthenticated ? { bookId: book._id } : "skip");
+  // An open checkout collects what it snapshotted, not today's price — the
+  // Paystack session never expires and a second Buy click resumes it.
+  const pending = useQuery(
+    api.payments.pendingCheckout,
+    isAuthenticated ? { bookId: book._id } : "skip",
+  );
+
+  const chargeCents = pending?.totalCents ?? book.priceCents;
+  const price = usePriceText(chargeCents);
+  const billedAs = useExactBillingText(chargeCents, pending?.currency);
   const startCheckout = useAction(api.payments.startCheckout);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

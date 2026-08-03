@@ -20,6 +20,13 @@ import { internalMutation } from "../_generated/server";
  * Prices a person would actually choose. Raw conversion produces R184.82, which
  * reads as an exchange-rate artefact rather than a price — and tells every
  * shopper the store thinks in dollars.
+ *
+ * This is a PRICING DECISION, not a conversion, and it rounds UP: the owner was
+ * shown both this ladder and straight nearest-rand conversion, per book, and
+ * chose the ladder ($9.99 → R199, $14.99 → R289, …). It is not the
+ * nearest-whole-unit rule from docs/09-i18n-and-pricing.md, which governs
+ * display conversion of a fixed base price — a shop-window approximation —
+ * whereas this sets the base prices themselves. Do not "fix" it to round down.
  */
 const PRICE_LADDER = [
   99, 129, 149, 169, 179, 199, 219, 229, 249, 269, 289, 299,
@@ -48,6 +55,14 @@ export const run = internalMutation({
     if (settings.baseCurrency === "ZAR") {
       return { alreadyZar: true as const, changed: 0, books: [] };
     }
+    // `usdToZar` is, by name and by arithmetic, a USD rate. Applying it to a
+    // catalogue priced in anything else silently corrupts every price — a EUR
+    // book would be multiplied by a dollar rate. Refuse rather than guess.
+    if (settings.baseCurrency !== "USD") {
+      throw new Error(
+        `Base currency is ${settings.baseCurrency}, not USD. This migration only converts a USD catalogue.`,
+      );
+    }
 
     const books = await ctx.db.query("books").collect();
     const changes = books.map((book) => ({
@@ -63,21 +78,29 @@ export const run = internalMutation({
     }
     await ctx.db.patch(settings._id, { baseCurrency: "ZAR" });
 
-    // Seed the display rate the storefront needs to show USD, which is now the
-    // default for shoppers we cannot place. Without it, every international
-    // visitor silently falls back to reading rand. fxRates means
-    // "1 base = rate × currency", so ZAR → USD is the reciprocal.
-    const existing = await ctx.db
+    // Every existing rate was written against the OLD base. fxRates means
+    // "1 base = rate × currency", so a EUR row saying 0.92 meant "1 USD = 0.92
+    // EUR"; left alone it would now claim "1 ZAR = 0.92 EUR" and misprice that
+    // market by the whole exchange rate. Rebase them all in this transaction:
+    // 1 ZAR = (1/usdToZar) USD, so every old per-USD rate divides through.
+    const now = Date.now();
+    const rates = await ctx.db.query("fxRates").collect();
+    for (const row of rates) {
+      await ctx.db.patch(row._id, { rate: row.rate / usdToZar, updatedAt: now });
+    }
+
+    // The storefront needs a USD rate specifically: USD is the default display
+    // currency for shoppers we cannot place, and without it every international
+    // visitor silently falls back to reading rand. A pre-existing USD row of
+    // 1.0 has already been divided to the same value by the loop above.
+    const usd = await ctx.db
       .query("fxRates")
       .withIndex("by_currency", (q) => q.eq("currency", "USD"))
       .unique();
-    const rate = 1 / usdToZar;
-    if (existing) {
-      await ctx.db.patch(existing._id, { rate, updatedAt: Date.now() });
-    } else {
-      await ctx.db.insert("fxRates", { currency: "USD", rate, updatedAt: Date.now() });
+    if (!usd) {
+      await ctx.db.insert("fxRates", { currency: "USD", rate: 1 / usdToZar, updatedAt: now });
     }
 
-    return { applied: true as const, changed: changes.length, books: changes };
+    return { applied: true as const, changed: changes.length, books: changes, ratesRebased: rates.length };
   },
 });

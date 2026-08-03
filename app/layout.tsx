@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import { fetchQuery } from "convex/nextjs";
 import { ConvexClientProvider } from "./ConvexClientProvider";
@@ -8,6 +8,7 @@ import { api } from "@/convex/_generated/api";
 import { getDictionary } from "@/lib/i18n";
 import { DEFAULT_DISPLAY_CURRENCY, languageDir } from "@/lib/languages";
 import { LOCALE_COOKIE } from "@/lib/locale";
+import { CURRENCY_COOKIE, CURRENCY_HEADER, LOCALE_HEADER } from "@/proxy";
 import "./globals.css";
 
 // Geist ships Latin and Latin-ext only. Greek, Arabic, Devanagari, Hangul and
@@ -27,9 +28,13 @@ export default async function RootLayout({
   // proxy.ts has already resolved these from Accept-Language / IP country and
   // pinned them to cookies, so the first paint is in the shopper's language —
   // no flash of English, no redirect.
-  const jar = await cookies();
-  const lang = jar.get(LOCALE_COOKIE)?.value ?? "en";
-  const currency = jar.get("currency")?.value;
+  // proxy.ts forwards its resolution on the request headers as well as pinning
+  // cookies. Headers are preferred because a cookie set by the proxy only
+  // reaches the server on the NEXT request — reading cookies alone left a
+  // first-time visitor with no currency and base-currency prices.
+  const [jar, head] = await Promise.all([cookies(), headers()]);
+  const lang = head.get(LOCALE_HEADER) ?? jar.get(LOCALE_COOKIE)?.value ?? "en";
+  const currency = head.get(CURRENCY_HEADER) ?? jar.get(CURRENCY_COOKIE)?.value;
 
   const [dict, settings, rates] = await Promise.all([
     getDictionary(lang),

@@ -2,6 +2,7 @@
 export { startCheckout } from "./payments/actions/startCheckout";
 export { syncFromGateway } from "./payments/actions/syncFromGateway";
 export { orderStatus } from "./payments/queries/orderStatus";
+export { pendingCheckout } from "./payments/queries/pendingCheckout";
 export { needingAttention } from "./payments/queries/needingAttention";
 export { resolveAlert } from "./payments/mutations/resolveAlert";
 // Internal — reachable only from the signed webhook and our own actions.
