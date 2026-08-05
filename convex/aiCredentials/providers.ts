@@ -23,9 +23,8 @@ export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 // tokens dominate the bill.
 export const OPENROUTER_TEXT_MODEL = "deepseek/deepseek-v4-flash";
 
-// Routing list sent to OpenRouter as `models`, tried in order, so a throttle or
-// outage on the primary is retried on the next rather than failing the turn.
-// The primary must be first — this list replaces the single-model route.
+// OpenRouter tries `model` first, then each entry in `models`. Keep only true
+// fallbacks here or a throttled primary is attempted twice before failover.
 //
 // GPT-5.6 Luna is the fallback: also a reasoning model with tool calling, and
 // the closest match on independent scoring (AA 51 vs DeepSeek's 50), so a
@@ -33,15 +32,25 @@ export const OPENROUTER_TEXT_MODEL = "deepseek/deepseek-v4-flash";
 // per output token, which is the right way round for a path that should rarely
 // be taken.
 export const OPENROUTER_TEXT_FALLBACKS = [
-  "deepseek/deepseek-v4-flash",
   "openai/gpt-5.6-luna",
 ] as const;
 
-// Translation only. Gemma 4 stays here deliberately: translation is a
-// constrained, schema-bound rewrite with no tool calling, which is exactly the
-// shape a free model handles reliably — and it is the highest-volume text job
-// in the app (21 languages x every chapter), so paying for it would dominate
-// spend for no quality gain.
-export const OPENROUTER_TRANSLATION_MODEL = "google/gemma-4-26b-a4b-it:free";
+// Explicit rather than provider-default: every agent route gets the same
+// reasoning budget, including fallback requests.
+export const OPENROUTER_TEXT_REASONING_EFFORT = "medium" as const;
+
+// Translation only.
+//
+// This was `google/gemma-4-26b-a4b-it:free`, justified as free capacity for the
+// highest-volume text job in the app. But openRouterClient appended the agent's
+// fallbacks to EVERY request, so a translation throttle or outage could spill
+// into the agent's reasoning route with different cost and output behaviour.
+//
+// Luna is named here now that the route is honoured (see openRouterTextRequest):
+// 1M context, structured outputs, and $0.10/$0.60 per M — the cheapest thing in
+// the chain per output token, which is what a whole-chapter rewrite is made of.
+// Translation sends no reasoning parameter: requiring it alongside structured
+// output excluded compatible providers.
+export const OPENROUTER_TRANSLATION_MODEL = "openai/gpt-5.6-luna";
 
 export const OPENROUTER_IMAGE_MODEL = "google/gemini-3.1-flash-lite-image";

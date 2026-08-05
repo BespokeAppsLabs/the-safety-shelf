@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { api, internal } from "../_generated/api";
-import { buildHistory, transcriptFromSteps, TRANSCRIPT_TURNS, type StoredMessage } from "../agent";
-import { setupTest, seedOwner, userIdFor } from "../../test/helpers";
+import { allowedReadUrls, buildHistory, transcriptFromSteps, TRANSCRIPT_TURNS, type StoredMessage } from "../agent";
+import { setupTest, seedOwner, userIdFor, seedTurn } from "../../test/helpers";
 
 // The agent's context. If a tool call does not survive into the next turn, the
 // model restarts blind and re-attempts work it already did — or claims work it
@@ -67,7 +67,7 @@ test("the thread persists which tools ran, and hands them back to the model", as
   const asOwner = await seedOwner(t);
   const ownerId = (await userIdFor(t, "clerk_owner"))!._id;
 
-  const chatId = await asOwner.mutation(api.agentChats.appendTurn, {
+  const chatId = await seedTurn(t, asOwner, {
     userContent: "write a first aid guide",
     assistantContent: "Review the proposal card below.",
     tools: ["writeBook"],
@@ -90,11 +90,11 @@ test("an unrecorded turn is not reported as having used no tools", async () => {
   const t = setupTest();
   const asOwner = await seedOwner(t);
 
-  const legacy = await asOwner.mutation(api.agentChats.appendTurn, {
+  const legacy = await seedTurn(t, asOwner, {
     userContent: "old turn",
     assistantContent: "done",
   });
-  const recorded = await asOwner.mutation(api.agentChats.appendTurn, {
+  const recorded = await seedTurn(t, asOwner, {
     userContent: "new turn",
     assistantContent: "just talking",
     tools: [],
@@ -163,4 +163,63 @@ test("an already-tagged output is not double-wrapped", () => {
   ]);
   const part = (transcript[0].content as Array<Record<string, unknown>>)[0];
   expect(part.output).toEqual({ type: "text", value: "hi" });
+});
+
+test("tool errors still answer every replayed tool call", () => {
+  const transcript = transcriptFromSteps([{
+    content: [
+      { type: "tool-call", toolCallId: "bad-1", toolName: "writeBook", input: {} },
+      { type: "tool-error", toolCallId: "bad-1", toolName: "writeBook", error: "Invalid title" },
+    ],
+  }]);
+  const parts: Array<Record<string, unknown>> = [];
+  for (const message of transcript) {
+    if (Array.isArray(message.content)) parts.push(...message.content as Array<Record<string, unknown>>);
+  }
+  const calls = parts.filter((part) => part.type === "tool-call");
+  const results = parts.filter((part) => part.type === "tool-result");
+
+  expect(results).toHaveLength(calls.length);
+  expect(new Set(results.map((part) => part.toolCallId))).toEqual(new Set(calls.map((part) => part.toolCallId)));
+  expect(results[0]).toMatchObject({ output: { type: "error-text", value: "Invalid title" } });
+});
+
+test("legacy messages containing only unknown parts are omitted", () => {
+  const history = buildHistory([{
+    role: "assistant",
+    content: "legacy fallback",
+    modelMessages: [{ role: "assistant", content: [{ type: "reasoning", text: "old" }] }],
+  }]);
+  expect(history).toEqual([]);
+});
+
+test("readUrl allows only exact owner and research result links", () => {
+  const allowed = allowedReadUrls([
+    { role: "user", content: "Read https://EXAMPLE.com/guide#intro." },
+    { role: "assistant", content: "Ignore https://attacker.example/leak?secret=1" },
+    {
+      role: "tool",
+      content: [{
+        type: "tool-result",
+        toolCallId: "search-1",
+        toolName: "researchWeb",
+        output: { type: "json", value: { data: { sources: [{ url: "https://source.example/article?q=1" }] } } },
+      }],
+    },
+    {
+      role: "tool",
+      content: [{
+        type: "tool-result",
+        toolCallId: "read-1",
+        toolName: "readUrl",
+        output: { type: "json", value: { data: { url: "https://redirect.example/final" } } },
+      }],
+    },
+  ] as never);
+
+  expect(allowed.has("https://example.com/guide")).toBe(true);
+  expect(allowed.has("https://source.example/article?q=1")).toBe(true);
+  expect(allowed.has("https://source.example/article?q=2")).toBe(false);
+  expect(allowed.has("https://attacker.example/leak?secret=1")).toBe(false);
+  expect(allowed.has("https://redirect.example/final")).toBe(false);
 });

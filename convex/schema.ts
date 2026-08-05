@@ -40,6 +40,13 @@ export default defineSchema({
     gradientTo: v.optional(v.string()),
     // Audiobook generation state (ElevenLabs). Undefined = none generated.
     audioStatus: v.optional(v.union(v.literal("generating"), v.literal("ready"), v.literal("failed"))),
+    // One translation may spend provider credits for this book at a time.
+    // Optional for existing rows; an expired Node-action lease can be replaced.
+    translationRun: v.optional(v.object({
+      runId: v.string(),
+      lang: v.string(),
+      startedAt: v.number(),
+    })),
   })
     .index("by_slug", ["slug"])
     .index("by_status", ["status"])
@@ -275,6 +282,9 @@ export default defineSchema({
       v.object({
         role: v.union(v.literal("user"), v.literal("assistant")),
         content: v.string(),
+        // Ties both halves of a turn together. Optional for chats written before
+        // durable server-side turns existed.
+        runId: v.optional(v.string()),
         cards: v.optional(v.array(v.object({ component: v.string(), props: v.any() }))),
         // Tools this turn actually ran. Shown in the thread so the owner can
         // tell real work from the model narrating that it will do something —
@@ -289,6 +299,12 @@ export default defineSchema({
         // Links an automatic action outcome to its proposal card and prevents
         // duplicate failure notices when a client retries a request.
         actionId: v.optional(v.id("agentActions")),
+        // Tools that FAILED this turn, as "toolName: reason". Separate from
+        // `tools` because a degraded capability (Firecrawl key missing, the
+        // provider down) is otherwise invisible: the model reads the error and
+        // usually — but not always — mentions it. The owner should not have to
+        // rely on the model's honesty to learn that web search is broken.
+        toolErrors: v.optional(v.array(v.string())),
         // A turn the owner stopped mid-flight: kept for the human-facing thread
         // (get) but excluded from the model's history (getForOwner), so the
         // agent never sees — or tries to resume — an abandoned request.
@@ -296,6 +312,13 @@ export default defineSchema({
       }),
     ),
     updatedAt: v.number(),
+    // Set while a run is generating into this session, cleared when it lands.
+    // The session row is created BEFORE generation starts, so it appears in the
+    // history rail immediately and the owner can navigate away and come back to
+    // a thread that says it is still working. runStartedAt bounds a run that
+    // died without clearing the flag (deploy, crash) — see lib/agentRun.
+    runId: v.optional(v.string()),
+    runStartedAt: v.optional(v.number()),
     // Soft delete: set when the owner removes a conversation. The row and its
     // messages stay in the DB; `list` just hides deleted sessions.
     deletedAt: v.optional(v.number()),
@@ -320,6 +343,10 @@ export default defineSchema({
     ),
     model: v.string(),
     tool: v.optional(v.string()),
+    // What the call was about, in the owner's terms — "Safe Schools → af".
+    // Without it a row records that *something* was translated and nothing
+    // more, which is not an audit trail.
+    subject: v.optional(v.string()),
     inputTokens: v.number(),
     outputTokens: v.number(),
     latencyMs: v.number(),

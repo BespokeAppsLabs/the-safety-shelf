@@ -73,6 +73,18 @@ export function AgentPromptCard() {
         <Button disabled={!dirty || busy} onClick={() => void handlePublish()}>
           {busy ? "Publishing…" : "Publish new version"}
         </Button>
+        {/* The prompt is authored in lib/agentPrompt.ts, but a published version
+            always wins at runtime — so edits made in code stay invisible here
+            and silently drift out of date (the model-routing lines did exactly
+            that). This loads the code copy into the box so it can be reviewed
+            and published as the next version. */}
+        <button
+          className="text-sm font-semibold text-primary disabled:text-muted"
+          disabled={content === DEFAULT_SYSTEM_PROMPT}
+          onClick={() => setContent(DEFAULT_SYSTEM_PROMPT)}
+        >
+          Load built-in default
+        </button>
         <button
           className="text-sm font-semibold text-primary"
           onClick={() => setShowHistory((current) => !current)}

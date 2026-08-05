@@ -216,6 +216,15 @@ export function ReviewProposalDialog({ action, onClose }: { action: Doc<"agentAc
           </>
         ) : bookId ? (
           <>
+            {action.tool === "translateBook" ? (
+              <p className="rounded-2xl bg-background p-4 text-sm text-muted">
+                Approving translates the text below into{" "}
+                <span className="font-semibold text-ink">
+                  {(action.args as { language?: string })?.language ?? "the requested language"}
+                </span>
+                . It creates a review draft you save afterwards. Reader delivery is not connected yet.
+              </p>
+            ) : null}
             <PublishReview bookId={bookId} />
             <ApprovalControls actionId={action._id} />
           </>

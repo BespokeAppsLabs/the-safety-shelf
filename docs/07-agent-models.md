@@ -12,16 +12,17 @@ depends on what the job actually needs.
 | Primary | `deepseek/deepseek-v4-flash` | reasoning + tool calling, 1M context, $0.14/M in · $0.28/M out |
 | Fallback | `openai/gpt-5.6-luna` | reasoning + tool calling, scores within a point (AA 51 vs 50) |
 
-Both are sent as OpenRouter's `models` routing list, primary first, so a
-throttle or provider outage retries on the next instead of failing the turn.
-Roughly **$1 per thousand agent turns**.
+DeepSeek is sent as `model`; `models` contains only Luna as the subsequent
+fallback. A throttle or provider outage therefore fails over once instead of
+retrying the primary. Roughly **$1 per thousand agent turns**.
 
 **Reasoning is a requirement, not a preference.** A turn may call a tool, read a
 rejection, work out which argument was wrong, and call again — see the retry
 loop below. Ling 2.6 Flash was evaluated and rejected for exactly this: cheap
 and agent-tuned, but OpenRouter reports no reasoning parameters for it at all,
-so the correction step has nowhere to happen. `test/openrouter.test.ts` asserts
-the chain, so a future cost-driven swap has to argue with a failing test.
+so the correction step has nowhere to happen. The routing layer explicitly
+sends `reasoning_effort: "medium"`; it does not depend on a provider default.
+`test/openrouter.test.ts` asserts the complete serialized request.
 
 ### What this replaced, and why
 
@@ -40,14 +41,35 @@ Free-tier limits are **50 requests/day** on an account that has never purchased
 credits (1,000/day after $10, permanently). An agent that must reliably call
 tools under a large schema cannot live inside that.
 
-## Translation — deliberately still free
+## Translation
 
-`google/gemma-4-26b-a4b-it:free` via `OPENROUTER_TRANSLATION_MODEL`.
+`openai/gpt-5.6-luna` via `OPENROUTER_TRANSLATION_MODEL`. No reasoning
+parameter is sent: `TRANSLATION_OPTIONS` is empty because requiring that
+parameter alongside structured output excluded compatible OpenRouter providers.
 
-Translation is a constrained, schema-bound rewrite with no tool calling — the
-shape a free model handles reliably — and it is the highest-volume text job in
-the app (21 languages × every chapter). Paying for it would dominate spend for
-no quality gain.
+### Why translation has an isolated route
+
+This was `google/gemma-4-26b-a4b-it:free`, on the reasoning that translation is
+a schema-bound rewrite and the highest-volume text job in the app (21 languages
+× every chapter), so paying for it would dominate spend for no quality gain.
+
+`openRouterClient` used to append the agent's fallbacks to **every** chat
+completion. That made a translation throttle or outage eligible to spill into
+an agent reasoning model with different cost and structured-output behaviour.
+The requested translation model was not an isolated route.
+
+Three changes, one cause suppressed:
+
+- `openRouterTextRequest` sends Luna as a fallback **only** after the agent's
+  primary `model`. Translation receives no `models` field.
+- Translation names Luna: 1M context, structured outputs, and $0.10/$0.60 per M
+  — the cheapest per output token in the chain, which is what a whole-chapter
+  rewrite is made of.
+- Chapter output is raised to 8k tokens. No reasoning parameter is sent, so the
+  route stays compatible with structured-output providers.
+
+Regression cover: `test/openrouter.test.ts` asserts a non-agent route keeps its
+own model and is sent no `models` list.
 
 ## Tool routing
 

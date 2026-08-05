@@ -119,6 +119,36 @@ body {
   font-weight: 700;
 }
 
+/*
+ * CJK metrics for the display face.
+ *
+ * Georgia carries no CJK glyphs, so zh/ja/ko fall through to a system CJK face
+ * whose glyphs fill the whole em box — unlike a Latin serif, where the visible
+ * cap-height is only ~0.7em. Every .landing-display call site pairs a tight
+ * leading (0.79–0.96) and negative tracking with that Latin assumption, which
+ * on CJK stacks consecutive lines straight through one another. Reset both
+ * here, at the one rule all eight call sites share, rather than per heading.
+ *
+ * Georgia stays first in the stack on purpose: Latin runs inside a translated
+ * page (numerals, the brand mark) should still render in the display serif.
+ */
+.landing-display:is(:lang(zh), :lang(ja), :lang(ko)) {
+  font-family: Georgia, "Songti SC", "Noto Serif CJK SC", "Hiragino Mincho ProN",
+    "PingFang SC", "Microsoft YaHei", serif;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+/*
+ * The two hero-scale headings. A full-width glyph runs roughly twice as wide as
+ * an average Latin character, so the Latin clamp ceilings (8.6rem / 8rem) push
+ * a five-to-seven character line past its column and force an extra wrap. Lower
+ * the ceiling for CJK only; the smaller headings fit their columns as they are.
+ */
+.landing-display-xl:is(:lang(zh), :lang(ja), :lang(ko)) {
+  font-size: clamp(2.75rem, 6vw, 5.25rem);
+}
+
 .landing-kicker {
   font-size: 0.7rem;
   font-weight: 900;

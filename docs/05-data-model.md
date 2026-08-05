@@ -48,6 +48,11 @@ export default defineSchema({
     coverStorageId: v.optional(v.id("_storage")),
     epubStorageId: v.optional(v.id("_storage")),
     pdfStorageId: v.optional(v.id("_storage")),
+    translationRun: v.optional(v.object({
+      runId: v.string(),
+      lang: v.string(),
+      startedAt: v.number(),
+    })),
   })
     .index("by_slug", ["slug"])
     .index("by_status", ["status"])
@@ -60,6 +65,11 @@ export default defineSchema({
   // auto-suffix on collision (`-2`), so without this a duplicate title looks
   // like a normal save — which is exactly how a second "Pregnancy Safety
   // Basics" reached the live catalog.
+  //
+  // `translationRun` is a book-level lease, not translation output. Approval
+  // writes it atomically before scheduling provider work; only the matching
+  // run may store a draft or clear it. It expires after ten minutes so a killed
+  // action cannot block the book permanently.
 
   bookBlocks: defineTable({
     bookId: v.id("books"),
@@ -183,8 +193,36 @@ export default defineSchema({
     result: v.optional(v.any()),
     relatedBookId: v.optional(v.id("books")),
   })
-    .index("by_tool", ["tool"])
-    .index("by_status", ["status"]),
+  .index("by_tool", ["tool"])
+  .index("by_status", ["status"]),
+
+  // Owner chat sessions. startTurn persists the owner message before model
+  // generation; finishTurn appends the server-side reply. `runId` marks the
+  // active turn, while stopped turns remain visible but are excluded from
+  // model replay. Tool transcripts are retained only on messages.
+  agentChats: defineTable({
+    ownerId: v.id("users"),
+    title: v.string(),
+    messages: v.array(v.object({
+      role: v.union(v.literal("user"), v.literal("assistant")),
+      content: v.string(),
+      runId: v.optional(v.string()),
+      cards: v.optional(v.array(v.object({ component: v.string(), props: v.any() }))),
+      tools: v.optional(v.array(v.string())),
+      toolErrors: v.optional(v.array(v.string())),
+      modelMessages: v.optional(v.array(v.any())),
+      actionId: v.optional(v.id("agentActions")),
+      stopped: v.optional(v.boolean()),
+    })),
+    updatedAt: v.number(),
+    runId: v.optional(v.string()),
+    runStartedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()),
+  }).index("by_owner", ["ownerId"]),
+
+  // The session `runId` is also a ten-minute lease. Each message keeps its own
+  // `runId`, so a late completion can settle beside its originating user turn
+  // without clearing or reordering a newer run.
 
   // Full LLM call observability — every agent turn, not just confirm-gated
   // ones. Distinct from agentActions: this is "what ran, which model, what
@@ -197,6 +235,7 @@ export default defineSchema({
     ),
     model: v.string(), // e.g. OpenRouter returned model, snapshot of what actually served the call
     tool: v.optional(v.string()), // unset for plain chat turns with no tool call
+    subject: v.optional(v.string()), // owner-readable context, e.g. "Safe Schools → af"
     inputTokens: v.number(),
     outputTokens: v.number(),
     latencyMs: v.number(),

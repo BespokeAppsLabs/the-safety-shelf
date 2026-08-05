@@ -3,7 +3,13 @@ import { generateText } from "ai";
 import { decryptSecret, encryptSecret } from "../convex/lib/secrets";
 import { generateOpenRouterImage } from "../convex/images";
 import { openRouterClient, openRouterTextRequest, validateOpenRouterKey } from "../convex/lib/openrouter";
-import { OPENROUTER_IMAGE_MODEL, OPENROUTER_TEXT_FALLBACKS, OPENROUTER_TEXT_MODEL, OPENROUTER_TRANSLATION_MODEL } from "../convex/aiCredentials/providers";
+import {
+  OPENROUTER_IMAGE_MODEL,
+  OPENROUTER_TEXT_FALLBACKS,
+  OPENROUTER_TEXT_MODEL,
+  OPENROUTER_TEXT_REASONING_EFFORT,
+  OPENROUTER_TRANSLATION_MODEL,
+} from "../convex/aiCredentials/providers";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -33,20 +39,54 @@ test("routes agentic work to the paid model and sends the fallback chain", async
   // The agent must not run on a free model: a 50-request/day cap surfaced as
   // unparseable throttle responses and stalled tool calls.
   expect(OPENROUTER_TEXT_MODEL).not.toMatch(/:free$/);
-  // A fallback chain is sent, primary first, so a throttle retries instead of
-  // failing the turn.
-  expect(body.models[0]).toBe(OPENROUTER_TEXT_MODEL);
-  expect(OPENROUTER_TEXT_FALLBACKS[0]).toBe(OPENROUTER_TEXT_MODEL);
-  expect(OPENROUTER_TEXT_FALLBACKS.length).toBeGreaterThan(1);
-  // Translation stays on the free model — schema-bound, no tool calling, and
-  // by far the highest-volume text job in the app.
-  expect(OPENROUTER_TRANSLATION_MODEL).toMatch(/:free$/);
+  // `model` is attempted first; `models` contains only subsequent fallbacks.
+  expect(body.models).toEqual([...OPENROUTER_TEXT_FALLBACKS]);
+  expect(OPENROUTER_TEXT_FALLBACKS).not.toContain(OPENROUTER_TEXT_MODEL);
+  expect(OPENROUTER_TEXT_FALLBACKS.length).toBeGreaterThan(0);
+  expect(body.reasoning_effort).toBe("medium");
+  expect(OPENROUTER_TEXT_REASONING_EFFORT).toBe("medium");
   expect(openRouterTextRequest({ model: OPENROUTER_TEXT_MODEL, tools: [{ type: "function" }] })).toMatchObject({
     provider: { require_parameters: true },
   });
   expect(openRouterTextRequest({ model: OPENROUTER_TEXT_MODEL, response_format: { type: "json_schema" } })).toMatchObject({
     provider: { require_parameters: true },
   });
+});
+
+test("a non-agent route keeps the model it asked for", async () => {
+  // The regression this exists to stop: the agent's fallbacks were appended to
+  // EVERY request, so a translation failure could spill into a reasoning model
+  // with different cost and structured-output behaviour.
+  const translation = openRouterTextRequest({
+    model: OPENROUTER_TRANSLATION_MODEL,
+    response_format: { type: "json_schema" },
+  });
+  expect(translation).not.toHaveProperty("models");
+  expect(translation).toMatchObject({
+    model: OPENROUTER_TRANSLATION_MODEL,
+    provider: { require_parameters: true },
+  });
+  expect(OPENROUTER_TRANSLATION_MODEL).not.toBe(OPENROUTER_TEXT_MODEL);
+
+  // And end to end, through the client the action actually builds.
+  const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+    id: "1", object: "chat.completion", created: 1, model: OPENROUTER_TRANSLATION_MODEL,
+    choices: [{ index: 0, message: { role: "assistant", content: "{}" }, finish_reason: "stop" }],
+    usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+  }), { status: 200, headers: { "content-type": "application/json" } }));
+  vi.stubGlobal("fetch", fetchMock);
+
+  await generateText({ model: openRouterClient("sk-or-test").chat(OPENROUTER_TRANSLATION_MODEL), prompt: "ping" });
+  const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+  expect(body.model).toBe(OPENROUTER_TRANSLATION_MODEL);
+  expect(body.models).toBeUndefined();
+});
+
+test("translation does not run on a free model", () => {
+  // The free tier's 50-request/day cap returns non-JSON throttle bodies, and
+  // translation is the highest-volume text job in the app (21 languages x
+  // every chapter) — the one job guaranteed to hit that cap.
+  expect(OPENROUTER_TRANSLATION_MODEL).not.toMatch(/:free$/);
 });
 
 test("validates a key without sending an inference request", async () => {
@@ -79,7 +119,7 @@ test("every agentic model in the chain supports reasoning and tool calling", () 
   // here for exposing no reasoning parameters — cheap and agent-tuned is not
   // enough if the correction step has nowhere to happen.
   const REASONING_TOOL_MODELS = ["deepseek/deepseek-v4-flash", "openai/gpt-5.6-luna"];
-  expect([...OPENROUTER_TEXT_FALLBACKS]).toEqual(REASONING_TOOL_MODELS);
+  expect([OPENROUTER_TEXT_MODEL, ...OPENROUTER_TEXT_FALLBACKS]).toEqual(REASONING_TOOL_MODELS);
   expect(OPENROUTER_TEXT_MODEL).toBe(REASONING_TOOL_MODELS[0]);
   expect(OPENROUTER_TEXT_FALLBACKS).not.toContain("inclusionai/ling-2.6-flash");
 });

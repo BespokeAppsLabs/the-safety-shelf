@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import { convexTest } from "convex-test";
 import schema from "../convex/schema";
+import { api, internal } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
 
 const modules = import.meta.glob("../convex/**/*.*s");
@@ -89,6 +90,39 @@ export async function seedPurchase(
     }
     return orderId;
   });
+}
+
+/**
+ * A finished chat turn, both halves at once.
+ *
+ * Production splits a turn in two — startTurn stores the owner's message and
+ * flags the session running, then the action's finishTurn appends the reply —
+ * so that a turn survives the owner navigating away mid-run. Tests that only
+ * care about the resulting thread should not have to spell that out twice.
+ */
+export async function seedTurn(
+  t: Test,
+  asOwner: Awaited<ReturnType<typeof seedOwner>>,
+  {
+    chatId,
+    userContent,
+    assistantContent,
+    ...reply
+  }: {
+    chatId?: Id<"agentChats">;
+    userContent: string;
+    assistantContent: string;
+    cards?: { component: string; props: unknown }[];
+    tools?: string[];
+    toolErrors?: string[];
+    modelMessages?: unknown[];
+    stopped?: boolean;
+  },
+) {
+  const runId = `test-run-${Math.random()}`;
+  const id = await asOwner.mutation(api.agentChats.startTurn, { chatId, content: userContent, runId });
+  await t.mutation(internal.agentChats.finishTurn, { chatId: id, runId, content: assistantContent, ...reply });
+  return id;
 }
 
 // Looks up the users._id for a clerkId seeded via seedOwner/seedCustomer —

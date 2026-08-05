@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { viewerMutation, requireOwner } from "../../lib/auth";
 
-// Edit a variant's title/blurb and publish state (draft ⇄ live).
+// Edit a variant's title/blurb, review state, and reserved future serving state.
 export const update = viewerMutation({
   args: {
     variantId: v.id("bookVariants"),

@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { searchWeb } from "../convex/lib/firecrawl";
+import { scrapeUrl, searchWeb } from "../convex/lib/firecrawl";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -19,5 +19,37 @@ test("searches Firecrawl with bounded markdown results", async () => {
     sources: ["web"],
     scrapeOptions: { formats: [{ type: "markdown" }], onlyMainContent: true },
   });
+  process.env.FIRECRAWL_API_KEY = previous;
+});
+
+test("scrapes one page with a larger bound, and refuses non-http URLs", async () => {
+  const previous = process.env.FIRECRAWL_API_KEY;
+  process.env.FIRECRAWL_API_KEY = "fc-test";
+  const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+    data: {
+      markdown: "y".repeat(9000),
+      metadata: { title: "Regulation", description: "Official guidance", sourceURL: "https://gov.example/reg" },
+    },
+  }), { status: 200, headers: { "content-type": "application/json" } }));
+  vi.stubGlobal("fetch", fetchMock);
+
+  const source = await scrapeUrl("https://gov.example/reg");
+  expect(source).toEqual({
+    title: "Regulation",
+    url: "https://gov.example/reg",
+    description: "Official guidance",
+    content: "y".repeat(8000),
+  });
+  expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+    url: "https://gov.example/reg",
+    formats: [{ type: "markdown" }],
+    onlyMainContent: true,
+  });
+
+  // The URL arrives from model output, so the protocol is a trust boundary.
+  await expect(scrapeUrl("file:///etc/passwd")).rejects.toThrow(/http and https/);
+  await expect(scrapeUrl("not a url")).rejects.toThrow(/not a valid URL/);
+  expect(fetchMock).toHaveBeenCalledTimes(1); // neither rejection reached Firecrawl
+
   process.env.FIRECRAWL_API_KEY = previous;
 });

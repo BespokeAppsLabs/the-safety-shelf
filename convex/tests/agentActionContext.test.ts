@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { formatActionContext, formatSavedDraftContext, pendingApprovalReply, proposalReply, requestedCoverTitle } from "../agent";
+import { formatActionContext, formatSavedDraftContext, pendingApprovalReply, PROPOSAL_TOOL_NAMES, proposalReply, proposalSucceeded, requestedCoverTitle } from "../agent";
 
 test("puts action outcomes into the next-turn context", () => {
   const context = formatActionContext([
@@ -24,6 +24,14 @@ test("uses the card rather than model prose for every proposal", () => {
     "Review the proposal card below and use its approval control to continue.",
   );
   expect(proposalReply([], "A normal answer", 0)).toBe("A normal answer");
+});
+
+test("translation uses the shared proposal reply and successful-stop contract", () => {
+  expect(PROPOSAL_TOOL_NAMES).toContain("translateBook");
+  expect(proposalReply(["translateBook"], "still working", 1)).toBe(
+    "Review the proposal card below and use its approval control to continue.",
+  );
+  expect(proposalSucceeded({ steps: [{ toolResults: [{ toolName: "translateBook", output: { data: { proposed: true } } }] }] } as never)).toBe(true);
 });
 
 test("recognizes an image request for a book despite title spacing or a typo", () => {
