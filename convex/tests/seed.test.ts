@@ -1,6 +1,22 @@
-import { expect, test } from "vitest";
+import { beforeEach, expect, test, vi } from "vitest";
+import { ConvexError } from "convex/values";
 import { api, internal } from "../_generated/api";
 import { setupTest } from "../../test/helpers";
+
+// The seed refuses to run unless the deployment opts in. Dev sets this; prod
+// never does. See the guard in convex/seed.ts.
+beforeEach(() => {
+  vi.stubEnv("ALLOW_DEMO_SEED", "true");
+  return () => vi.unstubAllEnvs();
+});
+
+test("demo seed refuses to run when the deployment has not opted in", async () => {
+  vi.stubEnv("ALLOW_DEMO_SEED", "");
+  const t = setupTest();
+
+  await expect(t.mutation(internal.seed.seed, {})).rejects.toThrow(ConvexError);
+  expect(await t.query(api.books.listLive, {})).toEqual([]);
+});
 
 test("demo seed restores all seven books and can attach a cover", async () => {
   const t = setupTest();
