@@ -117,8 +117,6 @@
     "goToLibrary": "Ya kwa laeboraring ya me"
   },
   "footer": {
-    "demoLine1": "Lebenkele la sekao la The Safety Shelf.",
-    "demoLine2": "Ga jaana ke katalogo ya teko le direko tsa selegae. Convex, Clerk, Stripe le didirisiwa tsa agent moragonyana.",
     "copyright": "© {year} The Safety Shelf"
   }
 }

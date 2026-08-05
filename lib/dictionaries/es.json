@@ -117,8 +117,6 @@
     "goToLibrary": "Ir a mi biblioteca"
   },
   "footer": {
-    "demoLine1": "Tienda de demostración de The Safety Shelf.",
-    "demoLine2": "Por ahora, catálogo de prueba y compras locales. Convex, Clerk, Stripe y herramientas de agente más adelante.",
     "copyright": "© {year} The Safety Shelf"
   }
 }

@@ -117,8 +117,6 @@
     "goToLibrary": "내 라이브러리로 가기"
   },
   "footer": {
-    "demoLine1": "The Safety Shelf 데모 스토어입니다.",
-    "demoLine2": "현재는 테스트 카탈로그와 로컬 구매만 지원합니다. Convex, Clerk, Stripe, 에이전트 도구는 추후 지원됩니다.",
     "copyright": "© {year} The Safety Shelf"
   }
 }

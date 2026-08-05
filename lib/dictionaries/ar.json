@@ -117,8 +117,6 @@
     "goToLibrary": "الذهاب إلى مكتبتي"
   },
   "footer": {
-    "demoLine1": "متجر تجريبي لـ The Safety Shelf.",
-    "demoLine2": "كتالوج تجريبي وعمليات شراء محلية حاليًا. Convex وClerk وStripe وأدوات الوكيل لاحقًا.",
     "copyright": "© {year} The Safety Shelf"
   }
 }

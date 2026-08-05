@@ -117,8 +117,6 @@
     "goToLibrary": "前往我的书库"
   },
   "footer": {
-    "demoLine1": "The Safety Shelf 演示店面。",
-    "demoLine2": "目前为测试目录与本地购买。Convex、Clerk、Stripe 及代理工具将陆续接入。",
     "copyright": "© {year} The Safety Shelf"
   }
 }

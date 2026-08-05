@@ -117,8 +117,6 @@
     "goToLibrary": "Ke perpustakaan saya"
   },
   "footer": {
-    "demoLine1": "Etalase demo The Safety Shelf.",
-    "demoLine2": "Untuk saat ini katalog uji coba dan pembelian lokal. Convex, Clerk, Stripe, dan perkakas agen menyusul.",
     "copyright": "© {year} The Safety Shelf"
   }
 }

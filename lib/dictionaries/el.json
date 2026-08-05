@@ -117,8 +117,6 @@
     "goToLibrary": "Στη βιβλιοθήκη μου"
   },
   "footer": {
-    "demoLine1": "Επιδεικτικό κατάστημα The Safety Shelf.",
-    "demoLine2": "Προς το παρόν δοκιμαστικός κατάλογος και τοπικές αγορές. Convex, Clerk, Stripe και εργαλεία agent αργότερα.",
     "copyright": "© {year} The Safety Shelf"
   }
 }

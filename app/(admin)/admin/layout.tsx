@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
@@ -10,6 +11,8 @@ import { isAdminOwner } from "@/lib/adminAccess";
 import { ADMIN_NAV } from "@/lib/nav";
 
 const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
+export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } };
 
 // Fail closed before rendering any admin UI. Clerk identifies the request and
 // Convex remains the role authority, so a customer cannot reach this layout

@@ -117,8 +117,6 @@
     "goToLibrary": "मेरी लाइब्रेरी पर जाएं"
   },
   "footer": {
-    "demoLine1": "The Safety Shelf का डेमो स्टोरफ़्रंट।",
-    "demoLine2": "अभी परीक्षण कैटलॉग और स्थानीय खरीद। Convex, Clerk, Stripe और एजेंट टूल्स बाद में।",
     "copyright": "© {year} The Safety Shelf"
   }
 }

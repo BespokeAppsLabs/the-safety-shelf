@@ -117,8 +117,6 @@
     "goToLibrary": "ライブラリへ移動"
   },
   "footer": {
-    "demoLine1": "The Safety Shelf のデモストアです。",
-    "demoLine2": "現在はテストカタログとローカル購入のみ。Convex・Clerk・Stripe・エージェントツールは今後対応します。",
     "copyright": "© {year} The Safety Shelf"
   }
 }
