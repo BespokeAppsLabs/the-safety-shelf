@@ -236,15 +236,20 @@ function ContentTab({
   book,
   originalChapters,
   onOriginalChange,
+  initialLang,
 }: {
   book: Doc<"books">;
   originalChapters: Chapter[];
   onOriginalChange: (chapters: Chapter[]) => void;
+  initialLang?: string;
 }) {
   const variants = useQuery(api.bookVariants.list, { bookId: book._id });
   const setOriginalBlocks = useMutation(api.bookBlocks.setBlocks);
   const setVariantBlocks = useMutation(api.variantBlocks.setBlocks);
-  const [lang, setLang] = useState(book.originalLang);
+  // Seeded from the link so "review this translation" opens on the translation
+  // rather than on the original. The effect below still falls back to the
+  // original if the requested language has no saved variant.
+  const [lang, setLang] = useState(initialLang || book.originalLang);
   const [editedVariantChapters, setEditedVariantChapters] = useState<Chapter[] | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -384,10 +389,12 @@ export function AdminBookEditor({
   slug,
   bookId,
   initialTab = "details",
+  initialLang,
 }: {
   slug?: string;
   bookId?: Id<"books">;
   initialTab?: Tab;
+  initialLang?: string;
 }) {
   const { isAuthenticated } = useConvexAuth();
   const bookBySlug = useQuery(api.books.getAnyBySlug, isAuthenticated && slug ? { slug } : "skip");
@@ -589,7 +596,7 @@ export function AdminBookEditor({
         </Card>
       ) : null}
 
-      {tab === "content" ? <ContentTab book={book} originalChapters={chapters} onOriginalChange={setChapters} /> : null}
+      {tab === "content" ? <ContentTab book={book} originalChapters={chapters} onOriginalChange={setChapters} initialLang={initialLang} /> : null}
 
       {tab === "images" ? (
         <Card className="space-y-5">
@@ -631,7 +638,7 @@ export function AdminBookEditor({
 
       {tab === "audio" ? <AudioTab book={book} /> : null}
 
-      {tab === "read" ? <ReadTab book={book} originalChapters={chapters} lang={readLang || book.originalLang} onLangChange={setReadLang} /> : null}
+      {tab === "read" ? <ReadTab book={book} originalChapters={chapters} lang={readLang || initialLang || book.originalLang} onLangChange={setReadLang} /> : null}
     </div>
   );
 }

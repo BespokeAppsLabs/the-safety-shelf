@@ -3,6 +3,7 @@
 export { list } from "./agentChats/queries/list";
 export { get } from "./agentChats/queries/get";
 export { getForOwner } from "./agentChats/queries/getForOwner";
-export { appendTurn } from "./agentChats/mutations/append";
-export { appendActionUpdate } from "./agentChats/mutations/appendActionUpdate";
+export { startTurn } from "./agentChats/mutations/startTurn";
+export { finishTurn } from "./agentChats/mutations/finishTurn";
+export { appendActionUpdate, appendActionUpdateForOwner } from "./agentChats/mutations/appendActionUpdate";
 export { remove } from "./agentChats/mutations/remove";

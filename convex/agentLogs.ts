@@ -1,9 +1,14 @@
 import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 
-// Internal-only — written by agent.ts (a "use node" action) after every LLM
-// call. Distinct from agentActions: this is call observability (model,
-// tokens, latency, cost), not the propose-then-confirm approval trail.
+// Internal-only — written by agent.ts and translate.ts (both "use node"
+// actions) after every LLM call. Distinct from agentActions: this is call
+// observability (model, tokens, latency, cost), not the propose-then-confirm
+// approval trail.
+//
+// `model` must be the model the PROVIDER reports serving, not the one the code
+// asked for. Fallback routing can substitute a model, so recording only the
+// requested constant would hide the actual behaviour and bill.
 export const record = internalMutation({
   args: {
     role: v.union(
@@ -12,6 +17,7 @@ export const record = internalMutation({
     ),
     model: v.string(),
     tool: v.optional(v.string()),
+    subject: v.optional(v.string()),
     inputTokens: v.number(),
     outputTokens: v.number(),
     latencyMs: v.number(),

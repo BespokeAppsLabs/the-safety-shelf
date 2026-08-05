@@ -20,6 +20,7 @@ function VariantEditor({ variant, onSaved }: { variant: Doc<"bookVariants">; onS
   const blocks = useQuery(api.variantBlocks.listByVariant, { variantId: variant._id });
   const updateVariant = useMutation(api.bookVariants.update);
   const setBlocks = useMutation(api.variantBlocks.setBlocks);
+  const discardVariant = useMutation(api.bookVariants.discard);
 
   const [title, setTitle] = useState(variant.title ?? "");
   const [blurb, setBlurb] = useState(variant.blurb ?? "");
@@ -47,11 +48,22 @@ function VariantEditor({ variant, onSaved }: { variant: Doc<"bookVariants">; onS
     }
   }
 
+  async function discard() {
+    setSaving(true);
+    setError(null);
+    try {
+      await discardVariant({ variantId: variant._id });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setSaving(false);
+    }
+  }
+
   return (
     <Card className="space-y-4">
       <div>
         <p className="text-sm font-semibold text-ink">Review {languageLabel(variant.lang)}</p>
-        <p className="mt-1 text-xs text-muted">Save this translation to move it into Read.</p>
+        <p className="mt-1 text-xs text-muted">Save this translation to move it into admin Content.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -67,9 +79,15 @@ function VariantEditor({ variant, onSaved }: { variant: Doc<"bookVariants">; onS
 
       {chapters === null ? <p className="text-sm text-muted">Loading…</p> : <ChapterEditor chapters={chapters} onChange={setChapters} />}
 
-      <div>
+      <div className="flex flex-wrap items-center gap-2">
         <Button size="sm" disabled={saving || chapters === null} onClick={() => void save()}>
           {saving ? "Saving…" : "Save translation"}
+        </Button>
+        {/* The way out of a translation you do not want. An unsaved draft blocks
+            this book from being translated again, so without a discard the only
+            exit from a bad translation was to save it. */}
+        <Button size="sm" variant="ghost" disabled={saving} onClick={() => void discard()}>
+          Discard
         </Button>
       </div>
 

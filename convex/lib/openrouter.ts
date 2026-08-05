@@ -1,6 +1,11 @@
 "use node";
 import { createOpenAI } from "@ai-sdk/openai";
-import { OPENROUTER_BASE_URL, OPENROUTER_TEXT_FALLBACKS } from "../aiCredentials/providers";
+import {
+  OPENROUTER_BASE_URL,
+  OPENROUTER_TEXT_FALLBACKS,
+  OPENROUTER_TEXT_MODEL,
+  OPENROUTER_TEXT_REASONING_EFFORT,
+} from "../aiCredentials/providers";
 
 export function openRouterTextRequest(body: Record<string, unknown>) {
   // A draft request includes the large writeBook schema. Require a provider
@@ -13,7 +18,18 @@ export function openRouterTextRequest(body: Record<string, unknown>) {
   const request = needsStructuredProvider
     ? { ...body, provider: { require_parameters: true } }
     : body;
-  return OPENROUTER_TEXT_FALLBACKS.length ? { ...request, models: [...OPENROUTER_TEXT_FALLBACKS] } : request;
+
+  // The fallback chain belongs to the agent's route and nothing else. It used
+  // to be appended to every chat completion this client sent, and OpenRouter's
+  // `models` is the fallback list after `model`, so translation must never
+  // inherit the agent route. A caller's chosen model is not a suggestion.
+  const isAgentRoute = body.model === OPENROUTER_TEXT_MODEL;
+  if (!isAgentRoute) return request;
+  return {
+    ...request,
+    reasoning_effort: request.reasoning_effort ?? OPENROUTER_TEXT_REASONING_EFFORT,
+    ...(OPENROUTER_TEXT_FALLBACKS.length ? { models: [...OPENROUTER_TEXT_FALLBACKS] } : {}),
+  };
 }
 
 // Key setup must validate authentication, not whether a particular free model

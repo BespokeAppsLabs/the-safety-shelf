@@ -75,7 +75,7 @@ export async function LandingScreen() {
               <span className="h-px w-10 bg-[#147a5c]" />
               {dict.landing.heroKicker}
             </p>
-            <h1 className="landing-display mt-7 max-w-[820px] text-[clamp(4rem,9vw,8.6rem)] leading-[0.79] tracking-[-0.075em]">
+            <h1 className="landing-display landing-display-xl mt-7 max-w-[820px] text-[clamp(4rem,9vw,8.6rem)] leading-[0.79] tracking-[-0.075em]">
               {dict.landing.heroTitleLine1}
               <span className="block text-[#147a5c]">{dict.landing.heroTitleLine2}</span>
             </h1>
@@ -266,7 +266,7 @@ export async function LandingScreen() {
       <section className="bg-[#efaa35] py-20 sm:py-28">
         <Container className="text-center">
           <p className="landing-kicker">{dict.landing.ctaKicker}</p>
-          <h2 className="landing-display mx-auto mt-6 max-w-5xl text-[clamp(3.5rem,8vw,8rem)] leading-[0.82] tracking-[-0.07em]">
+          <h2 className="landing-display landing-display-xl mx-auto mt-6 max-w-5xl text-[clamp(3.5rem,8vw,8rem)] leading-[0.82] tracking-[-0.07em]">
             {dict.landing.ctaTitle}
           </h2>
           <Link

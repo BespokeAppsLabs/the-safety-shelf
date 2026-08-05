@@ -1,8 +1,10 @@
 import { ConvexError, v } from "convex/values";
 import { viewerMutation, requireOwner } from "../../lib/auth";
 import { assertUniqueTitle, setChapters } from "../../lib/books";
+import { internal } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import type { MutationCtx } from "../../_generated/server";
+import { reserveTranslationRun, TRANSLATION_RUN_TIMEOUT_MS } from "../../lib/translationRun";
 
 // The owner's Approve click. Unlike decide (which only records the verdict for
 // async executions), this runs the proposed write in the same transaction and
@@ -18,6 +20,38 @@ export const approveAndExecute = viewerMutation({
     if (!action) throw new ConvexError("Agent action not found");
     if (action.status !== "proposed") {
       throw new ConvexError(`Cannot approve an action in status "${action.status}"`);
+    }
+
+    // Translation is the one approved operation that outlives this transaction:
+    // it is an action making provider calls for minutes, which a mutation
+    // cannot run. It is dispatched and left "approved" — marking it executed
+    // here would assert a translation exists before a single word is written,
+    // and the system prompt treats [executed] as proof the write happened.
+    // internal.translate.runForOwner resolves the row when it finishes.
+    if (action.tool === "translateBook") {
+      const bookId = action.args.bookId as Id<"books">;
+      const lang = action.args.lang as string;
+      const runId = actionId as string;
+      const decidedAt = Date.now();
+      await reserveTranslationRun(ctx, bookId, lang, runId, decidedAt);
+      await ctx.db.patch(actionId, {
+        status: "approved",
+        decidedAt,
+        decidedBy: ctx.viewer._id,
+      });
+      await ctx.scheduler.runAfter(0, internal.translate.runForOwner, {
+        ownerId: ctx.viewer._id,
+        bookId,
+        lang,
+        runId,
+        actionId,
+      });
+      await ctx.scheduler.runAfter(TRANSLATION_RUN_TIMEOUT_MS + 5_000, internal.translateData.expireRun, {
+        bookId,
+        runId,
+        actionId,
+      });
+      return { started: true, lang };
     }
 
     // On success: executed + result. On failure the thrown error rolls the

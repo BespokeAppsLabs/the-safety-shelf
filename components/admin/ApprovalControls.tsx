@@ -21,11 +21,19 @@ export function ApprovalControls({ actionId }: { actionId: string }) {
 
   const status = action?.status ?? "proposed";
   if (status !== "proposed") {
-    const variant = status === "executed" ? "success" : status === "rejected" ? "neutral" : "danger";
-    const label = status === "executed" ? "Approved & applied" : status === "rejected" ? "Rejected" : "Failed";
+    // "approved" is a real resting state, not a failure. Most tools apply
+    // inside the approval transaction and jump straight to executed, but a
+    // translation is dispatched and runs for minutes — and while it did, this
+    // read the fallback branch and told the owner their translation had FAILED.
+    const { variant, label } = {
+      executed: { variant: "success", label: "Approved & applied" },
+      rejected: { variant: "neutral", label: "Rejected" },
+      approved: { variant: "info", label: "Approved · working…" },
+      failed: { variant: "danger", label: "Failed" },
+    }[status] ?? { variant: "danger", label: "Failed" };
     return (
       <div className="mt-4">
-        <Badge variant={variant}>{label}</Badge>
+        <Badge variant={variant as "success" | "neutral" | "info" | "danger"}>{label}</Badge>
       </div>
     );
   }

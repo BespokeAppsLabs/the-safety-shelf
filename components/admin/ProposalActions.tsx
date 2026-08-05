@@ -9,7 +9,12 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 
 // Tools whose proposal carries something worth reading before approving.
-const REVIEWABLE = new Set(["writeBook", "editBook", "publishBook"]);
+//
+// translateBook belongs here even though the translation does not exist yet:
+// approving it spends credits on every chapter of a specific book, and the
+// thing worth checking first is that it is the right book — which the dialog's
+// book-content view already shows.
+const REVIEWABLE = new Set(["writeBook", "editBook", "publishBook", "translateBook"]);
 
 // Approve/Reject plus, for proposals that change a book, a Review that opens
 // the full draft. Lives with the controls rather than on one screen so every

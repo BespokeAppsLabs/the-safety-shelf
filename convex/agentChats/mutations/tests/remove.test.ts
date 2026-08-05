@@ -1,12 +1,12 @@
 import { expect, test } from "vitest";
 import { api } from "../../../_generated/api";
-import { setupTest, seedOwner } from "../../../../test/helpers";
+import { setupTest, seedOwner, seedTurn } from "../../../../test/helpers";
 
 test("soft delete hides the chat from list but keeps the row and messages", async () => {
   const t = setupTest();
   const asOwner = await seedOwner(t);
 
-  const chatId = await asOwner.mutation(api.agentChats.appendTurn, {
+  const chatId = await seedTurn(t, asOwner, {
     userContent: "hello",
     assistantContent: "hi",
   });
@@ -26,7 +26,7 @@ test("rejects deleting another owner's chat", async () => {
   const asOwnerA = await seedOwner(t, "clerk_owner_a");
   const asOwnerB = await seedOwner(t, "clerk_owner_b");
 
-  const chatId = await asOwnerA.mutation(api.agentChats.appendTurn, {
+  const chatId = await seedTurn(t, asOwnerA, {
     userContent: "mine",
     assistantContent: "ok",
   });

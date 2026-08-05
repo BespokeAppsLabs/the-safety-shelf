@@ -12,6 +12,17 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { agentImageUrl } from "@/lib/agentImage";
 import { BasePrice } from "@/components/store/Price";
 import { ProposalActions } from "@/components/admin/ProposalActions";
+import { translationReviewState } from "@/lib/translationState";
+
+// Where a card link opens, decided by destination rather than by which card
+// drew it. Anything outside /admin — the storefront, the reader, an external
+// source — is a different workspace, and following it in place drops the owner
+// out of the conversation they were having. Admin paths stay in this tab, since
+// moving the owner around the admin app is exactly what the navigate tool is
+// for.
+function tabProps(href: string) {
+  return href.startsWith("/admin") ? {} : { target: "_blank", rel: "noreferrer" };
+}
 
 // Cover art: real cover image when one's been uploaded (coverUrl), otherwise
 // the gradient placeholder every book already has — same fallback ProductCard
@@ -91,8 +102,8 @@ export function BookStatsCard(props: BookStatsCardProps) {
         </div>
       </dl>
       {props.slug ? (
-        <Link href={`/book/${props.slug}`} className="mt-4 block text-sm font-semibold text-primary">
-          View storefront page →
+        <Link href={`/book/${props.slug}`} {...tabProps(`/book/${props.slug}`)} className="mt-4 block text-sm font-semibold text-primary">
+          View storefront page ↗
         </Link>
       ) : null}
     </Card>
@@ -123,7 +134,7 @@ export function TopSellersTable({ rows }: { rows: TopSellersRow[] }) {
       <p className="text-sm font-semibold text-ink">Top sellers</p>
       <div className="mt-3 space-y-3">
         {rows.map((row) => (
-          <Link key={row.slug} href={`/book/${row.slug}`} className="flex items-center gap-3">
+          <Link key={row.slug} href={`/book/${row.slug}`} {...tabProps(`/book/${row.slug}`)} className="flex items-center gap-3">
             <CoverThumb coverUrl={row.coverUrl} gradientFrom={row.gradientFrom} gradientTo={row.gradientTo} title={row.title} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-ink">{row.title}</p>
@@ -160,9 +171,10 @@ export function NavigateCard({ href, label }: { href: string; label: string }) {
       <p className="text-sm text-muted">The agent found a page for you:</p>
       <Link
         href={href}
+        {...tabProps(href)}
         className="mt-3 inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-strong"
       >
-        {label} →
+        {label} {href.startsWith("/admin") ? "→" : "↗"}
       </Link>
     </Card>
   );
@@ -187,6 +199,112 @@ export function WebResearchCard({
           </a>
         ))}
       </div>
+    </Card>
+  );
+}
+
+// A finished translation, handed back to the conversation that requested it.
+//
+// Saving moves a variant into admin Content, so it stays an explicit act — and
+// deliberately a shallow one here. The chapter-level editor lives in the
+// Translations tab; duplicating it inside a chat bubble would be a second copy
+// of the same screen to keep in step. This card covers the common case (the
+// title and blurb read correctly, accept it) and routes anything deeper to the
+// editor that already exists.
+export function TranslationReviewCard({
+  variantId,
+  bookId,
+  lang,
+  language,
+  bookTitle,
+  title,
+  blurb,
+  chapters,
+}: {
+  variantId: string;
+  bookId: string;
+  lang: string;
+  language: string;
+  bookTitle: string;
+  title: string;
+  blurb: string;
+  chapters: number;
+}) {
+  const updateVariant = useMutation(api.bookVariants.update);
+  const discardVariant = useMutation(api.bookVariants.discard);
+  const [outcome, setOutcome] = useState<"saved" | "discarded" | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function run(fn: () => Promise<unknown>, result: "saved" | "discarded") {
+    setBusy(true);
+    setError(null);
+    try {
+      await fn();
+      setOutcome(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Where the translated text is actually readable depends on whether it has
+  // been saved, and the two tabs split on exactly that: the Translations tab
+  // lists only unsaved drafts, while Content renders saved variants. Linking to
+  // one unconditionally is how "Review chapters" ended up showing the English
+  // original — the default tab is Read, which always renders the source.
+  // Read from the variant rather than from this component's own save state, so
+  // the link is still right after a reload or a save made in the panel.
+  const variants = useQuery(api.bookVariants.list, { bookId: bookId as Id<"books"> });
+  const state = outcome ?? translationReviewState(variants, variantId);
+  const reviewHref = state === "saved"
+    ? `/admin/books/preview/${bookId}?tab=content&lang=${lang}`
+    : `/admin/books/preview/${bookId}?tab=translations`;
+
+  const save = () => run(() => updateVariant({ variantId: variantId as Id<"bookVariants">, isSaved: true }), "saved");
+  // Discarding is not cosmetic: an unsaved draft blocks the book from being
+  // translated again, so without this the only way out of a bad translation
+  // was to save it.
+  const discard = () => run(() => discardVariant({ variantId: variantId as Id<"bookVariants"> }), "discarded");
+
+  return (
+    <Card className="max-w-sm">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+        {language} translation · {state}
+      </p>
+      <p className="mt-2 text-sm font-semibold text-ink">{title}</p>
+      <p className="mt-1 text-sm text-muted">{blurb}</p>
+      <p className="mt-2 text-xs text-muted">
+        {chapters} chapter{chapters === 1 ? "" : "s"} translated from &ldquo;{bookTitle}&rdquo;.
+      </p>
+      {state === "saved" ? (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <p className="text-sm font-semibold text-primary">
+            Saved to admin Content in {language}. Readers still receive the original text.
+          </p>
+          <Link href={reviewHref} className="text-sm font-semibold text-primary">
+            Review chapters →
+          </Link>
+        </div>
+      ) : state === "discarded" ? (
+        <p className="mt-3 text-sm font-semibold text-primary">Discarded. Nothing was published.</p>
+      ) : state === "loading" ? (
+        <p className="mt-3 text-sm text-muted">Checking translation status…</p>
+      ) : (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <Button size="sm" disabled={busy} onClick={() => void save()}>
+            {busy ? "Working…" : "Save translation"}
+          </Button>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => void discard()}>
+            Discard
+          </Button>
+          <Link href={reviewHref} className="text-sm font-semibold text-primary">
+            Review chapters →
+          </Link>
+        </div>
+      )}
+      {error ? <p className="mt-2 text-sm font-semibold text-red-strong">{error}</p> : null}
     </Card>
   );
 }
@@ -382,6 +500,7 @@ export const AGENT_COMPONENTS: Record<string, ComponentType<any>> = {
   RevenueStatsCard,
   NavigateCard,
   WebResearchCard,
+  TranslationReviewCard,
   ProposalCard,
   BookDraftCard,
   ImageGenerationProposalCard,

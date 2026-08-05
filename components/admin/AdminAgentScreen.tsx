@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { Dialog } from "@/components/ui/Dialog";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { AGENT_RUN_TIMEOUT_MS, isAgentRunActive } from "@/lib/agentRun";
 
 type AgentCard = { component: string; props: Record<string, unknown> };
 
@@ -21,14 +22,6 @@ function relativeTime(ms: number) {
   const hours = Math.round(mins / 60);
   if (hours < 24) return `${hours}h ago`;
   return `${Math.round(hours / 24)}d ago`;
-}
-
-// Rejects when the signal aborts — raced against the in-flight request so Esc
-// can bail out of waiting for a reply that can't be server-cancelled.
-function rejectOnAbort(signal: AbortSignal): Promise<never> {
-  return new Promise((_, reject) => {
-    signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
-  });
 }
 
 function SendIcon() {
@@ -65,6 +58,49 @@ function TrashIcon() {
   );
 }
 
+// What the turn actually DID, not what it said it would do.
+//
+// The agent's characteristic failure is narrating an action instead of calling
+// the tool — "let me create a draft…" followed by nothing. Prose alone cannot
+// be distinguished from real work, so every assistant turn now states its
+// tools, including when there were none.
+function ToolTrace({ tools }: { tools?: string[] }) {
+  // Undefined means "not recorded" — every turn from before this was tracked.
+  // Rendering those as "no tools used" would assert something false about
+  // history, since plenty of them did call tools. Absent data stays silent.
+  if (!tools) return null;
+  if (!tools.length) {
+    return <p className="mt-1 text-[11px] text-muted">No tools used — nothing was created or changed.</p>;
+  }
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-1">
+      <span className="text-[11px] text-muted">Used</span>
+      {tools.map((name) => (
+        <span key={name} className="rounded-full bg-background px-2 py-0.5 font-mono text-[11px] text-ink">
+          {name}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// A tool that threw. The model is told to own its failures, but it is the thing
+// that failed — it cannot be the only witness. Shown whether or not the reply
+// admits to it, so "the web search quietly stopped working" is visible here
+// rather than inferred from answers that got vaguer.
+function ToolFailures({ errors }: { errors?: string[] }) {
+  if (!errors?.length) return null;
+  return (
+    <div className="mt-1 space-y-1">
+      {errors.map((detail, index) => (
+        <p key={index} className="text-[11px] font-semibold text-red-strong">
+          ⚠ {detail}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 function CardList({ cards }: { cards: AgentCard[] }) {
   return (
     <div className="mt-3 flex flex-wrap justify-start gap-3">
@@ -86,18 +122,45 @@ function ChatPanel({
   const { isAuthenticated } = useConvexAuth();
   const status = useQuery(api.aiCredentials.getStatus, isAuthenticated ? {} : "skip");
   const chat = useQuery(api.agentChats.get, activeChatId ? { chatId: activeChatId } : "skip");
+  const recentActions = useQuery(api.agentActions.recent, isAuthenticated ? {} : "skip");
   const sendMessage = useAction(api.agent.sendMessage);
-  const appendTurn = useMutation(api.agentChats.appendTurn);
+  const startTurn = useMutation(api.agentChats.startTurn);
   const cancelRun = useMutation(api.agentRuns.cancel);
 
   const [draft, setDraft] = useState("");
-  const [pending, setPending] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
+  // Only covers the gap between hitting send and startTurn returning. Once the
+  // session exists, "is it working?" is answered by the session row itself, so
+  // it survives navigation instead of living in this component.
+  const [starting, setStarting] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
-  const abortRef = useRef<AbortController | null>(null);
-  const runIdRef = useRef<string | null>(null);
+
+  const runId = isAgentRunActive(chat?.runId, chat?.runStartedAt, now) ? chat!.runId! : null;
+  const sending = starting || Boolean(runId);
+
+  // A crashed action cannot clear its row. Wake this component when the same
+  // ten-minute lease used by startTurn expires so the owner can send again
+  // without waiting for some unrelated reactive update.
+  useEffect(() => {
+    if (!chat?.runId || !chat.runStartedAt) return;
+    const remaining = AGENT_RUN_TIMEOUT_MS - (Date.now() - chat.runStartedAt);
+    if (remaining <= 0) {
+      setNow(Date.now());
+      return;
+    }
+    const timer = window.setTimeout(() => setNow(Date.now()), remaining + 25);
+    return () => window.clearTimeout(timer);
+  }, [chat?.runId, chat?.runStartedAt]);
+
+  // Hand `starting` over to the session's own running flag only once the
+  // session has actually loaded. Clearing it in send() would unlock the input
+  // for the frame between the mutation resolving and the query catching up,
+  // which is long enough to fire a second message into a busy session.
+  useEffect(() => {
+    if (chat && chat._id === activeChatId) setStarting(false);
+  }, [chat, activeChatId]);
 
   // Auto-grow the input: reset to one line, then expand to fit content up to a
   // cap (past which it scrolls). Runs on every draft change, so clearing after
@@ -112,78 +175,81 @@ function ChatPanel({
   // Esc stops the running request. Global (not just the textarea) so it works
   // even if focus moved while the agent was thinking. Single press — matches
   // the "stop generating" convention; nothing else here needs Esc.
+  //
+  // The runId comes off the session row, so this also stops a run started
+  // before a reload or on another screen — the thing you reopened to check on.
   useEffect(() => {
-    if (!sending) return;
+    if (!runId) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        abortRef.current?.abort(); // stop the client's wait immediately…
-        if (runIdRef.current) void cancelRun({ runId: runIdRef.current }); // …and abort generation server-side
+        void cancelRun({ runId });
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [sending]);
+  }, [runId, cancelRun]);
 
   const messages = (chat?.messages ?? []) as {
     role: "user" | "assistant";
     content: string;
     cards?: AgentCard[];
+    tools?: string[];
+    toolErrors?: string[];
     stopped?: boolean;
   }[];
 
-  // The conversation is a live feed: every new turn, pending echo, or chat
-  // selection lands at the bottom so the newest message is immediately visible.
+  // Progress for translations THIS conversation asked for.
+  //
+  // agentActions.recent is owner-wide, so filtering it on status alone put the
+  // banner in every session — including a brand new one that had asked for
+  // nothing. A proposal belongs to the thread holding its card, and that
+  // relationship is already recorded there: the card carries the actionId.
+  // Read it back rather than inventing a second source of truth.
+  const proposalIds = new Set(
+    messages.flatMap((message) =>
+      (message.cards ?? [])
+        .map((card) => (card.props as { actionId?: string } | undefined)?.actionId)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  );
+  const runningTranslations = (recentActions ?? []).filter(
+    (item) => item.tool === "translateBook" && item.status === "approved" && proposalIds.has(item._id),
+  );
+
+  // The conversation is a live feed: every new turn or chat selection lands at
+  // the bottom so the newest message is immediately visible.
   useEffect(() => {
     const el = messagesRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [activeChatId, messages.length, pending, sending]);
+  }, [activeChatId, messages.length, sending, runningTranslations.length]);
 
+  // Two steps, deliberately: open the turn (which creates the session and
+  // stores the message), then run the agent against it. The session is durable
+  // from the first step, so nothing here needs to survive — navigating away
+  // mid-run loses no more than the scroll position, and the reply is committed
+  // server-side into a thread that is already in History.
   async function send() {
     const text = draft.trim();
     if (!text || sending) return;
 
     setDraft("");
-    setPending(text);
-    setSending(true);
+    setStarting(true);
     setError(null);
-
-    const controller = new AbortController();
-    abortRef.current = controller;
-    const runId = crypto.randomUUID();
-    runIdRef.current = runId;
-    const request = sendMessage({ message: text, chatId: activeChatId ?? undefined, runId });
-    request.catch(() => {}); // server aborts on cancel; swallow its late rejection since we raced past it
+    const turnRunId = crypto.randomUUID();
 
     try {
-      const { reply, cards } = await Promise.race([request, rejectOnAbort(controller.signal)]);
-      const chatId = await appendTurn({
-        chatId: activeChatId ?? undefined,
-        userContent: text,
-        assistantContent: reply,
-        cards: (cards.length ? cards : undefined) as AgentCard[] | undefined,
-      });
-      if (chatId !== activeChatId) onChatStarted(chatId as Id<"agentChats">);
-    } catch (err) {
-      if (controller.signal.aborted) {
-        // Record the stop for the human-facing thread only. `stopped: true`
-        // keeps it out of the model's history (getForOwner), so the agent
-        // won't try to resume the request the owner cut off. Reply discarded.
-        const chatId = await appendTurn({
-          chatId: activeChatId ?? undefined,
-          userContent: text,
-          assistantContent: "⏹ Stopped by the user before this response finished.",
-          stopped: true,
-        });
-        if (chatId !== activeChatId) onChatStarted(chatId as Id<"agentChats">);
-      } else {
+      const id = await startTurn({ chatId: activeChatId ?? undefined, content: text, runId: turnRunId });
+      if (id !== activeChatId) onChatStarted(id as Id<"agentChats">);
+      // Deliberately not awaited: durable completion arrives through the live
+      // thread. A dispatch/auth rejection still needs to be visible locally;
+      // the ten-minute lease is the backstop when no authenticated path settles.
+      void sendMessage({ message: text, chatId: id, runId: turnRunId }).catch((err) => {
         setError(err instanceof Error ? err.message : String(err));
-      }
-    } finally {
-      setSending(false);
-      setPending(null);
-      abortRef.current = null;
-      runIdRef.current = null;
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setStarting(false);
     }
   }
 
@@ -199,7 +265,7 @@ function ChatPanel({
       </div>
 
       <div ref={messagesRef} className="mt-4 flex-1 space-y-4 overflow-y-auto rounded-3xl bg-background p-4">
-        {messages.length === 0 && !pending ? (
+        {messages.length === 0 ? (
           <p className="text-sm text-muted">
             Ask about sales, top sellers, or revenue — or say &ldquo;take me to the catalog&rdquo; and the agent will
             navigate the app for you.
@@ -218,16 +284,29 @@ function ChatPanel({
               >
                 {msg.content}
               </span>
+              {msg.role === "assistant" && !msg.stopped ? <ToolTrace tools={msg.tools} /> : null}
+              {msg.role === "assistant" ? <ToolFailures errors={msg.toolErrors} /> : null}
               {msg.cards?.length ? <CardList cards={msg.cards} /> : null}
             </div>
           ))
         )}
-        {pending ? (
-          <div className="text-right">
-            <span className="inline-block max-w-[85%] rounded-2xl bg-primary px-4 py-2 text-sm text-white">{pending}</span>
-          </div>
-        ) : null}
         {sending ? <p className="text-sm italic text-muted">Thinking… <span className="not-italic">(Esc to stop)</span></p> : null}
+        {runningTranslations.map((item) => {
+          const args = item.args as { title?: string; language?: string } | undefined;
+          return (
+            <div key={item._id} className="flex items-start gap-2 rounded-2xl bg-white p-3 shadow-soft">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-primary" aria-hidden="true" />
+              <p className="text-sm text-ink">
+                <span className="font-semibold">Translating {args?.title ? `“${args.title}”` : "your book"}</span>
+                {args?.language ? ` into ${args.language}` : ""} — started {relativeTime(item.decidedAt ?? item.proposedAt)}.
+                <span className="block text-xs text-muted">
+                  A chapter at a time; this takes a few minutes. A review card appears here when it lands — you can leave
+                  this page.
+                </span>
+              </p>
+            </div>
+          );
+        })}
       </div>
 
       <div className="mt-4 flex shrink-0 items-end gap-2 rounded-3xl border border-border bg-white p-1.5 transition focus-within:border-primary">
@@ -314,7 +393,14 @@ function HistoryRail({
               >
                 <button onClick={() => onSelect(item._id)} className="min-w-0 flex-1 px-4 py-3 text-left">
                   <p className="truncate text-sm font-medium text-ink">{item.title}</p>
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-1 flex items-center gap-1.5 text-xs text-muted">
+                    {item.busy ? (
+                      <>
+                        <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-primary" aria-hidden="true" />
+                        <span className="font-semibold text-primary">Working…</span>
+                        <span aria-hidden="true">·</span>
+                      </>
+                    ) : null}
                     {item.messageCount} message{item.messageCount === 1 ? "" : "s"} · {relativeTime(item.updatedAt)}
                   </p>
                 </button>
