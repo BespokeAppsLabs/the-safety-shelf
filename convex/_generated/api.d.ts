@@ -68,6 +68,7 @@ import type * as books_queries_listAll from "../books/queries/listAll.js";
 import type * as books_queries_listLive from "../books/queries/listLive.js";
 import type * as books_queries_salesCounts from "../books/queries/salesCounts.js";
 import type * as books_queries_salesSummary from "../books/queries/salesSummary.js";
+import type * as bootstrapCategories from "../bootstrapCategories.js";
 import type * as categories from "../categories.js";
 import type * as categories_mutations_create from "../categories/mutations/create.js";
 import type * as categories_queries_list from "../categories/queries/list.js";
@@ -195,6 +196,7 @@ declare const fullApi: ApiFromModules<{
   "books/queries/listLive": typeof books_queries_listLive;
   "books/queries/salesCounts": typeof books_queries_salesCounts;
   "books/queries/salesSummary": typeof books_queries_salesSummary;
+  bootstrapCategories: typeof bootstrapCategories;
   categories: typeof categories;
   "categories/mutations/create": typeof categories_mutations_create;
   "categories/queries/list": typeof categories_queries_list;

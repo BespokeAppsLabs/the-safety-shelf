@@ -133,6 +133,17 @@ const BOOKS: Array<{
 export const seed = internalMutation({
   args: {},
   handler: async (ctx) => {
+    // ponytail: env flag, not a deployment-name check — the "already seeded"
+    // guard below is useless on the deployment that actually matters, because
+    // an empty prod DB sails straight through it. Demo books in production are
+    // unrecoverable without hand-deleting rows, so the seed refuses by default
+    // and dev opts IN: `npx convex env set ALLOW_DEMO_SEED true`. Never set it
+    // on prod.
+    if (!process.env.ALLOW_DEMO_SEED) {
+      throw new ConvexError(
+        "Refusing to seed: ALLOW_DEMO_SEED is not set on this deployment. This is demo content and must never run on production.",
+      );
+    }
     if (await ctx.db.query("books").first()) return "already seeded";
 
     const categoryIdBySlug = new Map<string, Awaited<ReturnType<typeof ctx.db.insert<"categories">>>>();
