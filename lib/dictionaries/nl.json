@@ -117,8 +117,6 @@
     "goToLibrary": "Naar mijn bibliotheek"
   },
   "footer": {
-    "demoLine1": "Demowinkel van The Safety Shelf.",
-    "demoLine2": "Voorlopig een testcatalogus en lokale aankopen. Convex, Clerk, Stripe en agenttools volgen later.",
     "copyright": "© {year} The Safety Shelf"
   }
 }

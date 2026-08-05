@@ -117,8 +117,6 @@
     "goToLibrary": "Go to my library"
   },
   "footer": {
-    "demoLine1": "The Safety Shelf demo storefront.",
-    "demoLine2": "Mock catalog now. Payments run on Paystack; Convex, Clerk, and agent tools power the rest.",
     "copyright": "© {year} The Safety Shelf"
   }
 }

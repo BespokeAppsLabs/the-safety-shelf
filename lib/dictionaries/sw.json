@@ -117,8 +117,6 @@
     "goToLibrary": "Nenda kwenye maktaba yangu"
   },
   "footer": {
-    "demoLine1": "Duka la mfano la The Safety Shelf.",
-    "demoLine2": "Kwa sasa ni katalogi ya majaribio na manunuzi ya ndani. Convex, Clerk, Stripe na zana za wakala baadaye.",
     "copyright": "© {year} The Safety Shelf"
   }
 }
