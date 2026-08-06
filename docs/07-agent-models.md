@@ -81,5 +81,10 @@ returns malformed output.
 ## Images and audio
 
 Cover and chapter art use `google/gemini-3.1-flash-lite-image`. Generation
-responses carry actual cost; there are no pre-generation estimates or model
-selectors. ElevenLabs remains independent for audiobook narration.
+responses carry actual cost; covers use portrait `2:3` output and chapter art
+uses square `1:1` output to match their display frames. A shared Safety Shelf
+image prompt supplies the safety, crop-safe, and no-watermark rules.
+It forbids brand colours and motifs, adds only `safety-shelf.co.za` as branding
+in small text along the bottom, and places `T.C Lekitlane` on every cover.
+There are no pre-generation estimates or model selectors. ElevenLabs remains
+independent for audiobook narration.

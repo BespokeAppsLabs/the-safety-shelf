@@ -5,6 +5,7 @@ import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { decryptSecret } from "./lib/secrets";
 import { OPENROUTER_BASE_URL, OPENROUTER_IMAGE_MODEL } from "./aiCredentials/providers";
+import { coverImagePrompt, IMAGE_ASPECT_RATIO, pageImagePrompt, type ImageTarget } from "../lib/imagePrompt";
 
 type ImageResult = { image: Blob; costUsd: number | null };
 
@@ -16,11 +17,11 @@ async function imageCredential(ctx: ActionCtx) {
   return decryptSecret(credential.encryptedKey);
 }
 
-export async function generateOpenRouterImage(apiKey: string, prompt: string): Promise<ImageResult> {
+export async function generateOpenRouterImage(apiKey: string, prompt: string, target: ImageTarget): Promise<ImageResult> {
   const res = await fetch(`${OPENROUTER_BASE_URL}/images`, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: OPENROUTER_IMAGE_MODEL, prompt, aspect_ratio: "1:1" }),
+    body: JSON.stringify({ model: OPENROUTER_IMAGE_MODEL, prompt, aspect_ratio: IMAGE_ASPECT_RATIO[target] }),
   });
   const json = (await res.json().catch(() => ({}))) as {
     data?: Array<{ b64_json?: string; media_type?: string }>;
@@ -44,8 +45,8 @@ export const generateCover = action({
   handler: async (ctx, { bookId, prompt }): Promise<GenerationResponse> => {
     const [apiKey, book] = await Promise.all([imageCredential(ctx), ctx.runQuery(api.books.getById, { bookId })]);
     if (!book) throw new ConvexError("Book not found");
-    const finalPrompt = prompt?.trim() || `Square professional digital book cover for The Safety Shelf. Title: ${book.title}. Topic: ${book.blurb}. Safety-first editorial illustration, clean shelf/shield motif, no small body text.`;
-    const result = await generateOpenRouterImage(apiKey, finalPrompt);
+    const finalPrompt = coverImagePrompt(book, prompt);
+    const result = await generateOpenRouterImage(apiKey, finalPrompt, "cover");
     const storageId = await ctx.storage.store(result.image);
     await ctx.runMutation(internal.imageMutations.setCover, { bookId, storageId });
     return { storageId, url: await ctx.storage.getUrl(storageId), actualCostUsd: result.costUsd };
@@ -62,8 +63,8 @@ export const generateChapterImage = action({
     ]);
     if (!book) throw new ConvexError("Book not found");
     const chapterText = blocks.filter((b) => b.chapter === chapter && b.type !== "img").map((b) => b.text).filter(Boolean).join("\n");
-    const finalPrompt = prompt?.trim() || `Square safety guide illustration for "${book.title}", chapter ${chapter}. Reflect this content: ${chapterText.slice(0, 900)}. Warm, clear, educational, diverse people, no text overlays.`;
-    const result = await generateOpenRouterImage(apiKey, finalPrompt);
+    const finalPrompt = pageImagePrompt(book, chapter, chapterText, prompt);
+    const result = await generateOpenRouterImage(apiKey, finalPrompt, "page");
     const storageId = await ctx.storage.store(result.image);
     await ctx.runMutation(internal.imageMutations.setChapterImage, { bookId, chapter, storageId });
     return { storageId, url: await ctx.storage.getUrl(storageId), actualCostUsd: result.costUsd };

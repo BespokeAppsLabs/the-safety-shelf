@@ -8,13 +8,6 @@ import { Price } from "@/components/store/Price";
 import { fill } from "@/lib/i18n";
 import { getServerI18n } from "@/lib/i18n.server";
 
-const SHELF_IMAGES: Record<string, string> = {
-  "pregnancy-safety": "/images/shelves/pregnancy-safety.webp",
-  "child-safety": "/images/shelves/child-safety.webp",
-  "first-aid": "/images/shelves/first-aid.webp",
-  "emergency-preparedness": "/images/shelves/emergency-preparedness.webp",
-};
-
 export async function LandingScreen() {
   const [{ dict }, categories, books] = await Promise.all([
     getServerI18n(),
@@ -22,7 +15,6 @@ export async function LandingScreen() {
     fetchQuery(api.books.listLive),
   ]);
   const promises = dict.landing.promises;
-  const topCategories = categories.slice(0, 4);
   const featured = books.slice(0, 3);
   const categoryTitleById = new Map(categories.map((category) => [category._id, category.title]));
 
@@ -151,23 +143,24 @@ export async function LandingScreen() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              {topCategories.map((category, index) => (
+              {categories.map((category, index) => (
                 <Link
                   href={{ pathname: "/store", query: { category: category.slug } }}
                   key={category._id}
-                  className={`landing-category group min-h-72 rounded-[2rem] bg-[#10251f] p-7 text-white sm:p-8 ${
-                    index === 0 ? "sm:row-span-2 sm:min-h-[37rem]" : ""
-                  }`}
+                  className="landing-category group min-h-72 rounded-[2rem] bg-[#10251f] p-7 text-white sm:p-8"
                 >
-                  {SHELF_IMAGES[category.slug] ? (
-                    <Image
-                      src={SHELF_IMAGES[category.slug]}
+                  {category.imageUrl ? (
+                    // Category art is owner-approved runtime data in Convex storage.
+                    <img
+                      src={category.imageUrl}
                       alt=""
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 32vw"
-                      className="object-cover transition duration-700 group-hover:scale-105"
+                      className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
-                  ) : null}
+                  ) : (
+                    <span aria-hidden="true" className="absolute left-7 top-6 text-7xl opacity-15 transition group-hover:scale-105">
+                      {category.icon}
+                    </span>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#10251f] via-[#10251f]/45 to-black/10" />
                   <div className="relative z-10 flex justify-end">
                     <span className="grid size-11 place-items-center rounded-full border border-white/35 bg-black/10 transition group-hover:rotate-45">

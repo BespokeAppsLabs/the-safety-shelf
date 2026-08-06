@@ -444,7 +444,7 @@ export function ImageGenerationProposalCard({
       )}
       {resultUrl ? (
         // eslint-disable-next-line @next/next/no-img-element — Convex storage URL, not a static asset.
-        <img src={resultUrl} alt={`${target === "cover" ? "Cover" : `Page ${chapter}`} for ${title}`} className="mt-4 aspect-square w-full rounded-2xl object-cover" />
+        <img src={resultUrl} alt={`${target === "cover" ? "Cover" : `Page ${chapter}`} for ${title}`} className={`mt-4 w-full rounded-2xl object-cover ${target === "cover" ? "aspect-[2/3]" : "aspect-square"}`} />
       ) : null}
       {error ? <p className="mt-2 text-xs font-semibold text-red-strong">{error}</p> : null}
     </Card>
