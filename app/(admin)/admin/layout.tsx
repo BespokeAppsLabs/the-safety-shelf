@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import { fetchQuery } from "convex/nextjs";
 import { AdminAccessDenied } from "@/components/auth/AdminAccessDenied";
+import { AdminMobileNav } from "@/components/admin/AdminMobileNav";
 import { Logo } from "@/components/ui/Logo";
 import { api } from "@/convex/_generated/api";
 import { isAdminOwner } from "@/lib/adminAccess";
@@ -56,14 +57,17 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       </aside>
       <div className="min-w-0 flex-1">
         <div className="mb-6 flex items-center justify-between gap-4 rounded-card border border-border bg-surface px-4 py-3 shadow-soft">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Owner view</p>
-            <p className="text-sm text-muted">
-              Owner-authorized workspace
-            </p>
+          <div className="flex min-w-0 items-center gap-3">
+            <AdminMobileNav />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Owner view</p>
+              <p className="truncate text-sm text-muted">
+                Owner-authorized workspace
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/store" className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted transition hover:bg-background hover:text-ink">
+          <div className="flex shrink-0 items-center gap-3">
+            <Link href="/store" className="hidden rounded-full border border-border px-4 py-2 text-sm font-medium text-muted transition hover:bg-background hover:text-ink sm:inline-block">
               Open store
             </Link>
             {/* Sign out lives in this menu. Sized to the 44px avatar the topbar
