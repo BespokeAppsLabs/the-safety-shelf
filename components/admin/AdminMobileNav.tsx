@@ -38,8 +38,24 @@ export function AdminMobileNav() {
 
   // The admin layout persists across route changes, so without this the drawer
   // stays open on top of the page it just navigated to. Keying off pathname
-  // rather than the link's onClick also covers back/forward.
+  // rather than the link's onClick also covers back/forward. It does not cover
+  // re-selecting the current page — same pathname, no rerun — so the links
+  // close it themselves as well.
   useEffect(() => setOpen(false), [pathname]);
+
+  // Widening past `lg` reveals the sidebar this drawer stands in for, and a
+  // modal <dialog> keeps the page behind it inert — so an open drawer would
+  // cover the nav it duplicates. Only listens while open. 64rem is Tailwind's
+  // `lg`, in rem so it tracks the root font size the way the class does.
+  useEffect(() => {
+    if (!open) return;
+    const mq = window.matchMedia("(min-width: 64rem)");
+    const onChange = () => {
+      if (mq.matches) setOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [open]);
 
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
@@ -105,6 +121,7 @@ export function AdminMobileNav() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? "page" : undefined}
                   className={`block rounded-xl px-3 py-3 text-sm font-medium transition ${
                     isActive(item.href)
