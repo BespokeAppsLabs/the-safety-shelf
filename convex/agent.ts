@@ -13,6 +13,7 @@ import { DEFAULT_SYSTEM_PROMPT } from "../lib/agentPrompt";
 import { blocksToChapters, editorChaptersToParagraphs } from "../lib/bookContent";
 import { LANGUAGES, DEFAULT_LANGUAGE, languageLabel } from "../lib/languages";
 import { isSavedTranslation } from "../lib/translationState";
+import { coverImagePrompt, pageImagePrompt } from "../lib/imagePrompt";
 
 // The only pages the navigate tool may send the owner to. Kept here (server
 // side, enforced) rather than only in the prompt, so a hallucinated path is
@@ -260,10 +261,6 @@ export function requestedCoverTitle(message: string, titles: string[]) {
   return [...titles].sort((a, b) => compact(b).length - compact(a).length).find((title) => request.includes(compact(title))) ?? null;
 }
 
-function coverPrompt(book: { title: string; blurb: string }) {
-  return `Square professional digital book cover for The Safety Shelf. Title: ${book.title}. Topic: ${book.blurb}. Safety-first editorial illustration, clean shelf/shield motif, no small body text.`;
-}
-
 function savedDraftBookId(actions: ActionContextRecord[]) {
   const action = [...actions]
     .sort((a, b) => b.proposedAt - a.proposedAt)
@@ -396,7 +393,7 @@ async function directCoverProposal(ctx: ActionCtx, message: string): Promise<{ r
   if (!title) return null;
   if (!(await imageProviderStatus(ctx))) return { reply: "No OpenRouter key connected — open Settings and connect one first.", cards: [] };
   const book = books.find((item) => item.title === title)!;
-  const prompt = coverPrompt(book);
+  const prompt = coverImagePrompt(book);
   const actionId = await ctx.runMutation(api.agentActions.propose, {
     tool: "generateCoverImage",
     args: { bookId: book._id, title: book.title, prompt },
@@ -833,7 +830,7 @@ function buildTools(ctx: ActionCtx, readableUrls: Set<string>) {
     }),
     generateCoverImage: tool({
       description:
-        "Propose spending image-provider credits to generate or regenerate a square cover image for an existing book. This does NOT generate until the owner approves the card.",
+        "Propose spending image-provider credits to generate or regenerate a portrait 2:3 cover image for an existing book. This does NOT generate until the owner approves the card.",
       inputSchema: z.object({
         title: z.string().describe("Full or partial book title"),
         prompt: z.string().optional().describe("Optional final image prompt; blank uses the book title and blurb"),
@@ -844,7 +841,7 @@ function buildTools(ctx: ActionCtx, readableUrls: Set<string>) {
         const needle = title.trim().toLowerCase();
         const match = books.find((book) => book.title.toLowerCase().includes(needle));
         if (!match) return { data: { error: `No book matches "${title}".` }, error: `No book matches "${title}".` };
-        const finalPrompt = prompt?.trim() || coverPrompt(match);
+        const finalPrompt = coverImagePrompt(match, prompt);
         const actionId = await ctx.runMutation(api.agentActions.propose, {
           tool: "generateCoverImage",
           args: { bookId: match._id, title: match.title, prompt: finalPrompt },
@@ -874,7 +871,7 @@ function buildTools(ctx: ActionCtx, readableUrls: Set<string>) {
         const blocks = await ctx.runQuery(api.bookBlocks.listByBook, { bookId: match._id });
         if (!blocks.some((block) => block.chapter === chapter)) return { data: { error: `"${match.title}" has no chapter/page ${chapter}.` }, error: `"${match.title}" has no chapter/page ${chapter}.` };
         const chapterText = blocks.filter((b) => b.chapter === chapter && b.type !== "img").map((b) => b.text).filter(Boolean).join("\n");
-        const finalPrompt = prompt?.trim() || `Square safety guide illustration for "${match.title}", chapter ${chapter}. Reflect this content: ${chapterText.slice(0, 900)}. Warm, clear, educational, diverse people, no text overlays.`;
+        const finalPrompt = pageImagePrompt(match, chapter, chapterText, prompt);
         const actionId = await ctx.runMutation(api.agentActions.propose, {
           tool: "generatePageImage",
           args: { bookId: match._id, title: match.title, chapter, prompt: finalPrompt },

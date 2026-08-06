@@ -128,7 +128,7 @@ a real book that already has `/admin/books/[slug]`, so their review is read-only
 ## Image generation
 - Covers and page art remain owner-triggered, and agent image tools still require owner approval before generation.
 - A single encrypted OpenRouter key serves all AI paths; no separate image credential exists.
-- Covers and chapter art use `google/gemini-3.1-flash-lite-image`, store bytes in Convex, and return OpenRouter's actual usage cost after completion.
+- Covers and chapter art use `google/gemini-3.1-flash-lite-image`, store bytes in Convex, and return OpenRouter's actual usage cost after completion. A shared Safety Shelf image prompt is applied to every request; covers generate at the storefront's portrait `2:3` ratio and page art at the reader's square `1:1` ratio. Images use subject-led colours rather than the brand palette; their only branding is `safety-shelf.co.za` in small text along the bottom. Every cover includes the author `T.C Lekitlane`.
 - The owner does not enter image prompts. The agent/manual action derives them from book and chapter context; there are no provider/model controls or fixed estimates.
 
 ## Web access

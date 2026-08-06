@@ -572,7 +572,7 @@ export function AdminBookEditor({
           </label>
           <div className="grid gap-4 rounded-3xl bg-background p-4 md:grid-cols-[12rem_1fr]">
             <div
-              className="relative aspect-square overflow-hidden rounded-3xl text-white"
+              className="relative aspect-[2/3] overflow-hidden rounded-3xl text-white"
               style={{ backgroundImage: book.coverUrl ? undefined : `linear-gradient(150deg, ${book.gradientFrom ?? "#147a5c"}, ${book.gradientTo ?? "#2f7dbd"})` }}
             >
               {book.coverUrl ? <img src={book.coverUrl} alt="" className="absolute inset-0 h-full w-full object-cover" /> : null}

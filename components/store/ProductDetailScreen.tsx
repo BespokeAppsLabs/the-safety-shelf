@@ -29,7 +29,7 @@ export function ProductDetailScreen({
       <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="p-4">
           <div
-            className="relative flex min-h-96 flex-col justify-between overflow-hidden rounded-3xl p-6 text-white"
+            className="relative flex aspect-[2/3] flex-col justify-between overflow-hidden rounded-3xl p-6 text-white"
             style={{ backgroundImage: book.coverUrl ? undefined : `linear-gradient(150deg, ${book.gradientFrom ?? "#147a5c"}, ${book.gradientTo ?? "#2f7dbd"})` }}
           >
             {book.coverUrl ? <img src={book.coverUrl} alt="" className="absolute inset-0 h-full w-full object-cover" /> : null}

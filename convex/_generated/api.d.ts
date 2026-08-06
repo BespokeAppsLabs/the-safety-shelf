@@ -72,6 +72,7 @@ import type * as bootstrapCategories from "../bootstrapCategories.js";
 import type * as categories from "../categories.js";
 import type * as categories_mutations_create from "../categories/mutations/create.js";
 import type * as categories_queries_list from "../categories/queries/list.js";
+import type * as categoryImages from "../categoryImages.js";
 import type * as dashboard from "../dashboard.js";
 import type * as entitlements from "../entitlements.js";
 import type * as entitlements_lib from "../entitlements/lib.js";
@@ -200,6 +201,7 @@ declare const fullApi: ApiFromModules<{
   categories: typeof categories;
   "categories/mutations/create": typeof categories_mutations_create;
   "categories/queries/list": typeof categories_queries_list;
+  categoryImages: typeof categoryImages;
   dashboard: typeof dashboard;
   entitlements: typeof entitlements;
   "entitlements/lib": typeof entitlements_lib;

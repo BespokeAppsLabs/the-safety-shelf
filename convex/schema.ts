@@ -16,6 +16,7 @@ export default defineSchema({
     slug: v.string(),
     title: v.string(),
     icon: v.optional(v.string()),
+    imageStorageId: v.optional(v.id("_storage")),
     description: v.optional(v.string()),
     sortOrder: v.number(),
   }).index("by_slug", ["slug"]),

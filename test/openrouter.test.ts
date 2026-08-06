@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import { decryptSecret, encryptSecret } from "../convex/lib/secrets";
 import { generateOpenRouterImage } from "../convex/images";
 import { openRouterClient, openRouterTextRequest, validateOpenRouterKey } from "../convex/lib/openrouter";
+import { COVER_AUTHOR, coverImagePrompt, IMAGE_ASPECT_RATIO, IMAGE_SYSTEM_PROMPT, IMAGE_WEBSITE, pageImagePrompt } from "../lib/imagePrompt";
 import {
   OPENROUTER_IMAGE_MODEL,
   OPENROUTER_TEXT_FALLBACKS,
@@ -99,18 +100,32 @@ test("validates a key without sending an inference request", async () => {
   });
 });
 
-test("stores OpenRouter image bytes and returns the provider's actual cost", async () => {
+test("stores OpenRouter image bytes and sends the target display ratio", async () => {
   const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
     data: [{ b64_json: Buffer.from("image-bytes").toString("base64"), media_type: "image/webp" }],
     usage: { cost: 0.0123 },
   }), { status: 200, headers: { "content-type": "application/json" } }));
   vi.stubGlobal("fetch", fetchMock);
 
-  const result = await generateOpenRouterImage("sk-or-test", "a calm illustration");
+  const prompt = coverImagePrompt({ title: "A Calm Guide", blurb: "Staying safe" });
+  const result = await generateOpenRouterImage("sk-or-test", prompt, "cover");
   expect(await result.image.text()).toBe("image-bytes");
   expect(result.image.type).toBe("image/webp");
   expect(result.costUsd).toBe(0.0123);
-  expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ model: OPENROUTER_IMAGE_MODEL, prompt: "a calm illustration" });
+  expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+    model: OPENROUTER_IMAGE_MODEL,
+    prompt,
+    aspect_ratio: "2:3",
+  });
+  expect(prompt.startsWith(IMAGE_SYSTEM_PROMPT)).toBe(true);
+  expect(prompt).toContain(`Book author: ${COVER_AUTHOR}`);
+  expect(prompt).toContain(`"${IMAGE_WEBSITE}"`);
+  expect(prompt).not.toContain("deep emerald with restrained amber accents");
+  const migratedPrompt = coverImagePrompt({ title: "A Calm Guide", blurb: "Staying safe" }, "Create one polished, edge-to-edge editorial illustration for The Safety Shelf. Use deep emerald and a shelf/shield motif.");
+  expect(migratedPrompt).not.toContain("Additional direction:");
+  expect(migratedPrompt).not.toContain("Use deep emerald");
+  expect(pageImagePrompt({ title: "A Calm Guide" }, 1, "Stay safe")).toContain(`"${IMAGE_WEBSITE}"`);
+  expect(IMAGE_ASPECT_RATIO.page).toBe("1:1");
 });
 
 test("every agentic model in the chain supports reasoning and tool calling", () => {

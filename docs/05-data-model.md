@@ -296,7 +296,9 @@ from the actual files; storage-id presence can't lie.
 Owner-manageable so the agent's `writeBook` flow can create a new shelf (e.g.
 "Workplace Safety") without a code change — matches the "agent that acts" thesis
 in [00-overview](00-overview.md). `lib/landing.ts`'s `LANDING_CATEGORIES` becomes
-a query over this table instead of a hardcoded array.
+a query over this table instead of a hardcoded array. Approved landing artwork is
+stored in Convex via optional `imageStorageId`; `categories.list` resolves it to
+`imageUrl`, so category presentation remains database-driven.
 
 ## Currency amendment (2026-07-30)
 Two tables added so no currency is hardcoded anywhere in the app. Full design in
