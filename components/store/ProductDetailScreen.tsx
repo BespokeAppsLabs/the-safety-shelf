@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AdminBookActions } from "@/components/store/AdminBookActions";
 import { BuyButton } from "@/components/store/BuyButton";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -55,6 +56,7 @@ export function ProductDetailScreen({
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <Price cents={book.priceCents} className="text-3xl font-semibold text-primary" />
             <BuyButton book={book} />
+            <AdminBookActions book={book} />
           </div>
 
           <Card className="mt-8">
