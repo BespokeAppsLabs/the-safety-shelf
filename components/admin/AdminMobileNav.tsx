@@ -53,6 +53,9 @@ export function AdminMobileNav() {
     const onChange = () => {
       if (mq.matches) setOpen(false);
     };
+    // Effects run after paint, so the query can already match by the time this
+    // subscribes — and a `change` that fired in that gap is not replayed.
+    onChange();
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
   }, [open]);
